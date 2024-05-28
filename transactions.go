@@ -79,15 +79,15 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 	}
 	table.SetBorder(true).SetTitle("Table")
 	app.SetFocus(table)
-	
+
 	code := tview.NewTextView().
 		SetWrap(false).
 		SetDynamicColors(true)
 	code.SetBorderPadding(1, 1, 2, 0)
-	
+
 	f := tview.NewForm()
 	f.SetBorder(true).SetTitle("Transaction Information")
-	
+
 	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
 		f.Clear(true)
 		code.Clear()
@@ -98,7 +98,7 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 		f.AddButton("Save", nil).AddButton("Cancel", nil)
 		app.SetFocus(f)
 	})
-	
+
 	selectRow := func() {
 		table.SetBorders(false).
 			SetSelectable(true, false).
@@ -108,13 +108,13 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 	}
 
 	selectRow()
-	
 
 	return "Transactions", tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			//AddItem(list, 10, 1, true).
-			AddItem(table, 0, 1, false), 0, 1, true).
+			AddItem(table, 0, 1, true), 0, 2, true).
 		//AddItem(code, codeWidth, 1, false)
-		AddItem(f, codeWidth, 1, false)
+		AddItem(f, 0, 1, false)
 }
+
