@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -54,6 +53,7 @@ const tableData = `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 12/21/2018|Central|Andrews|Binder|28|4.99|139.72`
 
 func TransactionsTable(nextSlide func()) (title string, content tview.Primitive) {
+	
 	count := 0
 	table := tview.NewTable().
 		SetFixed(1, 1)
@@ -78,43 +78,88 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 		}
 	}
 	table.SetBorder(true).SetTitle("Table")
-	app.SetFocus(table)
-
-	code := tview.NewTextView().
-		SetWrap(false).
-		SetDynamicColors(true)
-	code.SetBorderPadding(1, 1, 2, 0)
-
-	f := tview.NewForm()
-	f.SetBorder(true).SetTitle("Transaction Information")
-
-	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
-		f.Clear(true)
-		code.Clear()
-		for i := 0; i < count; i++ {
-			cell := table.GetCell(row, i)
-			f.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, nil)
+	
+	// Transaction Form
+	form := tview.NewForm()
+	form.SetBorder(true).SetTitle("Transaction Information")
+	
+	// List with accounts
+	accounts := tview.NewList()
+	accounts.ShowSecondaryText(false).
+		AddItem("Alfa Bank", "123", '1', nil).
+		AddItem("BNB", "123", '2', nil)
+	accounts.SetBorderPadding(1, 1, 2, 2).
+		SetBorder(true).
+		SetTitle("Account List")
+	
+	// List with categories
+	categories := tview.NewList()
+	categories.ShowSecondaryText(false).
+		AddItem("Work", "123", '1', nil).
+		AddItem("Store", "123", '2', nil)
+	categories.SetBorderPadding(1, 1, 2, 2).
+		SetBorder(true).
+		SetTitle("Category List")
+		
+	// Flex:
+	flex := tview.NewFlex()
+	
+	top_flex := tview.NewFlex().
+			SetDirection(tview.FlexColumn).
+			AddItem(accounts, 0, 1, false).
+			AddItem(categories, 0, 2, false)	
+			
+	bottom_flex := tview.NewFlex().
+			SetDirection(tview.FlexColumn).
+			AddItem(table, 0, 1, true)
+			
+	modal_flex := tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(top_flex, 20, 1, false).
+			AddItem(bottom_flex, 0, 1, true)
+				
+	flex.AddItem(modal_flex, 0, 2, true)
+	
+	// Form Buttons
+	close := func() {
+		bottom_flex.RemoveItem(form)
+		app.SetFocus(table)
+	}
+	save := func() {
+		bottom_flex.RemoveItem(form)
+		app.SetFocus(table)
+	}
+	
+	app.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+		if event.Buttons() == tcell.Button1 {
+			if form.InRect(event.Position()) == false {
+				bottom_flex.RemoveItem(form)
+			}
 		}
-		f.AddButton("Save", nil).AddButton("Cancel", nil)
-		app.SetFocus(f)
+		return event, action
 	})
 
+	// Table action
+	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
+		form.Clear(true)
+		
+		for i := 0; i < count; i++ {
+			cell := table.GetCell(row, i)
+			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, nil)
+		}
+		form.AddButton("Save", save).AddButton("Cancel", close)
+		
+		bottom_flex.AddItem(form, 0, 1, false)
+		app.SetFocus(form)
+	})
+		
 	selectRow := func() {
 		table.SetBorders(false).
 			SetSelectable(true, false).
-			SetSeparator(' ')
-		code.Clear()
-		fmt.Fprint(code, "fdkfd")
+			SetSeparator('|')
 	}
-
+	
 	selectRow()
 
-	return "Transactions", tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			//AddItem(list, 10, 1, true).
-			AddItem(table, 0, 1, true), 0, 2, true).
-		//AddItem(code, codeWidth, 1, false)
-		AddItem(f, 0, 1, false)
+	return "Transactions", flex
 }
-
