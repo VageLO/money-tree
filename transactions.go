@@ -92,14 +92,8 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 		SetBorder(true).
 		SetTitle("Account List")
 	
-	// List with categories
-	categories := tview.NewList()
-	categories.ShowSecondaryText(false).
-		AddItem("Work", "123", '1', nil).
-		AddItem("Store", "123", '2', nil)
-	categories.SetBorderPadding(1, 1, 2, 2).
-		SetBorder(true).
-		SetTitle("Category List")
+	// Tree with categories
+	categories := TreeView()
 		
 	// Flex:
 	flex := tview.NewFlex()
@@ -107,7 +101,7 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 	top_flex := tview.NewFlex().
 			SetDirection(tview.FlexColumn).
 			AddItem(accounts, 0, 1, false).
-			AddItem(categories, 0, 2, false)	
+			AddItem(categories, 0, 1, false)	
 			
 	bottom_flex := tview.NewFlex().
 			SetDirection(tview.FlexColumn).
