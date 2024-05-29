@@ -70,7 +70,7 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 			tableCell := tview.NewTableCell(cell).
 				SetTextColor(color).
 				SetAlign(align).
-				SetSelectable(row != 0 && column != 0)
+				SetSelectable(row != 0)
 			if column >= 1 && column <= 3 {
 				tableCell.SetExpansion(1)
 			}
@@ -125,9 +125,22 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 		bottom_flex.RemoveItem(form)
 		app.SetFocus(table)
 	}
-	save := func() {
-		bottom_flex.RemoveItem(form)
-		app.SetFocus(table)
+
+	changed := func(text string, row int, column int) {
+		color := tcell.ColorWhite
+		if row == 0 {
+			color = tcell.ColorYellow
+		} else if column == 0 {
+			color = tcell.ColorDarkCyan
+		}
+		tableCell := tview.NewTableCell(text).
+			SetTextColor(color).
+			SetAlign(tview.AlignLeft).
+			SetSelectable(row != 0)
+		if column >= 1 && column <= 3 {
+			tableCell.SetExpansion(1)
+		}
+		table.SetCell(row, column, tableCell)
 	}
 	
 	app.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
@@ -145,9 +158,15 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 		
 		for i := 0; i < count; i++ {
 			cell := table.GetCell(row, i)
-			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, nil)
+			column := i
+			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) {changed(text, row, column)})
 		}
-		form.AddButton("Save", save).AddButton("Cancel", close)
+		// Form Buttons
+		form.AddButton("Cancel", close)
+		form.AddButton("Delete", func(){
+			table.RemoveRow(row)
+			bottom_flex.RemoveItem(form)
+		})
 		
 		bottom_flex.AddItem(form, 0, 1, false)
 		app.SetFocus(form)
