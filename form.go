@@ -12,7 +12,7 @@ func Form() *tview.Form {
 	return form
 }
 
-func FillForm(form *tview.Form, count int, row int) *tview.Form {
+func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 	// Close Button
 	close := func() {
 		bottom_flex.RemoveItem(form)
@@ -41,7 +41,11 @@ func FillForm(form *tview.Form, count int, row int) *tview.Form {
 	for i := 0; i < count; i++ {
 		cell := table.GetCell(row, i)
 		column := i
-		form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) {changed(text, row, column)})
+		if empty {
+			form.AddInputField(table.GetCell(0, i).Text, "", 0, nil, func(text string) {changed(text, row, column)})
+		} else {
+			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) {changed(text, row, column)})
+		}
 	}
 
 	// Form Buttons
@@ -49,6 +53,7 @@ func FillForm(form *tview.Form, count int, row int) *tview.Form {
 	form.AddButton("Delete", func(){
 		table.RemoveRow(row)
 		bottom_flex.RemoveItem(form)
+		app.SetFocus(table)
 	})
 	
 	return form

@@ -10,6 +10,7 @@ import (
 var (
 	table = tview.NewTable().
 		SetFixed(1, 1)
+	count = 0
 )
 
 const tableData = `OrderDate|Region|Rep|Item|Units|UnitCost|Total
@@ -57,8 +58,7 @@ const tableData = `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 12/4/2018|Central|Jardine|Binder|94|19.99|1,879.06
 12/21/2018|Central|Andrews|Binder|28|4.99|139.72`
 	
-func FillTable(data string) int {
-	count := 0
+func FillTable(data string) {
 	table.Clear()
 	
 	for row, line := range strings.Split(data, "\n") {
@@ -81,20 +81,18 @@ func FillTable(data string) int {
 			table.SetCell(row, column, tableCell)
 		}
 	}
-	return count
 }
 
 func Table() *tview.Form {
 	
-	count := FillTable(tableData)
+	FillTable(tableData)
 	table.SetBorder(true).SetTitle("Transactions")
-	
-	//Form
-	form := Form()
 
+	form := Form()
+	
 	// Table action
 	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
-		form = FillForm(form, count, row)
+		form = FillForm(form, count, row, false)
 		
 		bottom_flex.AddItem(form, 0, 1, false)
 		app.SetFocus(form)

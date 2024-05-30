@@ -15,7 +15,7 @@ func AccountsList() *tview.List {
 	accounts.ShowSecondaryText(false).
 		AddItem("Alfa Bank", "123", '1', nil).
 		AddItem("BNB", "123", '2', func() {
-			_ = FillTable(tableData)
+			FillTable(tableData)
 			table.SetBorder(true).SetTitle("Accounts")
 			app.SetFocus(table)
 		})

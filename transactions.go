@@ -10,9 +10,6 @@ var (
 )
 func TransactionsTable(nextSlide func()) (title string, content tview.Primitive) {
 	
-	//Table
-	form := Table()
-	
 	// List with accounts
 	accounts := AccountsList()
 	
@@ -26,18 +23,8 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 			SetDirection(tview.FlexColumn).
 			AddItem(accounts, 0, 1, false).
 			AddItem(categories, 0, 1, false)
-
-	buttons_flex := tview.NewFlex().
-			SetDirection(tview.FlexColumn).
-			AddItem(tview.NewButton("Create"), 0, 1, false).
-			AddItem(tview.NewButton("Delete"), 0, 1, false)
 			
-	table_flex := tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(table, 0, 3, true).
-			AddItem(buttons_flex, 3, 1, false)
-			
-	bottom_flex.AddItem(table_flex, 0, 1, true)
+	bottom_flex.AddItem(table, 0, 2, true)
 	
 	modal_flex := tview.NewFlex().
 			SetDirection(tview.FlexRow).

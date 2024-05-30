@@ -35,7 +35,7 @@ func MakeTree() *node{
 			{text: "Child node"},
 			{text: "Selected child node", selected: func() {
 				// Updating table on selected node
-				_ = FillTable(tableData)
+				FillTable(tableData)
 				table.SetBorder(true).SetTitle("Categories")
 				app.SetFocus(table)
 			}},

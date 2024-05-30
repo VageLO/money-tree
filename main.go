@@ -10,6 +10,7 @@ import (
 
 type Slide func(nextSlide func()) (title string, content tview.Primitive)
 
+var form = Table()
 var app = tview.NewApplication()
 
 func main() {
@@ -68,6 +69,16 @@ func main() {
 			return nil
 		} else if event.Key() == tcell.KeyCtrlP {
 			previousSlide()
+			return nil
+		} else if event.Key() == tcell.KeyCtrlA {
+			bottom_flex.RemoveItem(form)
+			
+			newRow := table.GetRowCount()
+			table.InsertRow(newRow)
+			form = FillForm(form, count, newRow, true)
+			
+			bottom_flex.AddItem(form, 0, 1, false)
+			app.SetFocus(form)
 			return nil
 		}
 		return event
