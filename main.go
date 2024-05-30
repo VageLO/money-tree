@@ -71,6 +71,9 @@ func main() {
 			previousSlide()
 			return nil
 		} else if event.Key() == tcell.KeyCtrlA {
+			if table.HasFocus() == false {
+				return nil
+			}
 			bottom_flex.RemoveItem(form)
 			
 			newRow := table.GetRowCount()
