@@ -6,6 +6,10 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
+var (
+	table = tview.NewTable().
+		SetFixed(1, 1)
+)
 
 const tableData = `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 1/6/2017|East|Jones|Pencil|95|1.99|189.05
@@ -52,12 +56,10 @@ const tableData = `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 12/4/2018|Central|Jardine|Binder|94|19.99|1,879.06
 12/21/2018|Central|Andrews|Binder|28|4.99|139.72`
 
-func TransactionsTable(nextSlide func()) (title string, content tview.Primitive) {
-	
+func FillTable(data string) int {
 	count := 0
-	table := tview.NewTable().
-		SetFixed(1, 1)
-	for row, line := range strings.Split(tableData, "\n") {
+	
+	for row, line := range strings.Split(data, "\n") {
 		count = len(strings.Split(line, "|"))
 		for column, cell := range strings.Split(line, "|") {
 			color := tcell.ColorWhite
@@ -77,20 +79,20 @@ func TransactionsTable(nextSlide func()) (title string, content tview.Primitive)
 			table.SetCell(row, column, tableCell)
 		}
 	}
-	table.SetBorder(true).SetTitle("Table")
+	return count
+}
+
+func TransactionsTable(nextSlide func()) (title string, content tview.Primitive) {
+	
+	count := FillTable(tableData)
+	table.SetBorder(true).SetTitle("Transactions")
 	
 	// Transaction Form
 	form := tview.NewForm()
 	form.SetBorder(true).SetTitle("Transaction Information")
 	
 	// List with accounts
-	accounts := tview.NewList()
-	accounts.ShowSecondaryText(false).
-		AddItem("Alfa Bank", "123", '1', nil).
-		AddItem("BNB", "123", '2', nil)
-	accounts.SetBorderPadding(1, 1, 2, 2).
-		SetBorder(true).
-		SetTitle("Account List")
+	accounts := AccountsList()
 	
 	// Tree with categories
 	categories := TreeView()
