@@ -6,6 +6,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
+
 var (
 	table = tview.NewTable().
 		SetFixed(1, 1)
@@ -55,9 +56,10 @@ const tableData = `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 11/17/2018|Central|Jardine|Binder|11|4.99|54.89
 12/4/2018|Central|Jardine|Binder|94|19.99|1,879.06
 12/21/2018|Central|Andrews|Binder|28|4.99|139.72`
-
+	
 func FillTable(data string) int {
 	count := 0
+	table.Clear()
 	
 	for row, line := range strings.Split(data, "\n") {
 		count = len(strings.Split(line, "|"))

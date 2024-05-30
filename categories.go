@@ -20,7 +20,7 @@ func MakeTree() *node{
 	tableData := `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 1/6/2017|East|Jones|Pencil|95|1.99|189.05
 1/23/2017|Central|Kivell|Binder|50|19.99|999.50`
-
+		
 	var rootNode = &node{
 	text: "Root",
 	children: []*node{
@@ -35,9 +35,9 @@ func MakeTree() *node{
 			{text: "Child node"},
 			{text: "Selected child node", selected: func() {
 				// Updating table on selected node
-				table.Clear()
 				_ = FillTable(tableData)
 				table.SetBorder(true).SetTitle("Categories")
+				app.SetFocus(table)
 			}},
 		}},
 	}}

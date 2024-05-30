@@ -11,13 +11,13 @@ var (
 func AccountsList() *tview.List {
 	tableData := `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 1/6/2017|East|Jones|Pencil|95|1.99|189.05`
-
+		
 	accounts.ShowSecondaryText(false).
 		AddItem("Alfa Bank", "123", '1', nil).
 		AddItem("BNB", "123", '2', func() {
-			table.Clear()
 			_ = FillTable(tableData)
 			table.SetBorder(true).SetTitle("Accounts")
+			app.SetFocus(table)
 		})
 	accounts.
 		SetBorderPadding(1, 1, 2, 2).
