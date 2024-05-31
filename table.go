@@ -94,8 +94,8 @@ func Table() *tview.Form {
 	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
 		form = FillForm(form, count, row, false)
 		
-		bottom_flex.AddItem(form, 0, 1, false)
-		app.SetFocus(form)
+		pages.AddPage("Dialog", Dialog(form), true, true)
+		//app.SetFocus(form)
 	})
 	
 	table.SetBorders(false).

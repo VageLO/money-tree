@@ -15,7 +15,7 @@ func Form() *tview.Form {
 func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 	// Close Button
 	close := func() {
-		bottom_flex.RemoveItem(form)
+		pages.RemovePage("Dialog")
 		app.SetFocus(table)
 	}
 	
@@ -52,7 +52,7 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 	form.AddButton("Cancel", close)
 	form.AddButton("Delete", func(){
 		table.RemoveRow(row)
-		bottom_flex.RemoveItem(form)
+		pages.RemovePage("Dialog")
 		app.SetFocus(table)
 	})
 	
