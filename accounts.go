@@ -30,3 +30,7 @@ func RenameAccount() {
 	FillTreeAndListForm(nil, accounts)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 }
+
+func RemoveAccount() {
+	accounts.RemoveItem(accounts.GetCurrentItem())
+}

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -13,7 +15,7 @@ type node struct {
 }
 
 var (
-	tree = tview.NewTreeView().SetAlign(false).SetTopLevel(1).SetGraphics(true).SetPrefixes(nil)
+	tree = tview.NewTreeView().SetAlign(false).SetTopLevel(0).SetGraphics(true).SetPrefixes(nil)
 )
 
 func MakeTree() *node{
@@ -22,7 +24,7 @@ func MakeTree() *node{
 1/23/2017|Central|Kivell|Binder|50|19.99|999.50`
 		
 	var rootNode = &node{
-	text: "Root",
+	text: ".",
 	children: []*node{
 		{text: "Expand all", selected: func() { tree.GetRoot().ExpandAll() }},
 		{text: "Collapse all", selected: func() {
@@ -37,7 +39,7 @@ func MakeTree() *node{
 				// Updating table on selected node
 				FillTable(tableData)
 				table.SetBorder(true).SetTitle("Categories")
-			}},
+			}, expand: true, children: []*node {{text: "test"}}},
 		}},
 	}}
 	return rootNode
@@ -48,7 +50,7 @@ func TreeView() *tview.TreeView {
 	tree.SetBorder(true).
 		SetTitle("Category Tree")
 
-	// Add nodes.
+	// Add nodes
 	var add func(target *node) *tview.TreeNode
 	add = func(target *node) *tview.TreeNode {
 		node := tview.NewTreeNode(target.text).
@@ -84,4 +86,10 @@ func RenameNode() {
 	node := tree.GetCurrentNode()
 	FillTreeAndListForm(node, nil)
 	pages.AddPage("Dialog", Dialog(form), true, true)
+}
+
+func RemoveNode() {
+	node := tree.GetCurrentNode()
+	node.ClearChildren()
+	node.RemoveChild(node)
 }
