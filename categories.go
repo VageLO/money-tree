@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strconv"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -18,30 +16,30 @@ var (
 	tree = tview.NewTreeView().SetAlign(false).SetTopLevel(0).SetGraphics(true).SetPrefixes(nil)
 )
 
-func MakeTree() *node{
+func MakeTree() *node {
 	tableData := `OrderDate|Region|Rep|Item|Units|UnitCost|Total
 1/6/2017|East|Jones|Pencil|95|1.99|189.05
 1/23/2017|Central|Kivell|Binder|50|19.99|999.50`
-		
+
 	var rootNode = &node{
-	text: ".",
-	children: []*node{
-		{text: "Expand all", selected: func() { tree.GetRoot().ExpandAll() }},
-		{text: "Collapse all", selected: func() {
-			for _, child := range tree.GetRoot().GetChildren() {
-				child.CollapseAll()
-			}
-		}},
-		{text: "Root node", expand: true, children: []*node{
-			{text: "Child node"},
-			{text: "Child node"},
-			{text: "Selected child node", selected: func() {
-				// Updating table on selected node
-				FillTable(tableData)
-				table.SetBorder(true).SetTitle("Categories")
-			}, expand: true, children: []*node {{text: "test"}}},
-		}},
-	}}
+		text: ".",
+		children: []*node{
+			{text: "Expand all", selected: func() { tree.GetRoot().ExpandAll() }},
+			{text: "Collapse all", selected: func() {
+				for _, child := range tree.GetRoot().GetChildren() {
+					child.CollapseAll()
+				}
+			}},
+			{text: "Root node", expand: true, children: []*node{
+				{text: "Child node"},
+				{text: "Child node"},
+				{text: "Selected child node", selected: func() {
+					// Updating table on selected node
+					FillTable(tableData)
+					table.SetBorder(true).SetTitle("Categories")
+				}, expand: true, children: []*node{{text: "test"}}},
+			}},
+		}}
 	return rootNode
 }
 
