@@ -95,7 +95,6 @@ func Table() *tview.Form {
 		form = FillForm(form, count, row, false)
 		
 		pages.AddPage("Dialog", Dialog(form), true, true)
-		//app.SetFocus(form)
 	})
 	
 	table.SetBorders(false).

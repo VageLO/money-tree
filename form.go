@@ -13,11 +13,6 @@ func Form() *tview.Form {
 }
 
 func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
-	// Close Button
-	close := func() {
-		pages.RemovePage("Dialog")
-		app.SetFocus(table)
-	}
 	
 	// TODO: Description
 	changed := func(text string, row int, column int) {
@@ -47,14 +42,6 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) {changed(text, row, column)})
 		}
 	}
-
-	// Form Buttons
-	form.AddButton("Cancel", close)
-	form.AddButton("Delete", func(){
-		table.RemoveRow(row)
-		pages.RemovePage("Dialog")
-		app.SetFocus(table)
-	})
 	
 	return form
 }
