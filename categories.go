@@ -37,7 +37,6 @@ func MakeTree() *node{
 				// Updating table on selected node
 				FillTable(tableData)
 				table.SetBorder(true).SetTitle("Categories")
-				app.SetFocus(table)
 			}},
 		}},
 	}}
@@ -79,4 +78,10 @@ func TreeView() *tview.TreeView {
 		})
 
 	return tree
+}
+
+func RenameNode() {
+	node := tree.GetCurrentNode()
+	FillTreeAndListForm(node, nil)
+	pages.AddPage("Dialog", Dialog(form), true, true)
 }

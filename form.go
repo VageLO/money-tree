@@ -45,3 +45,25 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 	
 	return form
 }
+
+func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
+	form.Clear(true)
+	
+	if node != nil {
+		title := node.GetText()
+		changed := func(text string, node *tview.TreeNode) {
+			node.SetText(text)
+		}
+		form.AddInputField("Title: ", title, 0, nil, func(text string) {changed(text, node)})
+	}
+	if list != nil {
+		title, _ := list.GetItemText(list.GetCurrentItem())
+		changed := func(text string, list *tview.List) {
+			list.SetItemText(list.GetCurrentItem(), text, "")
+		}
+		form.AddInputField("Title: ", title, 0, nil, func(text string) {changed(text, list)})
+	}
+	
+	
+	
+}

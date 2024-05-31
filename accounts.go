@@ -17,7 +17,6 @@ func AccountsList() *tview.List {
 		AddItem("BNB", "123", '2', func() {
 			FillTable(tableData)
 			table.SetBorder(true).SetTitle("Accounts")
-			app.SetFocus(table)
 		})
 	accounts.
 		SetBorderPadding(1, 1, 2, 2).
@@ -25,4 +24,9 @@ func AccountsList() *tview.List {
 		SetTitle("Account List")
 		
 	return accounts
+}
+
+func RenameAccount() {
+	FillTreeAndListForm(nil, accounts)
+	pages.AddPage("Dialog", Dialog(form), true, true)
 }

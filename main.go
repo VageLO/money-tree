@@ -17,33 +17,7 @@ func main() {
 	
 	// Shortcuts
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		// Shortcut: creating new row in table and open dialog window with table attributes
-		if event.Key() == tcell.KeyCtrlA {
-			if table.HasFocus() == false {
-				return nil
-			}
-			
-			newRow := table.GetRowCount()
-			table.InsertRow(newRow)
-			
-			form = FillForm(form, count, newRow, true)
-			pages.AddPage("Dialog", Dialog(form), true, true)
-			
-			app.SetFocus(form)
-			return nil
-		} else if event.Key() == tcell.KeyCtrlD {
-			// Shortcut: deleting table row
-			if table.HasFocus() == false {
-				return nil
-			}
-			
-			row, _ := table.GetSelection()
-			table.RemoveRow(row)
-			
-			app.SetFocus(table)
-			return nil
-		}
-		return event
+		return Shortcuts(event)
 	})
 
 	// Start the application.
