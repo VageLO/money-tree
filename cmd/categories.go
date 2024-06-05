@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -16,6 +15,7 @@ type node struct {
 
 var (
 	tree = tview.NewTreeView().SetAlign(false).SetTopLevel(1).SetGraphics(true).SetPrefixes(nil)
+	add func(target *node, parent *tview.TreeNode) *tview.TreeNode
 )
 
 func MakeTree() *node{
@@ -51,7 +51,7 @@ func TreeView() *tview.TreeView {
 		SetTitle("Category Tree")
 
 	// Add nodes
-	var add func(target *node, parent *tview.TreeNode) *tview.TreeNode
+	
 	add = func(target *node, parent *tview.TreeNode) *tview.TreeNode {
 		node := tview.NewTreeNode(target.text).
 			SetSelectable(target.expand || target.selected != nil).
@@ -102,27 +102,52 @@ func RemoveNode() {
 }
 
 func AddNode() {
-	node := tview.NewTreeNode("")
-	FillTreeAndListForm(node, nil)
 	
 	root := tree.GetRoot()
-	var sel *tview.TreeNode
+	
+	n := &node {
+		text: "",
+		expand: true,
+	}
+	new_node := add(n, root)
+	
+	FillTreeAndListForm(new_node, nil)
+	
+	var selected_dropdown *tview.TreeNode
 	var options []string
+	options = append(options, root.GetText())
 	
 	for _, children := range root.GetChildren() {
 		options = append(options, children.GetText())
 	}
 	
-	form.AddDropDown("Categories", options, 0, func(option string, optionIndex int) {
-		for _, children := range root.GetChildren() {
-			log.Println(option)
-			if children.GetText() == option {
-				sel = children
+	initial := 0
+	
+	selected_node := tree.GetCurrentNode()
+	if selected_node != nil {
+		for idx, title := range options {
+			if title == selected_node.GetText() {
+				initial = idx
 			}
+		}
+	}
+	
+	form.AddDropDown("Categories", options, initial, func(option string, optionIndex int) {
+		for _, children := range root.GetChildren() {
+			if children.GetText() == option {
+				selected_dropdown = children
+				reference := new_node.GetReference().(*node)
+				reference.parent = children
+				new_node.SetReference(reference)
+			}
+		}
+		if root.GetText() == option {
+			selected_dropdown = root
 		}
 	})
 	form.AddButton("Add", func() {
-		sel.AddChild(node)
+		selected_dropdown.AddChild(new_node)
+		pages.RemovePage("Dialog")
 	})
 	pages.AddPage("Dialog", Dialog(form), true, true)
 }
