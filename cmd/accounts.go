@@ -1,0 +1,36 @@
+package cmd
+
+import (
+	"github.com/rivo/tview"
+)
+
+var (
+	accounts = tview.NewList()
+)
+
+func AccountsList() *tview.List {
+	tableData := `OrderDate|Region|Rep|Item|Units|UnitCost|Total
+1/6/2017|East|Jones|Pencil|95|1.99|189.05`
+		
+	accounts.ShowSecondaryText(false).
+		AddItem("Alfa Bank", "123", '1', nil).
+		AddItem("BNB", "123", '2', func() {
+			FillTable(tableData)
+			table.SetBorder(true).SetTitle("Accounts")
+		})
+	accounts.
+		SetBorderPadding(1, 1, 2, 2).
+		SetBorder(true).
+		SetTitle("Account List")
+		
+	return accounts
+}
+
+func RenameAccount() {
+	FillTreeAndListForm(nil, accounts)
+	pages.AddPage("Dialog", Dialog(form), true, true)
+}
+
+func RemoveAccount() {
+	accounts.RemoveItem(accounts.GetCurrentItem())
+}
