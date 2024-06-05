@@ -21,8 +21,9 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			if tree.HasFocus() {
 				AddNode()
 			}
-			
-			
+			if accounts.HasFocus() {
+				AddAccount()
+			}			
 		case tcell.KeyCtrlD, tcell.KeyDelete, tcell.KeyBackspace:
 			if table.HasFocus() {
 				row, _ := table.GetSelection()
