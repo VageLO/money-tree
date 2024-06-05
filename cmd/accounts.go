@@ -33,3 +33,16 @@ func RenameAccount() {
 func RemoveAccount() {
 	accounts.RemoveItem(accounts.GetCurrentItem())
 }
+
+func AddAccount() {
+	form.Clear(true)
+	var input_text string
+	form.AddInputField("Title: ", "", 0, nil, func(text string) {
+		input_text = text
+	})
+	form.AddButton("Add", func() {
+		accounts.AddItem(input_text, "", '3', nil)
+		pages.RemovePage("Dialog")
+	})
+	pages.AddPage("Dialog", Dialog(form), true, true)
+}
