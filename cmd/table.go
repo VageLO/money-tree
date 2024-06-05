@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
-	"reflect"
 
+	"github.com/gdamore/tcell/v2"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 )
 
@@ -13,76 +16,63 @@ var (
 	count = 0
 )
 
-type Transaction struct {
-	id               int
-	account_id       int
-	category_id      int
-	account_title    string
-	category_title   string
-	transaction_type string
-	data             string
-	amount           float32
-	balance          float32
-	currency         string
+func check(err error) {
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
-func FillTable(data []string, inter interface{}) {
-	table.Clear()
-	t := reflect.TypeOf(inter)
-	log.Println(t)
+func FillTable(request string) {
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
 
-	//	for idx, title := range data {
-	//		color := tcell.ColorDarkCyan
-	//		align := tview.AlignLeft
-	//		tableCell := tview.NewTableCell(title).
-	//			SetTextColor(color).
-	//			SetAlign(align).
-	//			SetSelectable(true)
-	//		table.SetCell(0, idx, tableCell)
-	//	}
-	//
-	// db, err := sql.Open("sqlite3", "./database.db")
-	// rows, err := db.Query(`Select * From Transactions`)
-	// //rows, err := db.Query(`SELECT Transactions.*, Transactions.type as transaction_type, Categories.title as category_title, Accounts.title as account_title, Accounts.currency FROM Transactions
-	// //INNER JOIN Accounts ON Transactions.account_id = Accounts.id
-	// //INNER JOIN Categories ON Transactions.category_id = Categories.id;`)
-	//
-	//	if err != nil {
-	//		log.Printf("select %v", err)
-	//	}
-	//
-	// defer rows.Close()
-	//
-	//	for i := 0; rows.Next(); i++ {
-	//		var transaction Transaction
-	//
-	//		if err := rows.Scan(&transaction.id,
-	//			&transaction.account_id, &transaction.category_id,
-	//			&transaction.account_title, &transaction.category_title,
-	//			&transaction.transaction_type, &transaction.data,
-	//			&transaction.amount, &transaction.balance,
-	//			&transaction.currency); err != nil {
-	//			log.Fatal(err)
-	//		}
-	//		log.Println(transaction)
-	//		//	color := tcell.ColorDarkCyan
-	//		//	align := tview.AlignLeft
-	//		//	tableCell := tview.NewTableCell(title).
-	//		//		SetTextColor(color).
-	//		//		SetAlign(align).
-	//		//		SetSelectable(true)
-	//		//	table.SetCell(1, 0, tableCell)
-	//	}
+	rows, err := db.Query(request)
+	check(err)
+
+	columns, err := rows.Columns()
+	check(err)
+
+	types, err := rows.ColumnTypes()
+
+	for _, typpe := range types {
+		for i := 0; rows.Next(); i++ {
+
+			if err := rows.Scan(*typpe); err != nil {
+				log.Fatal(err)
+			}
+			log.Println(typpe)
+			//	color := tcell.ColorDarkCyan
+			//	align := tview.AlignLeft
+			//	tableCell := tview.NewTableCell(title).
+			//		SetTextColor(color).
+			//		SetAlign(align).
+			//		SetSelectable(true)
+			//	table.SetCell(1, 0, tableCell)
+		}
+
+	}
+
+	for _, column := range columns {
+		fmt.Printf("%v\n", column)
+	}
+
+	for idx, title := range columns {
+		color := tcell.ColorDarkCyan
+		align := tview.AlignLeft
+		tableCell := tview.NewTableCell(title).
+			SetTextColor(color).
+			SetAlign(align).
+			SetSelectable(true)
+		table.SetCell(0, idx, tableCell)
+	}
+
+	defer rows.Close()
+
 }
 
 func Table() *tview.Form {
 
-	tran := &Transaction{
-		id:         3,
-		account_id: 34,
-	}
-	column_title := []string{"data", "transaction_type"}
-	FillTable(column_title, tran)
+	FillTable(`Select * From Transactions`)
 
 	table.SetBorder(true).SetTitle("Transactions")
 

@@ -10,38 +10,31 @@ type node struct {
 	expand   bool
 	selected func()
 	children []*node
-	parent *tview.TreeNode
+	parent   *tview.TreeNode
 }
 
 var (
 	tree = tview.NewTreeView().SetAlign(false).SetTopLevel(1).SetGraphics(true).SetPrefixes(nil)
-	add func(target *node, parent *tview.TreeNode) *tview.TreeNode
+	add  func(target *node, parent *tview.TreeNode) *tview.TreeNode
 )
 
-func MakeTree() *node{
-	tableData := `OrderDate|Region|Rep|Item|Units|UnitCost|Total
-1/6/2017|East|Jones|Pencil|95|1.99|189.05
-1/23/2017|Central|Kivell|Binder|50|19.99|999.50`
-		
+func MakeTree() *node {
+
 	var rootNode = &node{
-	text: ".",
-	children: []*node{
-		{text: "Expand all", selected: func() { tree.GetRoot().ExpandAll() }},
-		{text: "Collapse all", selected: func() {
-			for _, child := range tree.GetRoot().GetChildren() {
-				child.CollapseAll()
-			}
-		}},
-		{text: "Root node", expand: true, children: []*node{
-			{text: "Child node", expand: true},
-			{text: "Child node", expand: true},
-			{text: "Selected child node", selected: func() {
-				// Updating table on selected node
-				FillTable(tableData)
-				table.SetBorder(true).SetTitle("Categories")
-			}, expand: true, children: []*node {{text: "test", expand: true}}},
-		}},
-	}}
+		text: ".",
+		children: []*node{
+			{text: "Category 1", expand: true},
+			{text: "Category 2", expand: true},
+			{text: "Category 3", expand: true, children: []*node{
+				{text: "Child node", expand: true},
+				{text: "Child node", expand: true},
+				{text: "Selected child node", selected: func() {
+					// Updating table on selected node
+					//FillTable()
+					table.SetBorder(true).SetTitle("Categories")
+				}, expand: true, children: []*node{{text: "test", expand: true}}},
+			}},
+		}}
 	return rootNode
 }
 
@@ -51,7 +44,6 @@ func TreeView() *tview.TreeView {
 		SetTitle("Category Tree")
 
 	// Add nodes
-	
 	add = func(target *node, parent *tview.TreeNode) *tview.TreeNode {
 		node := tview.NewTreeNode(target.text).
 			SetSelectable(target.expand || target.selected != nil).
@@ -62,7 +54,7 @@ func TreeView() *tview.TreeView {
 		} else if target.selected != nil {
 			node.SetColor(tcell.ColorGreen)
 		}
-		if parent != nil {	
+		if parent != nil {
 			target.parent = parent
 		}
 		for _, child := range target.children {
@@ -81,6 +73,8 @@ func TreeView() *tview.TreeView {
 				original.selected()
 			}
 		})
+
+	tree.GetRoot().ExpandAll()
 
 	return tree
 }
@@ -102,27 +96,27 @@ func RemoveNode() {
 }
 
 func AddNode() {
-	
+
 	root := tree.GetRoot()
-	
-	n := &node {
-		text: "",
+
+	n := &node{
+		text:   "",
 		expand: true,
 	}
 	new_node := add(n, root)
-	
+
 	FillTreeAndListForm(new_node, nil)
-	
+
 	var selected_dropdown *tview.TreeNode
 	var options []string
 	options = append(options, root.GetText())
-	
+
 	for _, children := range root.GetChildren() {
 		options = append(options, children.GetText())
 	}
-	
+
 	initial := 0
-	
+
 	selected_node := tree.GetCurrentNode()
 	if selected_node != nil {
 		for idx, title := range options {
@@ -131,7 +125,7 @@ func AddNode() {
 			}
 		}
 	}
-	
+
 	form.AddDropDown("Categories", options, initial, func(option string, optionIndex int) {
 		for _, children := range root.GetChildren() {
 			if children.GetText() == option {
