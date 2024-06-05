@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"github.com/gdamore/tcell/v2"
@@ -10,6 +10,7 @@ type node struct {
 	expand   bool
 	selected func()
 	children []*node
+	parent   *tview.TreeNode
 }
 
 var (
@@ -17,9 +18,7 @@ var (
 )
 
 func MakeTree() *node {
-	tableData := `OrderDate|Region|Rep|Item|Units|UnitCost|Total
-1/6/2017|East|Jones|Pencil|95|1.99|189.05
-1/23/2017|Central|Kivell|Binder|50|19.99|999.50`
+	//var tableData []string
 
 	var rootNode = &node{
 		text: ".",
@@ -35,7 +34,7 @@ func MakeTree() *node {
 				{text: "Child node"},
 				{text: "Selected child node", selected: func() {
 					// Updating table on selected node
-					FillTable(tableData)
+					//FillTable(tableData)
 					table.SetBorder(true).SetTitle("Categories")
 				}, expand: true, children: []*node{{text: "test"}}},
 			}},
@@ -48,24 +47,31 @@ func TreeView() *tview.TreeView {
 	tree.SetBorder(true).
 		SetTitle("Category Tree")
 
-	// Add nodes
-	var add func(target *node) *tview.TreeNode
-	add = func(target *node) *tview.TreeNode {
+		// Add nodes
+	var add func(target *node, parent *tview.TreeNode) *tview.TreeNode
+
+	add = func(target *node, parent *tview.TreeNode) *tview.TreeNode {
+
 		node := tview.NewTreeNode(target.text).
 			SetSelectable(target.expand || target.selected != nil).
 			SetExpanded(target == rootNode).
 			SetReference(target)
+
 		if target.expand {
 			node.SetColor(tcell.ColorPurple)
 		} else if target.selected != nil {
 			node.SetColor(tcell.ColorGreen)
 		}
+		if parent != nil {
+			target.parent = parent
+		}
 		for _, child := range target.children {
-			node.AddChild(add(child))
+			node.AddChild(add(child, node))
 		}
 		return node
 	}
-	root := add(rootNode)
+
+	root := add(rootNode, nil)
 	tree.SetRoot(root).
 		SetCurrentNode(root).
 		SetSelectedFunc(func(n *tview.TreeNode) {
@@ -81,13 +87,17 @@ func TreeView() *tview.TreeView {
 }
 
 func RenameNode() {
-	node := tree.GetCurrentNode()
-	FillTreeAndListForm(node, nil)
+	//node := tree.GetCurrentNode()
+	//FillTreeAndListForm(node, nil)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 }
 
 func RemoveNode() {
-	node := tree.GetCurrentNode()
-	node.ClearChildren()
-	node.RemoveChild(node)
+	selected_node := tree.GetCurrentNode()
+	if selected_node == nil {
+		return
+	}
+	selected_node.ClearChildren()
+	reference := selected_node.GetReference().(*node)
+	reference.parent.RemoveChild(selected_node)
 }

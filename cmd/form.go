@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"github.com/gdamore/tcell/v2"
@@ -70,4 +70,3 @@ func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
 	}
 
 }
-
