@@ -6,7 +6,9 @@ import (
 )
 
 func TransactionsTable() tview.Primitive {
-
+	
+	form = Table()
+	
 	// List with accounts
 	accounts := AccountsList()
 

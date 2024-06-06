@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
-
+	"strconv"
+	
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 )
 
 var (
+	form = Table()
 	table = tview.NewTable().
 		SetFixed(1, 1)
 	count = 0
@@ -28,34 +29,14 @@ func FillTable(request string) {
 
 	rows, err := db.Query(request)
 	check(err)
-
+	
+	var m = map[string]interface{}{
+		"id": 0,
+	}
+	
 	columns, err := rows.Columns()
 	check(err)
-
-	types, err := rows.ColumnTypes()
-
-	for _, typpe := range types {
-		for i := 0; rows.Next(); i++ {
-
-			if err := rows.Scan(*typpe); err != nil {
-				log.Fatal(err)
-			}
-			log.Println(typpe)
-			//	color := tcell.ColorDarkCyan
-			//	align := tview.AlignLeft
-			//	tableCell := tview.NewTableCell(title).
-			//		SetTextColor(color).
-			//		SetAlign(align).
-			//		SetSelectable(true)
-			//	table.SetCell(1, 0, tableCell)
-		}
-
-	}
-
-	for _, column := range columns {
-		fmt.Printf("%v\n", column)
-	}
-
+	
 	for idx, title := range columns {
 		color := tcell.ColorDarkCyan
 		align := tview.AlignLeft
@@ -65,14 +46,31 @@ func FillTable(request string) {
 			SetSelectable(true)
 		table.SetCell(0, idx, tableCell)
 	}
+	
+	//types, err := rows.ColumnTypes()
+
+	for i := 1; rows.Next(); i++ {
+		
+		
+		if err := rows.Scan(&m["id"]); err != nil {
+			log.Fatal(err)
+		}
+		
+		color := tcell.ColorDarkCyan
+		align := tview.AlignLeft
+		tableCell := tview.NewTableCell(strconv.Itoa(m["id"])).
+			SetTextColor(color).
+			SetAlign(align).
+			SetSelectable(true)
+		table.SetCell(i, 0, tableCell)
+	}
 
 	defer rows.Close()
-
 }
 
 func Table() *tview.Form {
 
-	FillTable(`Select * From Transactions`)
+	FillTable(`Select id From Transactions`)
 
 	table.SetBorder(true).SetTitle("Transactions")
 

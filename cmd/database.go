@@ -2,29 +2,28 @@ package cmd
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func InitDB() {
+func InitDB() error {
 	url := "./database.db"
 
 	// Check if database file exist, if exist return.
 	fileInfo, _ := os.Stat(url)
 	log.Println(fileInfo)
 	if fileInfo != nil {
-		fmt.Println("file exist")
-		return
+		log.Println("File exist")
+		return nil
 	}
 
 	os.Create(url)
 
 	db, err := sql.Open("sqlite3", url)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 
@@ -40,8 +39,9 @@ func InitDB() {
 	FOREIGN KEY("account_id") REFERENCES "Accounts"("id") ON DELETE CASCADE,
 	PRIMARY KEY("id" AUTOINCREMENT)
 )`)
+
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	_, err = db.Exec(`CREATE TABLE "Accounts" (
@@ -52,7 +52,7 @@ func InitDB() {
   PRIMARY KEY("id" AUTOINCREMENT)
 )`)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	_, err = db.Exec(`CREATE TABLE "Categories" (
@@ -63,9 +63,10 @@ func InitDB() {
 )`)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 
 	db.Close()
+	return nil
 }

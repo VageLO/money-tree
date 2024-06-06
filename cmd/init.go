@@ -5,14 +5,15 @@ import (
 	"github.com/rivo/tview"
 )
 
+
+
 var (
-	form  = Table()
+	_ = InitDB()
 	app   = tview.NewApplication()
 	pages = tview.NewPages()
 )
 
 func Init() {
-	InitDB()
 
 	pages.AddPage("Transactions", TransactionsTable(), true, true)
 
