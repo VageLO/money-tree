@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"database/sql"
 	"log"
-	"strconv"
 	
 	"github.com/gdamore/tcell/v2"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 )
 
@@ -23,54 +20,46 @@ func check(err error) {
 	}
 }
 
-func FillTable(request string) {
-	db, err := sql.Open("sqlite3", "./database.db")
-	check(err)
-
-	rows, err := db.Query(request)
-	check(err)
-	
-	var m = map[string]interface{}{
-		"id": 0,
-	}
-	
-	columns, err := rows.Columns()
-	check(err)
+func FillTable(columns []string, row int, data []string, id int) {
 	
 	for idx, title := range columns {
-		color := tcell.ColorDarkCyan
+		color := tcell.ColorYellow
 		align := tview.AlignLeft
 		tableCell := tview.NewTableCell(title).
 			SetTextColor(color).
 			SetAlign(align).
-			SetSelectable(true)
+			SetSelectable(false)
+		if idx >= 1 && idx <= 3 {
+			tableCell.SetExpansion(1)
+		}
 		table.SetCell(0, idx, tableCell)
 	}
 	
-	//types, err := rows.ColumnTypes()
-
-	for i := 1; rows.Next(); i++ {
-		
-		
-		if err := rows.Scan(&m["id"]); err != nil {
-			log.Fatal(err)
-		}
-		
-		color := tcell.ColorDarkCyan
+	for idx, cell_data := range data {
+		color := tcell.ColorWhite
 		align := tview.AlignLeft
-		tableCell := tview.NewTableCell(strconv.Itoa(m["id"])).
+		tableCell := tview.NewTableCell(cell_data).
 			SetTextColor(color).
 			SetAlign(align).
 			SetSelectable(true)
-		table.SetCell(i, 0, tableCell)
-	}
+		if idx >= 1 && idx <= 3 {
+			tableCell.SetExpansion(1)
+		}
 
-	defer rows.Close()
+		tableCell.SetReference(struct{id int; field string}{id, columns[idx]})
+		table.SetCell(row, idx, tableCell)
+	}
 }
 
 func Table() *tview.Form {
 
-	FillTable(`Select id From Transactions`)
+	SelectTransactions(`
+		SELECT 
+		Transactions.id, transaction_type, data, amount, Transactions.balance, Accounts.title as account, Categories.title as category
+		FROM Transactions
+		INNER JOIN Categories ON Categories.id = Transactions.category_id
+		INNER JOIN Accounts ON Accounts.id = Transactions.account_id
+	`)
 
 	table.SetBorder(true).SetTitle("Transactions")
 
