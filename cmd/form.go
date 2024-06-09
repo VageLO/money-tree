@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/rivo/tview"
 )
 
@@ -18,6 +20,10 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 		UpdateTransaction(cell, text)
 	}
 
+	added := func(text string, cell *tview.TableCell) {
+		cell.SetText(text)
+	}
+
 	form.Clear(true)
 
 	form.SetCancelFunc(func() {
@@ -27,11 +33,14 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 	for i := 0; i < count; i++ {
 		cell := table.GetCell(row, i)
 		if empty {
-			form.AddInputField(table.GetCell(0, i).Text, "", 0, nil, func(text string) { changed(text, cell) })
+			log.Println(cell)
+			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell) })
 		} else {
 			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
 		}
 	}
+
+	form.AddButton("Add", nil)
 
 	return form
 }

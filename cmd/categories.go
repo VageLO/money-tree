@@ -1,7 +1,11 @@
 package cmd
 
 import (
+	"database/sql"
+	"log"
+
 	"github.com/gdamore/tcell/v2"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 )
 
@@ -11,6 +15,12 @@ type node struct {
 	selected func()
 	children []*node
 	parent   *tview.TreeNode
+}
+
+type category_type struct {
+	id        int
+	parent_id int
+	title     string
 }
 
 var (
@@ -139,9 +149,33 @@ func AddNode() {
 			selected_dropdown = root
 		}
 	})
+
 	form.AddButton("Add", func() {
 		selected_dropdown.AddChild(new_node)
 		pages.RemovePage("Dialog")
 	})
+
 	pages.AddPage("Dialog", Dialog(form), true, true)
+}
+
+func SelectCategories(request string) []category_type {
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+
+	root_categories, err := db.Query(request)
+	check(err)
+
+	var categories []category_type
+
+	for root_categories.Next() {
+		var c category_type
+		if err := root_categories.Scan(&c.id, &c.parent_id, &c.title); err != nil {
+			log.Fatal(err)
+		}
+		categories = append(categories, c)
+	}
+
+	defer root_categories.Close()
+	db.Close()
+	return categories
 }

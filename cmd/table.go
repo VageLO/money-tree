@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"log"
-	
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 var (
-	form = Table()
+	form  = Table()
 	table = tview.NewTable().
 		SetFixed(1, 1)
 	count = 0
@@ -21,7 +21,7 @@ func check(err error) {
 }
 
 func FillTable(columns []string, row int, data []string, id int) {
-	
+
 	for idx, title := range columns {
 		color := tcell.ColorYellow
 		align := tview.AlignLeft
@@ -34,7 +34,7 @@ func FillTable(columns []string, row int, data []string, id int) {
 		}
 		table.SetCell(0, idx, tableCell)
 	}
-	
+
 	for idx, cell_data := range data {
 		color := tcell.ColorWhite
 		align := tview.AlignLeft
@@ -46,7 +46,10 @@ func FillTable(columns []string, row int, data []string, id int) {
 			tableCell.SetExpansion(1)
 		}
 
-		tableCell.SetReference(struct{id int; field string}{id, columns[idx]})
+		tableCell.SetReference(struct {
+			id    int
+			field string
+		}{id, columns[idx]})
 		table.SetCell(row, idx, tableCell)
 	}
 }
@@ -82,13 +85,9 @@ func Table() *tview.Form {
 func AddToTable() {
 	newRow := table.GetRowCount()
 	table.InsertRow(newRow)
-
+	log.Println(newRow)
 	form = FillForm(form, count, newRow, true)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 
 	app.SetFocus(form)
-}
-
-func AddTransaction() {
-
 }

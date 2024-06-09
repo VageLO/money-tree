@@ -13,9 +13,8 @@ func InitDB() error {
 
 	// Check if database file exist, if exist return.
 	fileInfo, _ := os.Stat(url)
-	log.Println(fileInfo)
 	if fileInfo != nil {
-		log.Println("File exist")
+		log.Println("Database file exist")
 		return nil
 	}
 
