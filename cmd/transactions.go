@@ -124,7 +124,7 @@ func AddTransaction(cell *tview.TableCell, text string) {
 		field string
 	})
 
-	str := fmt.Sprintf(`Update Transactions SET %v = ? WHERE id = ?`, t.field)
+	str := fmt.Sprintf(`INSERT INTO Transactions () VALUES ()`, t.field)
 
 	_, err = db.Exec(str, text, t.id)
 	check(err)
