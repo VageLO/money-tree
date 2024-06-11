@@ -18,7 +18,7 @@ func Form() *tview.Form {
 	return form
 }
 
-func FillForm(form *tview.Form, columns int, row int, empty bool) *tview.Form {
+func FillForm(form *tview.Form, columns int, row int, IsEmptyForm bool) *tview.Form {
 	
 	form.Clear(true)
 	var t add_transaction
@@ -52,24 +52,24 @@ func FillForm(form *tview.Form, columns int, row int, empty bool) *tview.Form {
 
 	for i := 0; i < columns; i++ {
 		cell := table.GetCell(row, i)
-		if empty {		
-			InsertRow(&row_settings{
-				row: row,
-				column: i,
-				text: "",
-				selectable: true,
-				color: tcell.ColorWhite,
-			})
-			cell = table.GetCell(row, i)
-			column_name := table.GetCell(0, i).Text
-			
-			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell, column_name) })
+		if IsEmptyForm == false {		
+			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
 			continue
 		} 
-		form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
+		InsertRow(&row_settings{
+			row: row,
+			column: i,
+			text: "",
+			selectable: true,
+			color: tcell.ColorWhite,
+		})
+		cell = table.GetCell(row, i)
+		column_name := table.GetCell(0, i).Text
+		
+		form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell, column_name) })
 	}
 
-	if empty {
+	if IsEmptyForm {
 		form.AddButton("Add", func() {AddTransaction(&t)})
 	}
 	
