@@ -18,19 +18,19 @@ type account_type struct {
 }
 
 func AccountsList() *tview.List {
-	//var tableData []string
 
-	accounts.ShowSecondaryText(false).
-		AddItem("Alfa Bank", "123", '1', nil).
-		AddItem("BNB", "123", '2', func() {
-			//FillTable(tableData)
-			table.SetBorder(true).SetTitle("Accounts")
-		})
+	account_titles, _ := SelectAccounts()
+	
 	accounts.
 		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
 		SetTitle("Account List")
-
+		
+	for _, title := range account_titles {
+		accounts.AddItem(title, "", '1', nil)
+	}
+	accounts.ShowSecondaryText(false)
+	
 	return accounts
 }
 
