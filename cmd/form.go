@@ -64,7 +64,19 @@ func FillForm(form *tview.Form, columns int, row int, IsEmptyForm bool) *tview.F
 			color: tcell.ColorWhite,
 		})
 		cell = table.GetCell(row, i)
+		
 		column_name := table.GetCell(0, i).Text
+		
+		if column_name == "category" {
+			categories, _ := SelectCategories()
+			form.AddDropDown(table.GetCell(0, i).Text, categories, 0, nil)
+			continue
+		}
+		if column_name == "account" {
+			accounts, _ := SelectAccounts()
+			form.AddDropDown(table.GetCell(0, i).Text, accounts, 0, nil)
+			continue
+		}
 		
 		form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell, column_name) })
 	}

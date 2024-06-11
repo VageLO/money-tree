@@ -19,7 +19,6 @@ type node struct {
 
 type category_type struct {
 	id        int
-	parent_id int
 	title     string
 }
 
@@ -158,24 +157,26 @@ func AddNode() {
 	pages.AddPage("Dialog", Dialog(form), true, true)
 }
 
-func SelectCategories(request string) []category_type {
+func SelectCategories() ([]string, []category_type) {
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	root_categories, err := db.Query(request)
+	root_categories, err := db.Query(`SELECT id, title FROM Categories`)
 	check(err)
 
-	var categories []category_type
-
+	var category_titles []string
+	var category_types []category_type
+	
 	for root_categories.Next() {
 		var c category_type
-		if err := root_categories.Scan(&c.id, &c.parent_id, &c.title); err != nil {
+		if err := root_categories.Scan(&c.id, &c.title); err != nil {
 			log.Fatal(err)
 		}
-		categories = append(categories, c)
+		category_titles = append(category_titles, c.title)
+		category_types = append(category_types, c)
 	}
 
 	defer root_categories.Close()
 	db.Close()
-	return categories
+	return category_titles, category_types
 }
