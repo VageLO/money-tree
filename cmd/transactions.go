@@ -73,7 +73,7 @@ func SelectTransactions(request string) {
 	check(err)
 	columns = columns[1:]
 
-	count = len(columns)
+	column_count = len(columns)
 
 	for i := 1; rows.Next(); i++ {
 		var t Transaction
@@ -111,22 +111,16 @@ func UpdateTransaction(cell *tview.TableCell, text string) {
 	db.Close()
 }
 
-func AddTransaction(cell *tview.TableCell, text string) {
-	if text == "" {
-		return
-	}
+func AddTransaction(t *add_transaction) {
 
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	t := cell.GetReference().(struct {
-		id    int
-		field string
-	})
+	query := `
+	INSERT INTO Transactions (account_id, category_id, transaction_type,
+	date, amount, balance) VALUES (?, ?, ?, ?, ?, ?)`
 
-	str := fmt.Sprintf(`INSERT INTO Transactions () VALUES ()`, t.field)
-
-	_, err = db.Exec(str, text, t.id)
+	_, err = db.Exec(query, t.account, t.category, t.transaction_type, t.date, t.amount, t.balance)
 	check(err)
 
 	db.Close()

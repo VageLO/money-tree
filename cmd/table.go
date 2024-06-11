@@ -11,7 +11,7 @@ var (
 	form  = Table()
 	table = tview.NewTable().
 		SetFixed(1, 1)
-	count = 0
+	column_count = 0
 )
 
 func check(err error) {
@@ -19,6 +19,7 @@ func check(err error) {
 		log.Panic(err)
 	}
 }
+
 type row_settings struct {
 	row int
 	column int
@@ -87,7 +88,7 @@ func Table() *tview.Form {
 
 	// Table action
 	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
-		form = FillForm(form, count, row, false)
+		form = FillForm(form, column_count, row, false)
 
 		pages.AddPage("Dialog", Dialog(form), true, true)
 	})
@@ -102,7 +103,7 @@ func Table() *tview.Form {
 func AddToTable() {
 	newRow := table.GetRowCount()
 
-	form = FillForm(form, count, newRow, true)
+	form = FillForm(form, column_count, newRow, true)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 
 	app.SetFocus(form)

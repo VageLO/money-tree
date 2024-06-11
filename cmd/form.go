@@ -7,6 +7,10 @@ import (
 	"github.com/rivo/tview"
 )
 
+type add_transaction struct{
+	transaction_type, date, amount, balance, account, category string
+}
+	
 func Form() *tview.Form {
 	form := tview.NewForm()
 	form.SetBorder(true).SetTitle("Transaction Information")
@@ -14,24 +18,39 @@ func Form() *tview.Form {
 	return form
 }
 
-func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
-
+func FillForm(form *tview.Form, columns int, row int, empty bool) *tview.Form {
+	
+	form.Clear(true)
+	var t add_transaction
+	
 	changed := func(text string, cell *tview.TableCell) {
 		cell.SetText(text)
 		UpdateTransaction(cell, text)
 	}
-
+	
 	added := func(text string, cell *tview.TableCell, label string) {
 		cell.SetText(text)
+		switch field := label; field {
+		case "transaction_type":
+			t.transaction_type = text
+		case "date":
+			t.date = text
+		case "amount":
+			t.amount = text
+		case "balance":
+			t.balance = text
+		case "account":
+			t.account = text
+		case "category":
+			t.category = text
+		}
 	}
-	
-	form.Clear(true)
 
 	form.SetCancelFunc(func() {
 		pages.RemovePage("Dialog")
 	})
 
-	for i := 0; i < count; i++ {
+	for i := 0; i < columns; i++ {
 		cell := table.GetCell(row, i)
 		if empty {		
 			InsertRow(&row_settings{
@@ -42,15 +61,16 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 				color: tcell.ColorWhite,
 			})
 			cell = table.GetCell(row, i)
+			column_name := table.GetCell(0, i).Text
 			
-			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell, table.GetCell(0, i).Text) })
-		} else {
-			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
-		}
+			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell, column_name) })
+			continue
+		} 
+		form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
 	}
 
 	if empty {
-		form.AddButton("Add", nil)
+		form.AddButton("Add", func() {AddTransaction(&t)})
 	}
 	
 	return form
@@ -73,5 +93,4 @@ func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
 		}
 		form.AddInputField("Title: ", title, 0, nil, func(text string) { changed(text, list) })
 	}
-
 }
