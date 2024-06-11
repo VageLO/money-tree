@@ -14,7 +14,7 @@ import (
 type Transaction struct {
 	id               int
 	transaction_type string
-	data             string
+	date             string
 	amount           float64
 	balance          float64
 	account          string
@@ -77,11 +77,11 @@ func SelectTransactions(request string) {
 
 	for i := 1; rows.Next(); i++ {
 		var t Transaction
-		if err := rows.Scan(&t.id, &t.transaction_type, &t.data,
+		if err := rows.Scan(&t.id, &t.transaction_type, &t.date,
 			&t.amount, &t.balance, &t.account, &t.category); err != nil {
 			log.Fatal(err)
 		}
-		row := []string{t.transaction_type, t.data,
+		row := []string{t.transaction_type, t.date,
 			strconv.FormatFloat(t.amount, 'f', 2, 32), strconv.FormatFloat(t.balance, 'f', 2, 32), t.account, t.category}
 		FillTable(columns, i, row, t.id)
 	}

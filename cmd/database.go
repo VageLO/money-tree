@@ -31,7 +31,7 @@ func InitDB() error {
 	"account_id"	INTEGER NOT NULL,
 	"category_id"	INTEGER NOT NULL,
 	"transaction_type"	TEXT NOT NULL,
-	"data"	TEXT NOT NULL,
+	"date"	TEXT NOT NULL,
 	"amount"	NUMERIC NOT NULL,
 	"balance"	NUMERIC NOT NULL,
 	FOREIGN KEY("category_id") REFERENCES "Categories"("id") ON DELETE CASCADE,

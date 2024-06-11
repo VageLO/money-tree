@@ -19,38 +19,55 @@ func check(err error) {
 		log.Panic(err)
 	}
 }
+type row_settings struct {
+	row int
+	column int
+	text string
+	selectable bool
+	color tcell.Color
+	reference interface{}
+}
+
+func InsertRow(s *row_settings) {
+	align := tview.AlignLeft
+	tableCell := tview.NewTableCell(s.text).
+		SetTextColor(s.color).
+		SetAlign(align).
+		SetSelectable(s.selectable)
+	if s.column >= 1 && s.column <= 3 {
+		tableCell.SetExpansion(1)
+	}
+	if s.reference != nil {
+		tableCell.SetReference(s.reference)
+	}
+	table.SetCell(s.row, s.column, tableCell)
+}
 
 func FillTable(columns []string, row int, data []string, id int) {
 
 	for idx, title := range columns {
-		color := tcell.ColorYellow
-		align := tview.AlignLeft
-		tableCell := tview.NewTableCell(title).
-			SetTextColor(color).
-			SetAlign(align).
-			SetSelectable(false)
-		if idx >= 1 && idx <= 3 {
-			tableCell.SetExpansion(1)
-		}
-		table.SetCell(0, idx, tableCell)
+		
+		InsertRow(&row_settings{
+			row: 0,
+			column: idx,
+			text: title,
+			selectable: false,
+			color: tcell.ColorYellow,
+		})
 	}
 
 	for idx, cell_data := range data {
-		color := tcell.ColorWhite
-		align := tview.AlignLeft
-		tableCell := tview.NewTableCell(cell_data).
-			SetTextColor(color).
-			SetAlign(align).
-			SetSelectable(true)
-		if idx >= 1 && idx <= 3 {
-			tableCell.SetExpansion(1)
-		}
-
-		tableCell.SetReference(struct {
-			id    int
-			field string
-		}{id, columns[idx]})
-		table.SetCell(row, idx, tableCell)
+		InsertRow(&row_settings{
+			row: row,
+			column: idx,
+			text: cell_data,
+			selectable: true,
+			color: tcell.ColorWhite,
+			reference: struct {
+					id    int
+					field string
+				}{id, columns[idx]},
+		})
 	}
 }
 
@@ -58,7 +75,7 @@ func Table() *tview.Form {
 
 	SelectTransactions(`
 		SELECT 
-		Transactions.id, transaction_type, data, amount, Transactions.balance, Accounts.title as account, Categories.title as category
+		Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
 		FROM Transactions
 		INNER JOIN Categories ON Categories.id = Transactions.category_id
 		INNER JOIN Accounts ON Accounts.id = Transactions.account_id
@@ -84,8 +101,7 @@ func Table() *tview.Form {
 
 func AddToTable() {
 	newRow := table.GetRowCount()
-	table.InsertRow(newRow)
-	log.Println(newRow)
+
 	form = FillForm(form, count, newRow, true)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 

@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"log"
+	//"log"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -20,10 +21,10 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 		UpdateTransaction(cell, text)
 	}
 
-	added := func(text string, cell *tview.TableCell) {
+	added := func(text string, cell *tview.TableCell, label string) {
 		cell.SetText(text)
 	}
-
+	
 	form.Clear(true)
 
 	form.SetCancelFunc(func() {
@@ -32,16 +33,26 @@ func FillForm(form *tview.Form, count int, row int, empty bool) *tview.Form {
 
 	for i := 0; i < count; i++ {
 		cell := table.GetCell(row, i)
-		if empty {
-			log.Println(cell)
-			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell) })
+		if empty {		
+			InsertRow(&row_settings{
+				row: row,
+				column: i,
+				text: "",
+				selectable: true,
+				color: tcell.ColorWhite,
+			})
+			cell = table.GetCell(row, i)
+			
+			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell, table.GetCell(0, i).Text) })
 		} else {
 			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
 		}
 	}
 
-	form.AddButton("Add", nil)
-
+	if empty {
+		form.AddButton("Add", nil)
+	}
+	
 	return form
 }
 
