@@ -14,7 +14,7 @@ var (
 )
 
 type account_type struct {
-	id        int
+	id        int64
 	title     string
 	currency string
 	balance float64
@@ -28,21 +28,10 @@ func AccountsList() *tview.List {
 		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
 		SetTitle("Account List")
-	
-	selected := func(id int) {
-		request := fmt.Sprintf(`
-			SELECT 
-			Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
-			FROM Transactions
-			INNER JOIN Categories ON Categories.id = Transactions.category_id
-			INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE account_id = %v
-		`, id)
-		table.Clear()
-		form = Table(request)
-	}
+
 	for _, a := range account_types {
 		account_id := a.id
-		accounts.AddItem(a.title, a.currency, 0, func() { selected(account_id) })
+		accounts.AddItem(a.title, a.currency, 0, func() { SelectedAccount(account_id) })
 	}
 	
 	return accounts
@@ -63,12 +52,14 @@ func AddAccount(a *account_type) {
 	query := `
 	INSERT INTO Accounts (title, currency, balance) VALUES (?, ?, ?)`
 
-	_, err = db.Exec(query, a.title, a.currency, a.balance)
+	result, err := db.Exec(query, a.title, a.currency, a.balance)
 	check(err)
 
+	created_id, _ := result.LastInsertId()
+	
 	db.Close()
 	
-	accounts.AddItem(a.title, a.currency, '3', nil)
+	accounts.AddItem(a.title, a.currency, 0, func() { SelectedAccount(created_id) })
 	pages.RemovePage("Dialog")
 }
 
@@ -94,4 +85,16 @@ func SelectAccounts() ([]string, []account_type) {
 	defer root_accounts.Close()
 	db.Close()
 	return account_titles, account_types
+}
+
+func SelectedAccount(id int64) {
+	request := fmt.Sprintf(`
+		SELECT 
+		Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
+		FROM Transactions
+		INNER JOIN Categories ON Categories.id = Transactions.category_id
+		INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE account_id = %v
+	`, id)
+	table.Clear()
+	form = Table(request)
 }
