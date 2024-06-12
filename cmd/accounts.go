@@ -31,14 +31,25 @@ func AccountsList() *tview.List {
 
 	for _, a := range account_types {
 		account_id := a.id
-		accounts.AddItem(a.title, a.currency, 0, func() { SelectedAccount(account_id) })
+		second_title := fmt.Sprintf("%v %v", a.balance, a.currency)
+		accounts.AddItem(a.title, second_title, 0, func() { SelectedAccount(account_id) })
 	}
 	
 	return accounts
 }
 
-func RenameAccount(text string, list *tview.List) {
-	list.SetItemText(list.GetCurrentItem(), text, "")
+func RenameAccount(value, field, list_text, second string, list *tview.List) {
+	
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+	
+	query := fmt.Sprintf(`UPDATE Accounts SET %v = ? WHERE title = %v`, field, list_text)
+
+	_, err = db.Exec(query, value)
+	check(err)
+	
+	db.Close()
+	list.SetItemText(list.GetCurrentItem(), list_text, second)
 }
 
 func RemoveAccount() {

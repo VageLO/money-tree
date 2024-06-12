@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	//"log"
+	"strings"
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
@@ -97,8 +97,16 @@ func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
 		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameNode(text, node) })
 	}
 	if list != nil {
-		title, _ := list.GetItemText(list.GetCurrentItem())
-		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameAccount(text, list) })
+		title, second := list.GetItemText(list.GetCurrentItem())
+		split := strings.Split(second, " ")
+		balance := split[0]
+		currency := split[1]
+		
+		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameAccount(text, "title", text, second, list) })
+		
+		form.AddInputField("Currency: ", currency, 0, nil, func(text string) { RenameAccount(text, "currency", title, balance + " " + text, list) })
+		
+		form.AddInputField("Balance: ", balance, 0, nil, func(text string) { RenameAccount(text, "balance", title, text + " " + currency, list) })
 	}
 }
 
