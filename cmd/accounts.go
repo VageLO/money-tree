@@ -42,7 +42,20 @@ func RenameAccount(text string, list *tview.List) {
 }
 
 func RemoveAccount() {
-	accounts.RemoveItem(accounts.GetCurrentItem())
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+	
+	selected_account := accounts.GetCurrentItem()
+	title, _ := accounts.GetItemText(selected_account)
+	
+	query := `
+	DELETE FROM Accounts WHERE title = ?`
+
+	_, err = db.Exec(query, title)
+	check(err)
+	
+	db.Close()
+	accounts.RemoveItem(selected_account)
 }
 
 func AddAccount(a *account_type) {
