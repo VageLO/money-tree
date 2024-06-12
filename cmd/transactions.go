@@ -23,8 +23,6 @@ type Transaction struct {
 
 func TransactionsTable() tview.Primitive {
 
-	form = Table()
-
 	// List with accounts
 	accounts := AccountsList()
 

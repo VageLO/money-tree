@@ -8,7 +8,13 @@ import (
 )
 
 var (
-	form  = Table()
+	form  = Table(`
+		SELECT 
+		Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
+		FROM Transactions
+		INNER JOIN Categories ON Categories.id = Transactions.category_id
+		INNER JOIN Accounts ON Accounts.id = Transactions.account_id
+	`)
 	table = tview.NewTable().
 		SetFixed(1, 1)
 	column_count = 0
@@ -72,15 +78,9 @@ func FillTable(columns []string, row int, data []string, id int) {
 	}
 }
 
-func Table() *tview.Form {
+func Table(request string) *tview.Form {
 
-	SelectTransactions(`
-		SELECT 
-		Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
-		FROM Transactions
-		INNER JOIN Categories ON Categories.id = Transactions.category_id
-		INNER JOIN Accounts ON Accounts.id = Transactions.account_id
-	`)
+	SelectTransactions(request)
 
 	table.SetBorder(true).SetTitle("Transactions")
 

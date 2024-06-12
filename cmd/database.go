@@ -46,7 +46,7 @@ func InitDB() error {
 	_, err = db.Exec(`CREATE TABLE "Accounts" (
   "id"	INTEGER,
   "title"	TEXT NOT NULL UNIQUE,
-  "currency"	TEXT NOT NULL UNIQUE,
+  "currency"	TEXT NOT NULL,
   "balance"	NUMERIC NOT NULL DEFAULT 0,
   PRIMARY KEY("id" AUTOINCREMENT)
 )`)

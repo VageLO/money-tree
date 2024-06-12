@@ -3,6 +3,7 @@ package cmd
 import (
 	"database/sql"
 	"log"
+	"fmt"
 	
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
@@ -27,11 +28,22 @@ func AccountsList() *tview.List {
 		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
 		SetTitle("Account List")
-		
-	for _, a := range account_types {
-		accounts.AddItem(a.title, a.currency, '1', nil)
+	
+	selected := func(id int) {
+		request := fmt.Sprintf(`
+			SELECT 
+			Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
+			FROM Transactions
+			INNER JOIN Categories ON Categories.id = Transactions.category_id
+			INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE account_id = %v
+		`, id)
+		table.Clear()
+		form = Table(request)
 	}
-	//accounts.ShowSecondaryText(false)
+	for _, a := range account_types {
+		account_id := a.id
+		accounts.AddItem(a.title, a.currency, 0, func() { selected(account_id) })
+	}
 	
 	return accounts
 }
