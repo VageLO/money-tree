@@ -103,56 +103,7 @@ func RemoveNode() {
 }
 
 func AddNode() {
-
-	root := tree.GetRoot()
-
-	n := &node{
-		text:   "",
-		expand: true,
-	}
-	new_node := add(n, root)
-
-	FillTreeAndListForm(new_node, nil)
-
-	var selected_dropdown *tview.TreeNode
-	var options []string
-	options = append(options, root.GetText())
-
-	for _, children := range root.GetChildren() {
-		options = append(options, children.GetText())
-	}
-
-	initial := 0
-
-	selected_node := tree.GetCurrentNode()
-	if selected_node != nil {
-		for idx, title := range options {
-			if title == selected_node.GetText() {
-				initial = idx
-			}
-		}
-	}
-
-	form.AddDropDown("Categories", options, initial, func(option string, optionIndex int) {
-		for _, children := range root.GetChildren() {
-			if children.GetText() == option {
-				selected_dropdown = children
-				reference := new_node.GetReference().(*node)
-				reference.parent = children
-				new_node.SetReference(reference)
-			}
-		}
-		if root.GetText() == option {
-			selected_dropdown = root
-		}
-	})
-
-	form.AddButton("Add", func() {
-		selected_dropdown.AddChild(new_node)
-		pages.RemovePage("Dialog")
-	})
-
-	pages.AddPage("Dialog", Dialog(form), true, true)
+	// TODO
 }
 
 func SelectCategories() ([]string, []category_type) {

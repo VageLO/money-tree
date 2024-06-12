@@ -13,11 +13,11 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 		if tree.HasFocus() {
-			AddNode()
+			FormAddNode()
 			return nil
 		}
 		if accounts.HasFocus() {
-			AddAccount()
+			FormAddAccount()
 			return nil
 		}
 	case tcell.KeyCtrlD, tcell.KeyDelete, tcell.KeyBackspace:
