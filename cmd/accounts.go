@@ -34,9 +34,8 @@ func AccountsList() *tview.List {
 	return accounts
 }
 
-func RenameAccount() {
-	FillTreeAndListForm(nil, accounts)
-	pages.AddPage("Dialog", Dialog(form), true, true)
+func RenameAccount(text string, list *tview.List) {
+	list.SetItemText(list.GetCurrentItem(), text, "")
 }
 
 func RemoveAccount() {

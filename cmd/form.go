@@ -93,16 +93,21 @@ func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
 
 	if node != nil {
 		title := node.GetText()
-		changed := func(text string, node *tview.TreeNode) {
-			node.SetText(text)
-		}
-		form.AddInputField("Title: ", title, 0, nil, func(text string) { changed(text, node) })
+		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameNode(text, node) })
 	}
 	if list != nil {
 		title, _ := list.GetItemText(list.GetCurrentItem())
-		changed := func(text string, list *tview.List) {
-			list.SetItemText(list.GetCurrentItem(), text, "")
-		}
-		form.AddInputField("Title: ", title, 0, nil, func(text string) { changed(text, list) })
+		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameAccount(text, list) })
 	}
+}
+
+func FormRenameAccount() {
+	FillTreeAndListForm(nil, accounts)
+	pages.AddPage("Dialog", Dialog(form), true, true)
+}
+
+func FormRenameNode() {
+	node := tree.GetCurrentNode()
+	FillTreeAndListForm(node, nil)
+	pages.AddPage("Dialog", Dialog(form), true, true)
 }

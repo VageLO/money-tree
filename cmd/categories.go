@@ -88,10 +88,8 @@ func TreeView() *tview.TreeView {
 	return tree
 }
 
-func RenameNode() {
-	node := tree.GetCurrentNode()
-	FillTreeAndListForm(node, nil)
-	pages.AddPage("Dialog", Dialog(form), true, true)
+func RenameNode(text string, node *tview.TreeNode) {
+	node.SetText(text)
 }
 
 func RemoveNode() {

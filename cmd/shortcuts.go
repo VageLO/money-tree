@@ -38,11 +38,11 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 		}
 	case tcell.KeyCtrlR:
 		if tree.HasFocus() {
-			RenameNode()
+			FormRenameNode()
 			return nil
 		}
 		if accounts.HasFocus() {
-			RenameAccount()
+			FormRenameAccount()
 			return nil
 		}
 	}
