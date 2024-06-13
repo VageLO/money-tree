@@ -127,8 +127,42 @@ func RemoveNode() {
 	node.parent.RemoveChild(selected_node)
 }
 
-func AddNode() {
-	// TODO
+func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+	
+	title := new_node.GetText()
+	
+	parent_reference := parent_node.GetReference().(*node)
+	node_reference := new_node.GetReference().(*node)
+	
+	var parent_id int
+	var result sql.Result
+	
+	if parent_reference.reference != nil {
+		parent_id = parent_reference.reference.id
+		query := `INSERT INTO Categories (title, parent_id) VALUES (?, ?)`
+
+		result, err = db.Exec(query, title, parent_id)
+		check(err)
+	} else {
+		query := `INSERT INTO Categories (title) VALUES (?)`
+
+		result, err = db.Exec(query, title)
+		check(err)
+	}
+	
+	created_id, _ := result.LastInsertId()
+	
+	node_reference.reference.id = int(created_id)
+	// TODO: Make sure the correct data is stored
+	node_reference.reference.parent_id.Scan(parent_id)
+	node_reference.reference.title = title
+	
+	new_node.SetReference(node_reference)
+	
+	parent_node.AddChild(new_node)
+	db.Close()
 }
 
 func SelectCategories(request string) ([]string, []category_type, []*node) {
