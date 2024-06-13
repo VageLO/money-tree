@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"fmt"
+	"strings"
 	
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
@@ -38,18 +39,35 @@ func AccountsList() *tview.List {
 	return accounts
 }
 
-func RenameAccount(value, field, list_text, second string, list *tview.List) {
+func RenameAccount(value, field string, list *tview.List) {
+	selected_item := list.GetCurrentItem()
+	
+	title, second := list.GetItemText(selected_item)
+	split := strings.Split(second, " ")
+	balance := split[0]
+	currency := split[1]
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 	
-	query := fmt.Sprintf(`UPDATE Accounts SET %v = ? WHERE title = %v`, field, list_text)
-
-	_, err = db.Exec(query, value)
+	query := fmt.Sprintf(`UPDATE Accounts SET %v = ? WHERE title = ?`, field)
+	log.Println(query)
+	_, err = db.Exec(query, value, title)
 	check(err)
 	
+	// Shame
+	if field == "currency" {
+		currency = value
+	}
+	if field == "balance" {
+		balance = value
+	} 
+	if field == "title" {
+		title = value
+	}
+	
 	db.Close()
-	list.SetItemText(list.GetCurrentItem(), list_text, second)
+	list.SetItemText(selected_item, title, balance + " " + currency)
 }
 
 func RemoveAccount() {

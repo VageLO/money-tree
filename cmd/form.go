@@ -102,11 +102,11 @@ func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
 		balance := split[0]
 		currency := split[1]
 		
-		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameAccount(text, "title", text, second, list) })
+		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameAccount(text, "title", list) })
 		
-		form.AddInputField("Currency: ", currency, 0, nil, func(text string) { RenameAccount(text, "currency", title, balance + " " + text, list) })
+		form.AddInputField("Currency: ", currency, 0, nil, func(text string) { RenameAccount(text, "currency", list) })
 		
-		form.AddInputField("Balance: ", balance, 0, nil, func(text string) { RenameAccount(text, "balance", title, text + " " + currency, list) })
+		form.AddInputField("Balance: ", balance, 0, nil, func(text string) { RenameAccount(text, "balance", list) })
 	}
 }
 
