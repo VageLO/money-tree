@@ -88,8 +88,20 @@ func TreeView() *tview.TreeView {
 	return tree
 }
 
-func RenameNode(text string, node *tview.TreeNode) {
-	node.SetText(text)
+func RenameNode(text string, n *tview.TreeNode) {
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+	
+	node_reference := n.GetReference().(*node)
+	id := node_reference.reference.id
+	
+	query := `UPDATE Categories SET title = ? WHERE id = ?`
+
+	_, err = db.Exec(query, text, id)
+	check(err)
+	
+	db.Close()
+	n.SetText(text)
 }
 
 func RemoveNode() {
