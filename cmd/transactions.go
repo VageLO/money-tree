@@ -67,9 +67,7 @@ func SelectTransactions(request string) {
 	rows, err := db.Query(request)
 	check(err)
 
-	columns, err := rows.Columns()
-	check(err)
-	columns = columns[1:]
+	columns := []string{"transaction_type", "date", "amount", "balance", "account", "category"}
 
 	column_count = len(columns)
 

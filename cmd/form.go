@@ -69,7 +69,7 @@ func FillForm(form *tview.Form, columns int, row int, IsEmptyForm bool) *tview.F
 		column_name := table.GetCell(0, i).Text
 		
 		if column_name == "category" {
-			categories, _ := SelectCategories()
+			categories, _, _ := SelectCategories(`SELECT * FROM Categories WHERE parent_id IS NULL`)
 			form.AddDropDown(table.GetCell(0, i).Text, categories, 0, nil)
 			continue
 		}

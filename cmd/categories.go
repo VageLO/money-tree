@@ -3,6 +3,7 @@ package cmd
 import (
 	"database/sql"
 	"log"
+	"fmt"
 
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -15,10 +16,12 @@ type node struct {
 	selected func()
 	children []*node
 	parent   *tview.TreeNode
+	reference *category_type
 }
 
 type category_type struct {
 	id        int
+	parent_id sql.NullInt64
 	title     string
 }
 
@@ -28,22 +31,19 @@ var (
 )
 
 func MakeTree() *node {
-
+	
+	_, _, category_nodes := SelectCategories(`SELECT * FROM Categories WHERE parent_id IS NULL`)
+	
+	for i, node := range category_nodes {
+		query := fmt.Sprintf(`SELECT * FROM Categories WHERE parent_id = %v`, node.reference.id)
+		_, _, children_nodes := SelectCategories(query)
+		category_nodes[i].children = children_nodes
+	}
+	
 	var rootNode = &node{
 		text: ".",
-		children: []*node{
-			{text: "Category 1", expand: true},
-			{text: "Category 2", expand: true},
-			{text: "Category 3", expand: true, children: []*node{
-				{text: "Child node", expand: true},
-				{text: "Child node", expand: true},
-				{text: "Selected child node", selected: func() {
-					// Updating table on selected node
-					//FillTable()
-					table.SetBorder(true).SetTitle("Categories")
-				}, expand: true, children: []*node{{text: "test", expand: true}}},
-			}},
-		}}
+		children: category_nodes,
+	}
 	return rootNode
 }
 
@@ -97,35 +97,55 @@ func RemoveNode() {
 	if selected_node == nil {
 		return
 	}
+	
+	node := selected_node.GetReference().(*node)
+	id := node.reference.id
+	
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+	
+	query := `DELETE FROM Categories WHERE id = ? OR parent_id = ?`
+
+	_, err = db.Exec(query, id, id)
+	check(err)
+	
+	db.Close()
+	
 	selected_node.ClearChildren()
-	reference := selected_node.GetReference().(*node)
-	reference.parent.RemoveChild(selected_node)
+	node.parent.RemoveChild(selected_node)
 }
 
 func AddNode() {
 	// TODO
 }
 
-func SelectCategories() ([]string, []category_type) {
+func SelectCategories(request string) ([]string, []category_type, []*node) {
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	root_categories, err := db.Query(`SELECT id, title FROM Categories`)
+	root_categories, err := db.Query(request)
 	check(err)
 
 	var category_titles []string
 	var category_types []category_type
+	var category_nodes []*node
 	
 	for root_categories.Next() {
 		var c category_type
-		if err := root_categories.Scan(&c.id, &c.title); err != nil {
+		if err := root_categories.Scan(&c.id, &c.parent_id, &c.title); err != nil {
 			log.Fatal(err)
 		}
 		category_titles = append(category_titles, c.title)
 		category_types = append(category_types, c)
+		category_nodes = append(category_nodes, &node {
+			text: c.title,
+			expand: true,
+			reference: &c,
+			children: []*node{},
+		})
 	}
 
 	defer root_categories.Close()
 	db.Close()
-	return category_titles, category_types
+	return category_titles, category_types, category_nodes
 }
