@@ -20,7 +20,7 @@ type node struct {
 }
 
 type category_type struct {
-	id        int
+	id        int64
 	parent_id sql.NullInt64
 	title     string
 }
@@ -158,7 +158,7 @@ func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
 	
 	created_id, _ := result.LastInsertId()
 	
-	node_reference.reference.id = int(created_id)
+	node_reference.reference.id = created_id
 	// TODO: Make sure the correct data is stored
 	node_reference.reference.parent_id.Scan(parent_id)
 	node_reference.reference.title = title

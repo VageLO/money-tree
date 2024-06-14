@@ -28,7 +28,9 @@ func Modal(p tview.Primitive) tview.Primitive {
 
 func CallModal() {
 	if r := recover(); r != nil {
-		pages.RemovePage("Dialog")
+		if pages.HasPage("Dialog") {
+			pages.RemovePage("Dialog")
+		}
 		err := fmt.Sprintf("Error: %v", r)
 		modal.SetText(err)
 		pages.AddPage("Modal", Modal(modal), true, true)
