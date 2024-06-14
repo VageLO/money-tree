@@ -40,6 +40,8 @@ func AccountsList() *tview.List {
 }
 
 func RenameAccount(value, field string, list *tview.List) {
+	defer CallModal()
+	
 	selected_item := list.GetCurrentItem()
 	
 	title, second := list.GetItemText(selected_item)
@@ -51,7 +53,7 @@ func RenameAccount(value, field string, list *tview.List) {
 	check(err)
 	
 	query := fmt.Sprintf(`UPDATE Accounts SET %v = ? WHERE title = ?`, field)
-	log.Println(query)
+
 	_, err = db.Exec(query, value, title)
 	check(err)
 	
@@ -66,11 +68,13 @@ func RenameAccount(value, field string, list *tview.List) {
 		title = value
 	}
 	
-	db.Close()
+	defer db.Close()
 	list.SetItemText(selected_item, title, balance + " " + currency)
 }
 
 func RemoveAccount() {
+	defer CallModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 	
@@ -83,29 +87,32 @@ func RemoveAccount() {
 	_, err = db.Exec(query, title)
 	check(err)
 	
-	db.Close()
 	accounts.RemoveItem(selected_account)
+	defer db.Close()
 }
 
 func AddAccount(a *account_type) {
+	defer CallModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 	
 	query := `
 	INSERT INTO Accounts (title, currency, balance) VALUES (?, ?, ?)`
-
+	
 	result, err := db.Exec(query, a.title, a.currency, a.balance)
 	check(err)
-
-	created_id, _ := result.LastInsertId()
 	
-	db.Close()
+	created_id, _ := result.LastInsertId()
 	
 	accounts.AddItem(a.title, a.currency, 0, func() { SelectedAccount(created_id) })
 	pages.RemovePage("Dialog")
+	defer db.Close()
 }
 
 func SelectAccounts() ([]string, []account_type) {
+	defer CallModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -124,8 +131,8 @@ func SelectAccounts() ([]string, []account_type) {
 		account_types = append(account_types, a)
 	}
 
+	defer db.Close()
 	defer root_accounts.Close()
-	db.Close()
 	return account_titles, account_types
 }
 

@@ -53,6 +53,9 @@ func TransactionsTable() tview.Primitive {
 			if form.InRect(event.Position()) == false {
 				pages.RemovePage("Dialog")
 			}
+			if modal.InRect(event.Position()) == false {
+				pages.RemovePage("Modal")
+			}
 		}
 		return event, action
 	})
@@ -61,6 +64,7 @@ func TransactionsTable() tview.Primitive {
 }
 
 func SelectTransactions(request string) {
+	defer CallModal()
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -83,14 +87,15 @@ func SelectTransactions(request string) {
 	}
 
 	defer rows.Close()
-	db.Close()
+	defer db.Close()
 }
 
 func UpdateTransaction(cell *tview.TableCell, text string) {
 	if text == "" {
 		return
 	}
-
+	defer CallModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -104,11 +109,12 @@ func UpdateTransaction(cell *tview.TableCell, text string) {
 	_, err = db.Exec(str, text, t.id)
 	check(err)
 
-	db.Close()
+	defer db.Close()
 }
 
 func AddTransaction(t *add_transaction) {
-
+	defer CallModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -119,5 +125,5 @@ func AddTransaction(t *add_transaction) {
 	_, err = db.Exec(query, t.account, t.category, t.transaction_type, t.date, t.amount, t.balance)
 	check(err)
 
-	db.Close()
+	defer db.Close()
 }

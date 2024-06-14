@@ -11,10 +11,17 @@ var (
 	_ = InitDB()
 	app   = tview.NewApplication()
 	pages = tview.NewPages()
+	modal = tview.NewModal()
 )
 
-func Init() {
+func check(err error) {
+	if err != nil {
+		panic(err.Error())
+	}
+}
 
+func Init() {
+	
 	pages.AddPage("Transactions", TransactionsTable(), true, true)
 
 	// Shortcuts
@@ -23,7 +30,6 @@ func Init() {
 	})
 
 	// Start the application.
-	if err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run(); err != nil {
-		panic(err)
-	}
+	err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run() 
+	check(err)
 }

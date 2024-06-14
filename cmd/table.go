@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -19,12 +17,6 @@ var (
 		SetFixed(1, 1)
 	column_count = 0
 )
-
-func check(err error) {
-	if err != nil {
-		log.Panic(err)
-	}
-}
 
 type row_settings struct {
 	row int

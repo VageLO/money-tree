@@ -9,6 +9,7 @@ import (
 )
 
 func InitDB() error {
+	defer CallModal()
 	url := "./database.db"
 
 	// Check if database file exist, if exist return.
@@ -66,6 +67,6 @@ func InitDB() error {
 		os.Exit(1)
 	}
 
-	db.Close()
+	defer db.Close()
 	return nil
 }
