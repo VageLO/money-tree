@@ -6,19 +6,10 @@ import (
 )
 
 var (
-	form  = Table(`
-		SELECT 
-		Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
-		FROM Transactions
-		INNER JOIN Categories ON Categories.id = Transactions.category_id
-		INNER JOIN Accounts ON Accounts.id = Transactions.account_id
-	`)
-	table = tview.NewTable().
-		SetFixed(1, 1)
 	column_count = 0
 )
 
-type row_settings struct {
+type cell_type struct {
 	row int
 	column int
 	text string
@@ -27,7 +18,7 @@ type row_settings struct {
 	reference interface{}
 }
 
-func InsertRow(s *row_settings) {
+func InsertCell(s *cell_type) {
 	align := tview.AlignLeft
 	tableCell := tview.NewTableCell(s.text).
 		SetTextColor(s.color).
@@ -42,45 +33,34 @@ func InsertRow(s *row_settings) {
 	table.SetCell(s.row, s.column, tableCell)
 }
 
-func FillTable(columns []string, row int, data []string, id int) {
+func InsertRows(column_row []string, row int, data_row []string, id int) {
 
-	for idx, title := range columns {
-		
-		InsertRow(&row_settings{
-			row: 0,
-			column: idx,
-			text: title,
-			selectable: false,
-			color: tcell.ColorYellow,
-		})
-	}
-
-	for idx, cell_data := range data {
-		InsertRow(&row_settings{
+	for i, data := range data_row {
+		InsertCell(&cell_type{
 			row: row,
-			column: idx,
-			text: cell_data,
+			column: i,
+			text: data,
 			selectable: true,
 			color: tcell.ColorWhite,
 			reference: struct {
 					id    int
 					field string
-				}{id, columns[idx]},
+				}{id, column_row[i]},
 		})
 	}
 }
 
-func Table(request string) *tview.Form {
-
+func FillTable(request string) {
+	table.Clear()
+	
+	table.SetTitle("Transactions")
+	
 	SelectTransactions(request)
 
-	table.SetBorder(true).SetTitle("Transactions")
+	FormStyle("Transaction Information")
 
-	form := Form()
-
-	// Table action
 	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
-		form = FillForm(form, column_count, row, false)
+		FillForm(column_count, row, false)
 
 		pages.AddPage("Dialog", Dialog(form), true, true)
 	})
@@ -88,14 +68,12 @@ func Table(request string) *tview.Form {
 	table.SetBorders(false).
 		SetSelectable(true, false).
 		SetSeparator('|')
-
-	return form
 }
 
 func AddToTable() {
 	newRow := table.GetRowCount()
 
-	form = FillForm(form, column_count, newRow, true)
+	FillForm(column_count, newRow, true)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 
 	app.SetFocus(form)

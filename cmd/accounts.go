@@ -40,7 +40,7 @@ func AccountsList() *tview.List {
 }
 
 func RenameAccount(value, field string, list *tview.List) {
-	defer CallModal()
+	defer ErrorModal()
 	
 	selected_item := list.GetCurrentItem()
 	
@@ -73,7 +73,7 @@ func RenameAccount(value, field string, list *tview.List) {
 }
 
 func RemoveAccount() {
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -92,7 +92,7 @@ func RemoveAccount() {
 }
 
 func AddAccount(a *account_type) {
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -111,7 +111,7 @@ func AddAccount(a *account_type) {
 }
 
 func SelectAccounts() ([]string, []account_type) {
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -137,13 +137,6 @@ func SelectAccounts() ([]string, []account_type) {
 }
 
 func SelectedAccount(id int64) {
-	request := fmt.Sprintf(`
-		SELECT 
-		Transactions.id, transaction_type, date, amount, Transactions.balance, Accounts.title as account, Categories.title as category
-		FROM Transactions
-		INNER JOIN Categories ON Categories.id = Transactions.category_id
-		INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE account_id = %v
-	`, id)
-	table.Clear()
-	form = Table(request)
+	request := fmt.Sprintf(`SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE account_id = %v`, id)
+	FillTable(request)
 }

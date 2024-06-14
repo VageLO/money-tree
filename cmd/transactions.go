@@ -3,7 +3,6 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
@@ -13,6 +12,8 @@ import (
 
 type Transaction struct {
 	id               int
+	account_id int
+	category_id int
 	transaction_type string
 	date             string
 	amount           float64
@@ -21,8 +22,11 @@ type Transaction struct {
 	category         string
 }
 
-func TransactionsTable() tview.Primitive {
+func Transactions() tview.Primitive {
 
+	FillTable(`SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id
+INNER JOIN Accounts ON Accounts.id = Transactions.account_id`)
+	
 	// List with accounts
 	accounts := AccountsList()
 
@@ -64,7 +68,7 @@ func TransactionsTable() tview.Primitive {
 }
 
 func SelectTransactions(request string) {
-	defer CallModal()
+	defer ErrorModal()
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -74,16 +78,26 @@ func SelectTransactions(request string) {
 	columns := []string{"transaction_type", "date", "amount", "balance", "account", "category"}
 
 	column_count = len(columns)
-
+	
+	for i, column_title := range columns {
+		InsertCell(&cell_type{
+			row: 0,
+			column: i,
+			text: column_title,
+			selectable: false,
+			color: tcell.ColorYellow,
+		})
+	}
+	
 	for i := 1; rows.Next(); i++ {
 		var t Transaction
-		if err := rows.Scan(&t.id, &t.transaction_type, &t.date,
-			&t.amount, &t.balance, &t.account, &t.category); err != nil {
-			log.Fatal(err)
-		}
+		err := rows.Scan(&t.id, &t.account_id, &t.category_id, &t.transaction_type, &t.date, &t.amount, &t.balance, &t.account, &t.category)
+		
+		check(err)
+		
 		row := []string{t.transaction_type, t.date,
 			strconv.FormatFloat(t.amount, 'f', 2, 32), strconv.FormatFloat(t.balance, 'f', 2, 32), t.account, t.category}
-		FillTable(columns, i, row, t.id)
+		InsertRows(columns, i, row, t.id)
 	}
 
 	defer rows.Close()
@@ -94,7 +108,7 @@ func UpdateTransaction(cell *tview.TableCell, text string) {
 	if text == "" {
 		return
 	}
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -113,13 +127,12 @@ func UpdateTransaction(cell *tview.TableCell, text string) {
 }
 
 func AddTransaction(t *add_transaction) {
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	query := `
-	INSERT INTO Transactions (account_id, category_id, transaction_type,
+	query := `INSERT INTO Transactions (account_id, category_id, transaction_type,
 	date, amount, balance) VALUES (?, ?, ?, ?, ?, ?)`
 
 	_, err = db.Exec(query, t.account, t.category, t.transaction_type, t.date, t.amount, t.balance)

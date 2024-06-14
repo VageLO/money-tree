@@ -9,7 +9,7 @@ import (
 )
 
 func InitDB() error {
-	defer CallModal()
+	defer ErrorModal()
 	url := "./database.db"
 
 	// Check if database file exist, if exist return.

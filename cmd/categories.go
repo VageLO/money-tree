@@ -89,7 +89,7 @@ func TreeView() *tview.TreeView {
 }
 
 func RenameNode(text string, n *tview.TreeNode) {
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -111,7 +111,7 @@ func RemoveNode() {
 	if selected_node == nil {
 		return
 	}
-	defer CallModal()
+	defer ErrorModal()
 	
 	node := selected_node.GetReference().(*node)
 	id := node.reference.id
@@ -130,7 +130,7 @@ func RemoveNode() {
 }
 
 func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -140,7 +140,7 @@ func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
 	parent_reference := parent_node.GetReference().(*node)
 	node_reference := new_node.GetReference().(*node)
 	
-	var parent_id int
+	var parent_id int64
 	var result sql.Result
 	
 	if parent_reference.reference != nil {
@@ -170,7 +170,7 @@ func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
 }
 
 func SelectCategories(request string) ([]string, []category_type, []*node) {
-	defer CallModal()
+	defer ErrorModal()
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)

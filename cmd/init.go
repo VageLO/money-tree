@@ -12,6 +12,8 @@ var (
 	app   = tview.NewApplication()
 	pages = tview.NewPages()
 	modal = tview.NewModal()
+	form = tview.NewForm()
+	table = tview.NewTable().SetFixed(1, 1)
 )
 
 func check(err error) {
@@ -22,7 +24,7 @@ func check(err error) {
 
 func Init() {
 	
-	pages.AddPage("Transactions", TransactionsTable(), true, true)
+	pages.AddPage("Transactions", Transactions(), true, true)
 
 	// Shortcuts
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
