@@ -20,7 +20,7 @@ type node struct {
 }
 
 type category_type struct {
-	id        int
+	id        int64
 	parent_id sql.NullInt64
 	title     string
 }
@@ -89,6 +89,8 @@ func TreeView() *tview.TreeView {
 }
 
 func RenameNode(text string, n *tview.TreeNode) {
+	defer ErrorModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 	
@@ -100,8 +102,8 @@ func RenameNode(text string, n *tview.TreeNode) {
 	_, err = db.Exec(query, text, id)
 	check(err)
 	
-	db.Close()
 	n.SetText(text)
+	defer db.Close()
 }
 
 func RemoveNode() {
@@ -109,6 +111,7 @@ func RemoveNode() {
 	if selected_node == nil {
 		return
 	}
+	defer ErrorModal()
 	
 	node := selected_node.GetReference().(*node)
 	id := node.reference.id
@@ -121,13 +124,14 @@ func RemoveNode() {
 	_, err = db.Exec(query, id, id)
 	check(err)
 	
-	db.Close()
-	
 	selected_node.ClearChildren()
 	node.parent.RemoveChild(selected_node)
+	defer db.Close()
 }
 
 func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
+	defer ErrorModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 	
@@ -136,7 +140,7 @@ func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
 	parent_reference := parent_node.GetReference().(*node)
 	node_reference := new_node.GetReference().(*node)
 	
-	var parent_id int
+	var parent_id int64
 	var result sql.Result
 	
 	if parent_reference.reference != nil {
@@ -154,7 +158,7 @@ func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
 	
 	created_id, _ := result.LastInsertId()
 	
-	node_reference.reference.id = int(created_id)
+	node_reference.reference.id = created_id
 	// TODO: Make sure the correct data is stored
 	node_reference.reference.parent_id.Scan(parent_id)
 	node_reference.reference.title = title
@@ -162,10 +166,12 @@ func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
 	new_node.SetReference(node_reference)
 	
 	parent_node.AddChild(new_node)
-	db.Close()
+	defer db.Close()
 }
 
 func SelectCategories(request string) ([]string, []category_type, []*node) {
+	defer ErrorModal()
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -192,6 +198,6 @@ func SelectCategories(request string) ([]string, []category_type, []*node) {
 	}
 
 	defer root_categories.Close()
-	db.Close()
+	defer db.Close()
 	return category_titles, category_types, category_nodes
 }

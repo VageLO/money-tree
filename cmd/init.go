@@ -11,11 +11,20 @@ var (
 	_ = InitDB()
 	app   = tview.NewApplication()
 	pages = tview.NewPages()
+	modal = tview.NewModal()
+	form = tview.NewForm()
+	table = tview.NewTable().SetFixed(1, 1)
 )
 
-func Init() {
+func check(err error) {
+	if err != nil {
+		panic(err.Error())
+	}
+}
 
-	pages.AddPage("Transactions", TransactionsTable(), true, true)
+func Init() {
+	
+	pages.AddPage("Transactions", Transactions(), true, true)
 
 	// Shortcuts
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -23,7 +32,6 @@ func Init() {
 	})
 
 	// Start the application.
-	if err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run(); err != nil {
-		panic(err)
-	}
+	err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run() 
+	check(err)
 }

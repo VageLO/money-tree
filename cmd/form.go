@@ -12,14 +12,11 @@ type add_transaction struct{
 	transaction_type, date, amount, balance, account, category string
 }
 	
-func Form() *tview.Form {
-	form := tview.NewForm()
-	form.SetBorder(true).SetTitle("Transaction Information")
-
-	return form
+func FormStyle(formTitle string) {
+	form.SetBorder(true).SetTitle(formTitle)
 }
 
-func FillForm(form *tview.Form, columns int, row int, IsEmptyForm bool) *tview.Form {
+func FillForm( columns int, row int, IsEmptyForm bool) {
 	
 	form.Clear(true)
 	var t add_transaction
@@ -57,7 +54,7 @@ func FillForm(form *tview.Form, columns int, row int, IsEmptyForm bool) *tview.F
 			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
 			continue
 		} 
-		InsertRow(&row_settings{
+		InsertCell(&cell_type{
 			row: row,
 			column: i,
 			text: "",
@@ -85,8 +82,6 @@ func FillForm(form *tview.Form, columns int, row int, IsEmptyForm bool) *tview.F
 	if IsEmptyForm {
 		form.AddButton("Add", func() {AddTransaction(&t)})
 	}
-	
-	return form
 }
 
 func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {

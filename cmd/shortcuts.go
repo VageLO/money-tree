@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/gdamore/tcell/v2"
-	//"github.com/rivo/tview"
 )
 
 func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
