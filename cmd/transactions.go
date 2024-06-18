@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
-
+	"errors"
+	
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
@@ -12,8 +13,8 @@ import (
 
 type Transaction struct {
 	id               int
-	account_id int
-	category_id int
+	account_id int64
+	category_id int64
 	transaction_type string
 	date             string
 	amount           float64
@@ -126,8 +127,9 @@ func UpdateTransaction(cell *tview.TableCell, text string) {
 	defer db.Close()
 }
 
-func AddTransaction(t *add_transaction) {
+func AddTransaction(t *Transaction) {
 	defer ErrorModal()
+	check(t.isEmpty())
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -135,8 +137,16 @@ func AddTransaction(t *add_transaction) {
 	query := `INSERT INTO Transactions (account_id, category_id, transaction_type,
 	date, amount, balance) VALUES (?, ?, ?, ?, ?, ?)`
 
-	_, err = db.Exec(query, t.account, t.category, t.transaction_type, t.date, t.amount, t.balance)
+	_, err = db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, t.amount, t.balance)
 	check(err)
-
+	
+	pages.RemovePage("Dialog")
 	defer db.Close()
+}
+
+func (t Transaction) isEmpty() error {
+	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 || t.balance == 0 {
+		return errors.New("Empty field or can't be zero")
+	}
+	return nil
 }

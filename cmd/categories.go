@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"fmt"
+	"errors"
 
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -131,6 +132,7 @@ func RemoveNode() {
 
 func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
 	defer ErrorModal()
+	check(isEmpty(new_node))
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -200,4 +202,11 @@ func SelectCategories(request string) ([]string, []category_type, []*node) {
 	defer root_categories.Close()
 	defer db.Close()
 	return category_titles, category_types, category_nodes
+}
+
+func isEmpty(n *tview.TreeNode) error {
+	if n.GetText() == "" {
+		return errors.New("Empty field")
+	}
+	return nil
 }

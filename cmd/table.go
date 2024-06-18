@@ -57,8 +57,6 @@ func FillTable(request string) {
 	
 	SelectTransactions(request)
 
-	FormStyle("Transaction Information")
-
 	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
 		FillForm(column_count, row, false)
 

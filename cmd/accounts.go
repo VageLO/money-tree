@@ -5,6 +5,7 @@ import (
 	"log"
 	"fmt"
 	"strings"
+	"errors"
 	
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
@@ -41,7 +42,9 @@ func AccountsList() *tview.List {
 
 func RenameAccount(value, field string, list *tview.List) {
 	defer ErrorModal()
-	
+	if value == "" {
+		check(errors.New("Can't be empty"))
+	}
 	selected_item := list.GetCurrentItem()
 	
 	title, second := list.GetItemText(selected_item)
@@ -93,6 +96,7 @@ func RemoveAccount() {
 
 func AddAccount(a *account_type) {
 	defer ErrorModal()
+	check(a.isEmpty())
 	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -104,8 +108,8 @@ func AddAccount(a *account_type) {
 	check(err)
 	
 	created_id, _ := result.LastInsertId()
-	
-	accounts.AddItem(a.title, a.currency, 0, func() { SelectedAccount(created_id) })
+	balance := fmt.Sprintf("%v %v", a.balance, a.currency)
+	accounts.AddItem(a.title, balance, 0, func() { SelectedAccount(created_id) })
 	pages.RemovePage("Dialog")
 	defer db.Close()
 }
@@ -139,4 +143,11 @@ func SelectAccounts() ([]string, []account_type) {
 func SelectedAccount(id int64) {
 	request := fmt.Sprintf(`SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE account_id = %v`, id)
 	FillTable(request)
+}
+
+func (a account_type) isEmpty() error {
+	if a.title == "" || a.currency == "" {
+		return errors.New("Empty field or can't be zero")
+	}
+	return nil
 }

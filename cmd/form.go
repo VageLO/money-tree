@@ -8,18 +8,15 @@ import (
 	"github.com/rivo/tview"
 )
 
-type add_transaction struct{
-	transaction_type, date, amount, balance, account, category string
-}
-	
 func FormStyle(formTitle string) {
 	form.SetBorder(true).SetTitle(formTitle)
 }
 
 func FillForm( columns int, row int, IsEmptyForm bool) {
-	
 	form.Clear(true)
-	var t add_transaction
+	FormStyle("Transaction Information")
+
+	var t Transaction
 	
 	changed := func(text string, cell *tview.TableCell) {
 		cell.SetText(text)
@@ -27,6 +24,9 @@ func FillForm( columns int, row int, IsEmptyForm bool) {
 	}
 	
 	added := func(text string, cell *tview.TableCell, label string) {
+		if text == "" {return}
+		defer ErrorModal()
+		
 		cell.SetText(text)
 		switch field := label; field {
 		case "transaction_type":
@@ -34,13 +34,13 @@ func FillForm( columns int, row int, IsEmptyForm bool) {
 		case "date":
 			t.date = text
 		case "amount":
-			t.amount = text
+			amount, err := strconv.ParseFloat(text, 64)
+			check(err)
+			t.amount = amount
 		case "balance":
-			t.balance = text
-		case "account":
-			t.account = text
-		case "category":
-			t.category = text
+			balance, err := strconv.ParseFloat(text, 64)
+			check(err)
+			t.balance = balance
 		}
 	}
 
@@ -66,13 +66,13 @@ func FillForm( columns int, row int, IsEmptyForm bool) {
 		column_name := table.GetCell(0, i).Text
 		
 		if column_name == "category" {
-			categories, _, _ := SelectCategories(`SELECT * FROM Categories WHERE parent_id IS NULL`)
-			form.AddDropDown(table.GetCell(0, i).Text, categories, 0, nil)
+			categories, c_types, _ := SelectCategories(`SELECT * FROM Categories WHERE parent_id IS NULL`)
+			form.AddDropDown(table.GetCell(0, i).Text, categories, 0, func(option string, optionIndex int) { C_Selected(option, optionIndex, c_types, &t) })
 			continue
 		}
 		if column_name == "account" {
-			accounts, _ := SelectAccounts()
-			form.AddDropDown(table.GetCell(0, i).Text, accounts, 0, nil)
+			accounts, a_types := SelectAccounts()
+			form.AddDropDown(table.GetCell(0, i).Text, accounts, 0, func(option string, optionIndex int) { A_Selected(option, optionIndex, a_types, &t) })
 			continue
 		}
 		
@@ -88,10 +88,12 @@ func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
 	form.Clear(true)
 
 	if node != nil {
+		FormStyle("Category Information")
 		title := node.GetText()
 		form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameNode(text, node) })
 	}
 	if list != nil {
+		FormStyle("Account Information")
 		title, second := list.GetItemText(list.GetCurrentItem())
 		split := strings.Split(second, " ")
 		balance := split[0]
@@ -118,15 +120,26 @@ func FormRenameNode() {
 
 func FormAddAccount() {
 	form.Clear(true)
-	var a account_type
+	FormStyle("Add Account")
+	
+	var a = account_type{}
+	
 	form.AddInputField("Title: ", "", 0, nil, func(text string) {
 		a.title = text
 	})
 	form.AddInputField("Currency: ", "", 0, nil, func(text string) {
 		a.currency = text
 	})
-	form.AddInputField("Balance: ", "", 0, nil, func(text string) {
-		a.balance, _ = strconv.ParseFloat(text, 64); 
+	form.AddInputField("Balance: ", "0", 0, nil, func(text string) {
+		if text == "" { 
+			a.balance = 0
+			return
+		}
+		defer ErrorModal()
+
+		balance, err := strconv.ParseFloat(text, 64);
+		check(err)
+		a.balance = balance
 	})
 	form.AddButton("Add", func() { AddAccount(&a) })
 	pages.AddPage("Dialog", Dialog(form), true, true)
@@ -134,6 +147,7 @@ func FormAddAccount() {
 
 func FormAddNode() {
 	form.Clear(true)
+	FormStyle("Add Category")
 	root := tree.GetRoot()
 
 	n := &node{
@@ -191,6 +205,21 @@ func FormAddNode() {
 		AddCategory(new_node, selected_dropdown)
 		pages.RemovePage("Dialog")
 	})
-
 	pages.AddPage("Dialog", Dialog(form), true, true)
+}
+
+func A_Selected(option string, optionIndex int, a_types []account_type, t *Transaction) {
+	selected_a := a_types[optionIndex]
+	if selected_a.title != option {
+		return
+	}
+	t.account_id = selected_a.id
+}
+
+func C_Selected(option string, optionIndex int, c_types []category_type, t *Transaction) {
+	selected_c := c_types[optionIndex]
+	if selected_c.title != option {
+		return
+	}
+	t.category_id = selected_c.id
 }
