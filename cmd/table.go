@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	column_count = 0
+	columns = []string{"date", "transaction_type", "account", "category", "amount", "balance"}
+	column_count = len(columns)
 )
 
 type cell_type struct {
@@ -33,7 +34,7 @@ func InsertCell(s *cell_type) {
 	table.SetCell(s.row, s.column, tableCell)
 }
 
-func InsertRows(column_row []string, row int, data_row []string, id int) {
+func InsertRows(column_row []string, row int, data_row []string, transaction Transaction) {
 
 	for i, data := range data_row {
 		InsertCell(&cell_type{
@@ -43,9 +44,9 @@ func InsertRows(column_row []string, row int, data_row []string, id int) {
 			selectable: true,
 			color: tcell.ColorWhite,
 			reference: struct {
-					id    int
+					transaction Transaction
 					field string
-				}{id, column_row[i]},
+				}{transaction, column_row[i]},
 		})
 	}
 }
@@ -56,7 +57,7 @@ func FillTable(request string) {
 	table.SetTitle("Transactions")
 	
 	SelectTransactions(request)
-
+	
 	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
 		FillForm(column_count, row, false)
 

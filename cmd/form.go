@@ -4,7 +4,7 @@ import (
 	"strings"
 	"strconv"
 
-	"github.com/gdamore/tcell/v2"
+	//"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -12,76 +12,65 @@ func FormStyle(formTitle string) {
 	form.SetBorder(true).SetTitle(formTitle)
 }
 
+func changed(text string, cell *tview.TableCell) {
+	cell.SetText(text)
+	UpdateTransaction(cell, text)
+}
+	
+func added(text string, label string, t *Transaction) {
+	if text == "" {return}
+	defer ErrorModal()
+
+	switch field := label; field {
+	case "transaction_type":
+		t.transaction_type = text
+	case "date":
+		t.date = text
+	case "amount":
+		amount, err := strconv.ParseFloat(text, 64)
+		check(err)
+		t.amount = amount
+	}
+}
+	
 func FillForm( columns int, row int, IsEmptyForm bool) {
 	form.Clear(true)
 	FormStyle("Transaction Information")
 
-	var t Transaction
+	var transaction Transaction
 	
-	changed := func(text string, cell *tview.TableCell) {
-		cell.SetText(text)
-		UpdateTransaction(cell, text)
-	}
-	
-	added := func(text string, cell *tview.TableCell, label string) {
-		if text == "" {return}
-		defer ErrorModal()
-		
-		cell.SetText(text)
-		switch field := label; field {
-		case "transaction_type":
-			t.transaction_type = text
-		case "date":
-			t.date = text
-		case "amount":
-			amount, err := strconv.ParseFloat(text, 64)
-			check(err)
-			t.amount = amount
-		case "balance":
-			balance, err := strconv.ParseFloat(text, 64)
-			check(err)
-			t.balance = balance
-		}
-	}
-
 	form.SetCancelFunc(func() {
 		pages.RemovePage("Dialog")
 	})
 
 	for i := 0; i < columns; i++ {
-		cell := table.GetCell(row, i)
-		if IsEmptyForm == false {		
+		if table.GetCell(0, i).Text == "balance" {continue}
+		if IsEmptyForm == false {	
+			cell := table.GetCell(row, i)
 			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
 			continue
-		} 
-		InsertCell(&cell_type{
-			row: row,
-			column: i,
-			text: "",
-			selectable: true,
-			color: tcell.ColorWhite,
-		})
-		cell = table.GetCell(row, i)
-		
-		column_name := table.GetCell(0, i).Text
-		
-		if column_name == "category" {
-			categories, c_types, _ := SelectCategories(`SELECT * FROM Categories WHERE parent_id IS NULL`)
-			form.AddDropDown(table.GetCell(0, i).Text, categories, 0, func(option string, optionIndex int) { C_Selected(option, optionIndex, c_types, &t) })
-			continue
 		}
-		if column_name == "account" {
-			accounts, a_types := SelectAccounts()
-			form.AddDropDown(table.GetCell(0, i).Text, accounts, 0, func(option string, optionIndex int) { A_Selected(option, optionIndex, a_types, &t) })
-			continue
-		}
-		
-		form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { added(text, cell, column_name) })
+		EmptyForm(i, &transaction)
 	}
-
 	if IsEmptyForm {
-		form.AddButton("Add", func() {AddTransaction(&t)})
+		form.AddButton("Add", func() {AddTransaction(transaction, row)})
 	}
+}
+
+func EmptyForm(index int, t *Transaction) {
+	column_name := table.GetCell(0, index).Text
+	if column_name == "category" {
+		categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`)
+		form.AddDropDown(table.GetCell(0, index).Text, categories, 0, func(option string, optionIndex int) { C_Selected(option, optionIndex, c_types, t) })
+		return
+	}
+	if column_name == "account" {
+		accounts, a_types := SelectAccounts()
+		form.AddDropDown(table.GetCell(0, index).Text, accounts, 0, func(option string, optionIndex int) { A_Selected(option, optionIndex, a_types, t) })
+		return
+	}
+	
+	form.AddInputField(table.GetCell(0, index).Text, "", 0, nil, func(text string) { added(text, column_name, t) })
 }
 
 func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
@@ -214,6 +203,7 @@ func A_Selected(option string, optionIndex int, a_types []account_type, t *Trans
 		return
 	}
 	t.account_id = selected_a.id
+	t.account = selected_a.title
 }
 
 func C_Selected(option string, optionIndex int, c_types []category_type, t *Transaction) {
@@ -222,4 +212,5 @@ func C_Selected(option string, optionIndex int, c_types []category_type, t *Tran
 		return
 	}
 	t.category_id = selected_c.id
+	t.category = selected_c.title
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type Transaction struct {
-	id               int
+	id               int64
 	account_id int64
 	category_id int64
 	transaction_type string
@@ -75,10 +75,6 @@ func SelectTransactions(request string) {
 
 	rows, err := db.Query(request)
 	check(err)
-
-	columns := []string{"transaction_type", "date", "amount", "balance", "account", "category"}
-
-	column_count = len(columns)
 	
 	for i, column_title := range columns {
 		InsertCell(&cell_type{
@@ -96,9 +92,9 @@ func SelectTransactions(request string) {
 		
 		check(err)
 		
-		row := []string{t.transaction_type, t.date,
-			strconv.FormatFloat(t.amount, 'f', 2, 32), strconv.FormatFloat(t.balance, 'f', 2, 32), t.account, t.category}
-		InsertRows(columns, i, row, t.id)
+		row := []string{t.date, t.transaction_type, t.account, t.category,
+			strconv.FormatFloat(t.amount, 'f', 2, 32), strconv.FormatFloat(t.balance, 'f', 2, 32)}
+		InsertRows(columns, i, row, t)
 	}
 
 	defer rows.Close()
@@ -114,20 +110,20 @@ func UpdateTransaction(cell *tview.TableCell, text string) {
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	t := cell.GetReference().(struct {
-		id    int
+	c := cell.GetReference().(struct {
+		transaction Transaction
 		field string
 	})
 
-	str := fmt.Sprintf(`Update Transactions SET %v = ? WHERE id = ?`, t.field)
+	str := fmt.Sprintf(`Update Transactions SET %v = ? WHERE id = ?`, c.field)
 
-	_, err = db.Exec(str, text, t.id)
+	_, err = db.Exec(str, text, c.transaction.id)
 	check(err)
 
 	defer db.Close()
 }
 
-func AddTransaction(t *Transaction) {
+func AddTransaction(t Transaction, newRow int) {
 	defer ErrorModal()
 	check(t.isEmpty())
 	
@@ -137,15 +133,25 @@ func AddTransaction(t *Transaction) {
 	query := `INSERT INTO Transactions (account_id, category_id, transaction_type,
 	date, amount, balance) VALUES (?, ?, ?, ?, ?, ?)`
 
-	_, err = db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, t.amount, t.balance)
+	result, err := db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, t.amount, t.balance)
 	check(err)
+	
+	created_id, err := result.LastInsertId()
+	check(err)
+
+	t.id = created_id
+	
+	row := []string{t.date, t.transaction_type, t.account, t.category,
+	strconv.FormatFloat(t.amount, 'f', 2, 32), strconv.FormatFloat(t.balance, 'f', 2, 32)}
+	
+	InsertRows(columns, newRow, row, t)
 	
 	pages.RemovePage("Dialog")
 	defer db.Close()
 }
 
 func (t Transaction) isEmpty() error {
-	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 || t.balance == 0 {
+	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 {
 		return errors.New("Empty field or can't be zero")
 	}
 	return nil
