@@ -101,7 +101,7 @@ func SelectTransactions(request string) {
 	defer db.Close()
 }
 
-func UpdateTransaction(cell *tview.TableCell, text string) {
+func UpdateTransaction(cell *tview.TableCell, text string, category *category_type, account *account_type) {
 	if text == "" {
 		return
 	}
@@ -117,7 +117,16 @@ func UpdateTransaction(cell *tview.TableCell, text string) {
 
 	str := fmt.Sprintf(`Update Transactions SET %v = ? WHERE id = ?`, c.field)
 
-	_, err = db.Exec(str, text, c.transaction.id)
+	if category != nil {
+		str = `Update Transactions SET category_id = ? WHERE id = ?`
+		_, err = db.Exec(str, category.id, c.transaction.id)
+	} else if account != nil { 
+		str = `Update Transactions SET account_id = ? WHERE id = ?`
+		_, err = db.Exec(str, account.id, c.transaction.id)
+	} else {
+		_, err = db.Exec(str, text, c.transaction.id)
+	}
+	
 	check(err)
 
 	defer db.Close()

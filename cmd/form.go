@@ -12,9 +12,14 @@ func FormStyle(formTitle string) {
 	form.SetBorder(true).SetTitle(formTitle)
 }
 
-func changed(text string, cell *tview.TableCell) {
+func changed(text, label string, cell *tview.TableCell) {
+	if label == "amount" {
+		defer ErrorModal()
+		_, err := strconv.ParseFloat(text, 64)
+		check(err)
+	}
 	cell.SetText(text)
-	UpdateTransaction(cell, text)
+	UpdateTransaction(cell, text, nil, nil)
 }
 	
 func added(text string, label string, t *Transaction) {
@@ -46,18 +51,17 @@ func FillForm( columns int, row int, IsEmptyForm bool) {
 	for i := 0; i < columns; i++ {
 		if table.GetCell(0, i).Text == "balance" {continue}
 		if IsEmptyForm == false {	
-			cell := table.GetCell(row, i)
-			form.AddInputField(table.GetCell(0, i).Text, cell.Text, 0, nil, func(text string) { changed(text, cell) })
+			filledForm(i, row)
 			continue
 		}
-		EmptyForm(i, &transaction)
+		emptyForm(i, &transaction)
 	}
 	if IsEmptyForm {
 		form.AddButton("Add", func() {AddTransaction(transaction, row)})
 	}
 }
 
-func EmptyForm(index int, t *Transaction) {
+func emptyForm(index int, t *Transaction) {
 	column_name := table.GetCell(0, index).Text
 	if column_name == "category" {
 		categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`)
@@ -71,6 +75,43 @@ func EmptyForm(index int, t *Transaction) {
 	}
 	
 	form.AddInputField(table.GetCell(0, index).Text, "", 0, nil, func(text string) { added(text, column_name, t) })
+}
+
+func filledForm(index, row int) {
+	column_name := table.GetCell(0, index).Text
+	cell := table.GetCell(row, index)
+
+	if column_name == "category" {
+		categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`)
+		initial := 0
+		
+		for idx, title := range categories {
+			if title == cell.Text {
+				initial = idx
+			}
+		}
+		form.AddDropDown(column_name, categories, initial, func(option string, optionIndex int) {
+			UpdateTransaction(cell, option, &c_types[optionIndex], nil)
+		})
+		return
+	}
+	if column_name == "account" {
+		accounts, a_types := SelectAccounts()
+		initial := 0
+		
+		for idx, title := range accounts {
+			if title == cell.Text {
+				initial = idx
+			}
+		}
+
+		form.AddDropDown(column_name, accounts, initial, func(option string, optionIndex int) { 
+			UpdateTransaction(cell, option, nil, &a_types[optionIndex])
+		})
+		return
+	}
+
+	form.AddInputField(column_name, cell.Text, 0, nil, func(text string) { changed(text, column_name, cell) })
 }
 
 func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
