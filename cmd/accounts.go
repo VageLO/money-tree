@@ -24,6 +24,8 @@ type account_type struct {
 
 func AccountsList() *tview.List {
 
+	accounts.Clear()
+	
 	_, account_types := SelectAccounts()
 	
 	accounts.

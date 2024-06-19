@@ -154,7 +154,7 @@ func AddTransaction(t Transaction, newRow int) {
 	strconv.FormatFloat(t.amount, 'f', 2, 32), strconv.FormatFloat(t.balance, 'f', 2, 32)}
 	
 	InsertRows(columns, newRow, row, t)
-	
+	AccountsList()
 	pages.RemovePage("Dialog")
 	defer db.Close()
 }
@@ -187,6 +187,7 @@ func DeleteTransaction() {
 func (t Transaction) isEmpty() error {
 	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 {
 		return errors.New("Empty field or can't be zero")
-	}
+	} 
+	//TODO: Regex on date
 	return nil
 }
