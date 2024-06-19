@@ -21,10 +21,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 		}
 	case tcell.KeyCtrlD, tcell.KeyDelete, tcell.KeyBackspace:
 		if table.HasFocus() {
-			row, _ := table.GetSelection()
-			table.RemoveRow(row)
-
-			app.SetFocus(table)
+			DeleteTransaction()
 			return nil
 		}
 		if tree.HasFocus() {

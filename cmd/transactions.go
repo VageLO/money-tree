@@ -159,6 +159,31 @@ func AddTransaction(t Transaction, newRow int) {
 	defer db.Close()
 }
 
+func DeleteTransaction() {
+	defer ErrorModal()
+	row, _ := table.GetSelection()
+
+	if table.GetRowCount() <= 1 {return}
+	
+	cell := table.GetCell(row, 0)
+	c := cell.GetReference().(struct {
+		transaction Transaction
+		field string
+	})
+	
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+
+	query := `DELETE FROM Transactions WHERE id = ?`
+
+	_, err = db.Exec(query, c.transaction.id)
+	check(err)
+	
+	defer db.Close()
+
+	table.RemoveRow(row)
+}
+
 func (t Transaction) isEmpty() error {
 	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 {
 		return errors.New("Empty field or can't be zero")
