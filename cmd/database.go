@@ -12,6 +12,22 @@ func InitDB() error {
 	defer ErrorModal()
 	url := "./database.db"
 
+	transactions, err := os.ReadFile("./sql/Transactions.sql")
+    check(err)
+
+	accounts, err := os.ReadFile("./sql/Accounts.sql")
+    check(err)
+
+	categories, err := os.ReadFile("./sql/Categories.sql")
+    check(err)
+	
+	trigger_insert, err := os.ReadFile("./sql/Update_Balance_On_Transaction_Insert.sql")
+    check(err)
+	
+	trigger_update, err := os.ReadFile("./sql/Update_Balance_On_Transaction_Update.sql")
+    check(err)
+
+	
 	// Check if database file exist, if exist return.
 	fileInfo, _ := os.Stat(url)
 	if fileInfo != nil {
@@ -22,51 +38,23 @@ func InitDB() error {
 	os.Create(url)
 
 	db, err := sql.Open("sqlite3", url)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 
-	_, err = db.Exec(`CREATE TABLE "Transactions" (
-	"id"	INTEGER,
-	"account_id"	INTEGER NOT NULL,
-	"category_id"	INTEGER NOT NULL,
-	"transaction_type"	TEXT NOT NULL,
-	"date"	TEXT NOT NULL,
-	"amount"	NUMERIC NOT NULL,
-	"balance"	NUMERIC NOT NULL,
-	FOREIGN KEY("category_id") REFERENCES "Categories"("id") ON DELETE CASCADE,
-	FOREIGN KEY("account_id") REFERENCES "Accounts"("id") ON DELETE CASCADE,
-	PRIMARY KEY("id" AUTOINCREMENT)
-)`)
+	_, err = db.Exec(string(transactions))
+	check(err)
+	
+	_, err = db.Exec(string(accounts))
+	check(err)
 
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	_, err = db.Exec(`CREATE TABLE "Accounts" (
-  "id"	INTEGER,
-  "title"	TEXT NOT NULL UNIQUE,
-  "currency"	TEXT NOT NULL,
-  "balance"	NUMERIC NOT NULL DEFAULT 0,
-  PRIMARY KEY("id" AUTOINCREMENT)
-)`)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	_, err = db.Exec(`CREATE TABLE "Categories" (
-	"id"	INTEGER,
-	"parent_id"	INTEGER,
-	"title"	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY("id" AUTOINCREMENT)
-)`)
+	_, err = db.Exec(string(categories))
+	check(err)
 
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-
+	_, err = db.Exec(string(trigger_insert))
+	check(err)
+	
+	_, err = db.Exec(string(trigger_update))
+	check(err)
+	
 	defer db.Close()
 	return nil
 }
