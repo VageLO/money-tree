@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"os"
 
 	"github.com/dslipak/pdf"
-	//"github.com/fatih/color"
 )
 
 var (
@@ -41,7 +41,7 @@ func main() {
 	var transactions []Transaction
 
 	for pageNum := 1; pageNum <= r.NumPage(); pageNum++ {
-		fmt.Printf("Page: %d\n", pageNum)
+		//fmt.Printf("Page: %d\n", pageNum)
 
 		page := r.Page(pageNum)
 
@@ -74,8 +74,6 @@ func main() {
 			if !TransactionNum.MatchString(sentence.S) {
 				continue
 			}
-			fmt.Println(TransactionNum.FindString(sentence.S))
-			fmt.Println()
 			
 			if tranID != 0 {
 				temp_str += parse(texts[tranID:i-(len(sentence.S)-1)])
@@ -95,6 +93,7 @@ func main() {
 		fmt.Printf("%+v\n", tran)
 	}
 	fmt.Println("\n", len(transactions))
+	CSV(transactions)
 }
 
 func parse(array []pdf.Text) string {
@@ -133,7 +132,6 @@ func extractRegex(str string, transaction *Transaction) {
 		transaction.description = str[priceIndex[1]:len(str)]
 	}
 	if len(typeIndex) != 0 && len(priceIndex) != 0 {
-		fmt.Println(str[typeIndex[1]-2:priceIndex[0]])
 		find := str[typeIndex[1]-2:priceIndex[0]]
 		find = strings.Trim(find, " ")
 		transaction.status = find
@@ -149,4 +147,18 @@ func extractRegex(str string, transaction *Transaction) {
 		transaction.time = str[timeIndex[0]:timeIndex[1]]
 	}
 	
+}
+
+func CSV(t []Transaction) {
+	path := "./alfa.csv"
+	file, err := os.Create(path)
+	check(err)
+	str := "ID;DATE;TIME;TYPE_OF_TRANSACTION;STATUS;PRICE;DESCRIPTION\n"
+	for _, transaction := range t {
+		temp := []string{transaction.id, transaction.date, transaction.time, 
+		transaction.typeof, transaction.status, transaction.price, transaction.description}
+		str += strings.Join(temp, ";")
+		str += "\n"
+	}
+	file.WriteString(str)
 }
