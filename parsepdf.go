@@ -11,7 +11,9 @@ import (
 
 var (
 	filename       = "./alfa.pdf"
-	Price          = regexp.MustCompile(`(\d+\.\d{2}\s*[A-Z]{3})`)
+	PriceWithAcronym          = regexp.MustCompile(`(\d+\.\d{2}\s*[A-Z]{3})`)
+	Price		   = regexp.MustCompile(`\d+\.\d{2}`)
+	Acronym		   = regexp.MustCompile(`[A-Z]{3}`)
 	Date           = regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
 	Time           = regexp.MustCompile(`\d{2}:\d{2}:\d{2}`)
 	TransactionNum = regexp.MustCompile(`\d{16}`)
@@ -25,6 +27,7 @@ type Transaction struct {
 	typeof      string
 	status      string
 	price       string
+	acronym		string
 	description string
 }
 
@@ -126,9 +129,12 @@ func extractRegex(str string, transaction *Transaction) {
 		find = strings.Trim(find, " ")
 		transaction.typeof = find
 	}
-	if Price.MatchString(str) {
-		priceIndex = Price.FindStringIndex(str)
-		transaction.price = str[priceIndex[0]:priceIndex[1]]
+	if PriceWithAcronym.MatchString(str) {
+		priceIndex = PriceWithAcronym.FindStringIndex(str)
+		price_acronym := str[priceIndex[0]:priceIndex[1]]
+		
+		transaction.price = Price.FindString(price_acronym)
+		transaction.acronym = Acronym.FindString(price_acronym)
 		transaction.description = str[priceIndex[1]:len(str)]
 	}
 	if len(typeIndex) != 0 && len(priceIndex) != 0 {
@@ -153,10 +159,10 @@ func CSV(t []Transaction) {
 	path := "./alfa.csv"
 	file, err := os.Create(path)
 	check(err)
-	str := "ID;DATE;TIME;TYPE_OF_TRANSACTION;STATUS;PRICE;DESCRIPTION\n"
+	str := "ID;DATE;TIME;TYPE_OF_TRANSACTION;STATUS;PRICE;ACRONYM;DESCRIPTION\n"
 	for _, transaction := range t {
 		temp := []string{transaction.id, transaction.date, transaction.time, 
-		transaction.typeof, transaction.status, transaction.price, transaction.description}
+		transaction.typeof, transaction.status, transaction.price, transaction.acronym, transaction.description}
 		str += strings.Join(temp, ";")
 		str += "\n"
 	}
