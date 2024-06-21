@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	columns = []string{"date", "transaction_type", "account", "category", "amount", "balance"}
+	columns = []string{"date", "transaction_type", "account", "category", "amount", "description"}
 	column_count = len(columns)
 )
 
@@ -19,19 +19,27 @@ type cell_type struct {
 	reference interface{}
 }
 
-func InsertCell(s *cell_type) {
+func InsertCell(c *cell_type) {
 	align := tview.AlignLeft
-	tableCell := tview.NewTableCell(s.text).
-		SetTextColor(s.color).
+	tableCell := tview.NewTableCell(c.text).
+		SetTextColor(c.color).
 		SetAlign(align).
-		SetSelectable(s.selectable)
-	if s.column >= 1 && s.column <= 3 {
+		SetSelectable(c.selectable)
+	if c.column >= 1 && c.column <= 3 {
 		tableCell.SetExpansion(1)
 	}
-	if s.reference != nil {
-		tableCell.SetReference(s.reference)
+	if c.reference != nil {
+		tableCell.SetReference(c.reference)
 	}
-	table.SetCell(s.row, s.column, tableCell)
+	table.SetCell(c.row, c.column, tableCell)
+}
+
+func UpdateCell (c *cell_type) {
+	tableCell := table.GetCell(c.row, c.column)
+	tableCell.SetText(c.text)
+	if c.reference != nil {
+		tableCell.SetReference(c.reference)
+	}
 }
 
 func InsertRows(column_row []string, row int, data_row []string, transaction Transaction) {
@@ -43,10 +51,19 @@ func InsertRows(column_row []string, row int, data_row []string, transaction Tra
 			text: data,
 			selectable: true,
 			color: tcell.ColorWhite,
-			reference: struct {
-					transaction Transaction
-					field string
-				}{transaction, column_row[i]},
+			reference: transaction,
+		})
+	}
+}
+
+func UpdateRows(column_row []string, row int, data_row []string, transaction Transaction) {
+
+	for i, data := range data_row {
+		UpdateCell(&cell_type{
+			row: row,
+			column: i,
+			text: data,
+			reference: transaction,
 		})
 	}
 }

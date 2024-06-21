@@ -62,5 +62,6 @@ BEGIN
 
 			ELSE RAISE(ABORT, "Error: Update Account old.account_id")
 			END
+		ELSE RAISE(IGNORE)
 	END WHERE id = old.account_id;
 END;
