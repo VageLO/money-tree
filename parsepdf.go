@@ -2,22 +2,22 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
-	"os"
 
 	"github.com/dslipak/pdf"
 )
 
 var (
-	filename       = "./alfa.pdf"
-	PriceWithAcronym          = regexp.MustCompile(`(\d+\.\d{2}\s*[A-Z]{3})`)
-	Price		   = regexp.MustCompile(`\d+\.\d{2}`)
-	Acronym		   = regexp.MustCompile(`[A-Z]{3}`)
-	Date           = regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
-	Time           = regexp.MustCompile(`\d{2}:\d{2}:\d{2}`)
-	TransactionNum = regexp.MustCompile(`\d{16}`)
-	TransactionType= regexp.MustCompile(`[А-Я][^А-Я]*[А-Я]`)
+	filename         = "./alfa.pdf"
+	PriceWithAcronym = regexp.MustCompile(`(\d+\.\d{2}\s*[A-Z]{3})`)
+	Price            = regexp.MustCompile(`\d+\.\d{2}`)
+	Acronym          = regexp.MustCompile(`[A-Z]{3}`)
+	Date             = regexp.MustCompile(`\d{4}-\d{2}-\d{2}`)
+	Time             = regexp.MustCompile(`\d{2}:\d{2}:\d{2}`)
+	TransactionNum   = regexp.MustCompile(`\d{16}`)
+	TransactionType  = regexp.MustCompile(`[А-Я][^А-Я]*[А-Я]`)
 )
 
 type Transaction struct {
@@ -27,7 +27,7 @@ type Transaction struct {
 	typeof      string
 	status      string
 	price       string
-	acronym		string
+	acronym     string
 	description string
 }
 
@@ -52,11 +52,11 @@ func main() {
 		var temp pdf.Text
 
 		var transaction Transaction
-		
+
 		var tranID int
-		
+
 		var temp_str string
-		
+
 		texts := page.Content().Text
 		for i, text := range texts {
 			if text.Y == sentence.Y {
@@ -68,7 +68,7 @@ func main() {
 			} else {
 				sentence = text
 			}
-			
+
 			if i+1 == len(texts) {
 				temp_str += parse(texts[tranID:len(texts)])
 				extractRegex(temp_str, &transaction)
@@ -77,17 +77,17 @@ func main() {
 			if !TransactionNum.MatchString(sentence.S) {
 				continue
 			}
-			
+
 			if tranID != 0 {
-				temp_str += parse(texts[tranID:i-(len(sentence.S)-1)])
-				tranID = i+1
+				temp_str += parse(texts[tranID : i-(len(sentence.S)-1)])
+				tranID = i + 1
 				extractRegex(temp_str, &transaction)
 				transactions = append(transactions, transaction)
 				temp_str = ""
 				transaction = Transaction{}
 			}
 			transaction.id = TransactionNum.FindString(sentence.S)
-			tranID = i+1
+			tranID = i + 1
 			sentence.S = ""
 		}
 	}
@@ -103,7 +103,7 @@ func parse(array []pdf.Text) string {
 	var str string
 	var sentence pdf.Text
 	var temp pdf.Text
-	
+
 	for _, text := range array {
 		if text.Y == sentence.Y {
 			sentence.S = text.S
@@ -122,23 +122,23 @@ func parse(array []pdf.Text) string {
 
 func extractRegex(str string, transaction *Transaction) {
 	var priceIndex, dateIndex, timeIndex, typeIndex []int
-	
+
 	if TransactionType.MatchString(str) {
 		typeIndex = TransactionType.FindStringIndex(str)
-		find := str[typeIndex[0]:(typeIndex[1]-2)]
+		find := str[typeIndex[0]:(typeIndex[1] - 2)]
 		find = strings.Trim(find, " ")
 		transaction.typeof = find
 	}
 	if PriceWithAcronym.MatchString(str) {
 		priceIndex = PriceWithAcronym.FindStringIndex(str)
 		price_acronym := str[priceIndex[0]:priceIndex[1]]
-		
+
 		transaction.price = Price.FindString(price_acronym)
 		transaction.acronym = Acronym.FindString(price_acronym)
 		transaction.description = str[priceIndex[1]:len(str)]
 	}
 	if len(typeIndex) != 0 && len(priceIndex) != 0 {
-		find := str[typeIndex[1]-2:priceIndex[0]]
+		find := str[typeIndex[1]-2 : priceIndex[0]]
 		find = strings.Trim(find, " ")
 		transaction.status = find
 	}
@@ -152,7 +152,7 @@ func extractRegex(str string, transaction *Transaction) {
 		timeIndex = Time.FindStringIndex(str)
 		transaction.time = str[timeIndex[0]:timeIndex[1]]
 	}
-	
+
 }
 
 func CSV(t []Transaction) {
@@ -161,8 +161,8 @@ func CSV(t []Transaction) {
 	check(err)
 	str := "ID;DATE;TIME;TYPE_OF_TRANSACTION;STATUS;PRICE;ACRONYM;DESCRIPTION\n"
 	for _, transaction := range t {
-		temp := []string{transaction.id, transaction.date, transaction.time, 
-		transaction.typeof, transaction.status, transaction.price, transaction.acronym, transaction.description}
+		temp := []string{transaction.id, transaction.date, transaction.time,
+			transaction.typeof, transaction.status, transaction.price, transaction.acronym, transaction.description}
 		str += strings.Join(temp, ";")
 		str += "\n"
 	}
