@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"main/parser"
+
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -41,6 +43,8 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			FormRenameAccount()
 			return nil
 		}
+	case tcell.KeyCtrlI:
+		parser.ParsePdf()
 	}
 	return event
 }

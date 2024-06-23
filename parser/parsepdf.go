@@ -1,7 +1,6 @@
-package main
+package parser
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -37,7 +36,7 @@ func check(err error) {
 	}
 }
 
-func main() {
+func ParsePdf() {
 	r, err := pdf.Open(filename)
 	check(err)
 
@@ -91,12 +90,7 @@ func main() {
 			sentence.S = ""
 		}
 	}
-	fmt.Println()
-	for _, tran := range transactions {
-		fmt.Printf("%+v\n", tran)
-	}
-	fmt.Println("\n", len(transactions))
-	CSV(transactions)
+	csv(transactions)
 }
 
 func parse(array []pdf.Text) string {
@@ -155,7 +149,7 @@ func extractRegex(str string, transaction *Transaction) {
 
 }
 
-func CSV(t []Transaction) {
+func csv(t []Transaction) {
 	path := "./alfa.csv"
 	file, err := os.Create(path)
 	check(err)

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	
+
 	"github.com/rivo/tview"
 )
 
@@ -36,3 +36,4 @@ func ErrorModal() {
 		pages.AddPage("Modal", Modal(modal), true, true)
 	}
 }
+
