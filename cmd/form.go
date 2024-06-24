@@ -53,6 +53,7 @@ func FillForm( columns int, row int, IsEmptyForm bool) {
 }
 
 func emptyForm(index int, t *Transaction) {
+
 	column_name := table.GetCell(0, index).Text
 	
 	if column_name == "transaction_type" {
@@ -68,11 +69,13 @@ func emptyForm(index int, t *Transaction) {
 	}
 	if column_name == "category" {
 		categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`)
+		
 		form.AddDropDown(table.GetCell(0, index).Text, categories, 0, func(option string, optionIndex int) { C_Selected(option, optionIndex, c_types, t) })
 		return
 	}
 	if column_name == "account" {
 		accounts, a_types := SelectAccounts()
+
 		form.AddDropDown(table.GetCell(0, index).Text, accounts, 0, func(option string, optionIndex int) { A_Selected(option, optionIndex, a_types, t) })
 		return
 	}
@@ -160,12 +163,18 @@ func FillTreeAndListForm(node *tview.TreeNode, list *tview.List) {
 }
 
 func FormRenameAccount() {
+	if accounts.GetItemCount() <= 0 {
+		return
+	}
 	FillTreeAndListForm(nil, accounts)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 }
 
 func FormRenameNode() {
 	node := tree.GetCurrentNode()
+	if node == nil {
+		return
+	}
 	FillTreeAndListForm(node, nil)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 }

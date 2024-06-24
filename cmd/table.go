@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -75,7 +77,7 @@ func FillTable(request string) {
 	
 	SelectTransactions(request)
 	
-	table.Select(0, 0).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
+	table.Select(1, 1).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
 		FillForm(column_count, row, false)
 
 		pages.AddPage("Dialog", Dialog(form), true, true)
@@ -87,8 +89,12 @@ func FillTable(request string) {
 }
 
 func AddToTable() {
-	newRow := table.GetRowCount()
+	defer ErrorModal()
 
+	newRow := table.GetRowCount()
+	if tree.GetRowCount() <= 0 || accounts.GetItemCount() <= 0 {
+		check(errors.New("Account and category must be created"))
+	}
 	FillForm(column_count, newRow, true)
 	pages.AddPage("Dialog", Dialog(form), true, true)
 

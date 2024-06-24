@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strconv"
 	"errors"
+	"time"
 	
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -112,7 +113,7 @@ func UpdateTransaction(t Transaction, row int) {
 
 	query := `Update Transactions SET account_id = ?, category_id = ?, 
 	transaction_type = ?, date = ?, amount = ?, description = ? WHERE id = ?`
-	_, err = db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, t.amount, t.description, transaction.id)
+	_, err = db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, strconv.FormatFloat(t.amount, 'f', 2, 32), t.description, transaction.id)
 	check(err)
 	
 	t.id = transaction.id
@@ -137,7 +138,7 @@ func AddTransaction(t Transaction, newRow int) {
 	query := `INSERT INTO Transactions (account_id, category_id, transaction_type,
 	date, amount, description) VALUES (?, ?, ?, ?, ?, ?)`
 
-	result, err := db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, t.amount, t.description)
+	result, err := db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, strconv.FormatFloat(t.amount, 'f', 2, 32), t.description)
 	check(err)
 	
 	created_id, err := result.LastInsertId()
@@ -180,7 +181,10 @@ func DeleteTransaction() {
 func (t Transaction) isEmpty() error {
 	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 {
 		return errors.New("Empty field or can't be zero")
-	} 
-	//TODO: Regex on date
+	}
+	_, err := time.Parse("2006-01-02", t.date)
+	if err != nil {
+		return errors.New("Allowed date format (YYYY-MM-DD)")
+	}
 	return nil
 }

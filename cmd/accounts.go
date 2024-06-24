@@ -80,6 +80,10 @@ func RenameAccount(value, field string, list *tview.List) {
 func RemoveAccount() {
 	defer ErrorModal()
 	
+	if accounts.GetItemCount() <= 0 {
+		return
+	}
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 	
