@@ -1,5 +1,5 @@
 CREATE TRIGGER Update_Balance_On_Transaction_Update
-BEFORE UPDATE ON Transactions
+AFTER UPDATE ON Transactions
 FOR EACH ROW
 
 BEGIN

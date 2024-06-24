@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"main/parser"
+	//"main/parser"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -44,7 +44,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyCtrlI:
-		parser.ParsePdf()
+		//parser.ParsePdf()
 	}
 	return event
 }

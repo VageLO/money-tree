@@ -27,6 +27,8 @@ func InitDB() error {
 	trigger_update, err := os.ReadFile("./sql/Update_Balance_On_Transaction_Update.sql")
     check(err)
 
+	trigger_delete, err := os.ReadFile("./sql/Update_Balance_On_Transaction_Delete.sql")
+    check(err)
 	
 	// Check if database file exist, if exist return.
 	fileInfo, _ := os.Stat(url)
@@ -53,6 +55,9 @@ func InitDB() error {
 	check(err)
 	
 	_, err = db.Exec(string(trigger_update))
+	check(err)
+	
+	_, err = db.Exec(string(trigger_delete))
 	check(err)
 	
 	defer db.Close()
