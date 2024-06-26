@@ -35,7 +35,7 @@ func FillForm( columns int, row int, IsEmptyForm bool) {
 	var transaction Transaction
 	
 	form.SetCancelFunc(func() {
-		pages.RemovePage("Dialog")
+		pages.RemovePage("Modal")
 	})
 
 	for i := 0; i < columns; i++ {
@@ -167,7 +167,7 @@ func FormRenameAccount() {
 		return
 	}
 	FillTreeAndListForm(nil, accounts)
-	pages.AddPage("Dialog", Dialog(form), true, true)
+	pages.AddPage("Modal", Modal(form, 20, 50), true, true)
 }
 
 func FormRenameNode() {
@@ -176,7 +176,7 @@ func FormRenameNode() {
 		return
 	}
 	FillTreeAndListForm(node, nil)
-	pages.AddPage("Dialog", Dialog(form), true, true)
+	pages.AddPage("Modal", Modal(form, 20, 50), true, true)
 }
 
 func FormAddAccount() {
@@ -203,7 +203,7 @@ func FormAddAccount() {
 		a.balance = balance
 	})
 	form.AddButton("Add", func() { AddAccount(&a) })
-	pages.AddPage("Dialog", Dialog(form), true, true)
+	pages.AddPage("Modal", Modal(form, 20, 50), true, true)
 }
 
 func FormAddNode() {
@@ -264,9 +264,9 @@ func FormAddNode() {
 
 	form.AddButton("Add", func() {
 		AddCategory(new_node, selected_dropdown)
-		pages.RemovePage("Dialog")
+		pages.RemovePage("Modal")
 	})
-	pages.AddPage("Dialog", Dialog(form), true, true)
+	pages.AddPage("Modal", Modal(form, 20, 50), true, true)
 }
 
 func A_Selected(option string, optionIndex int, a_types []account_type, t *Transaction) {
