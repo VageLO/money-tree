@@ -1,13 +1,10 @@
 package cmd
 
 import (
-	"main/parser"
-
 	"github.com/gdamore/tcell/v2"
 )
 
 func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
-	defer ErrorModal()
 
 	switch key := event.Key(); key {
 	case tcell.KeyCtrlA, tcell.KeyInsert:
@@ -46,11 +43,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyF2:
-		// TODO: deal with exit focus
-		file_table, err := parser.FilePicker("./sql")
-		check(err)
-		x, y, _, _ := file_table.GetRect()
-		pages.AddPage("Modal", Modal(file_table, x, y), true, true)
+		FilePicker("./sql")
 	}
 	return event
 }

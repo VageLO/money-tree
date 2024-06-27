@@ -56,10 +56,13 @@ INNER JOIN Accounts ON Accounts.id = Transactions.account_id`)
 	app.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
 		if event.Buttons() == tcell.Button1 {
 			if form.InRect(event.Position()) == false {
-				pages.RemovePage("Modal")
+				pages.RemovePage("Form")
 			}
 			if modal.InRect(event.Position()) == false {
 				pages.RemovePage("Modal")
+			}
+			if file_table.InRect(event.Position()) == false {
+				pages.RemovePage("Files")
 			}
 		}
 		return event, action
@@ -123,7 +126,7 @@ func UpdateTransaction(t Transaction, row int) {
 	
 	UpdateRows(columns, row, data, t)
 	AccountsList()
-	pages.RemovePage("Modal")
+	pages.RemovePage("Form")
 
 	defer db.Close()
 }
@@ -151,7 +154,7 @@ func AddTransaction(t Transaction, newRow int) {
 	
 	InsertRows(columns, newRow, row, t)
 	AccountsList()
-	pages.RemovePage("Modal")
+	pages.RemovePage("Form")
 
 	defer db.Close()
 }

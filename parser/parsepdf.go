@@ -9,7 +9,6 @@ import (
 )
 
 var (
-	filename         = "./alfa.pdf"
 	PriceWithAcronym = regexp.MustCompile(`(\d+\.\d{2}\s*[A-Z]{3})`)
 	Price            = regexp.MustCompile(`\d+\.\d{2}`)
 	Acronym          = regexp.MustCompile(`[A-Z]{3}`)
@@ -36,14 +35,13 @@ func check(err error) {
 	}
 }
 
-func ParsePdf() {
+func ParsePdf(filename string) []Transaction {
 	r, err := pdf.Open(filename)
 	check(err)
 
 	var transactions []Transaction
 
 	for pageNum := 1; pageNum <= r.NumPage(); pageNum++ {
-		//fmt.Printf("Page: %d\n", pageNum)
 
 		page := r.Page(pageNum)
 
@@ -91,6 +89,7 @@ func ParsePdf() {
 		}
 	}
 	csv(transactions)
+	return transactions
 }
 
 func parse(array []pdf.Text) string {
@@ -161,4 +160,5 @@ func csv(t []Transaction) {
 		str += "\n"
 	}
 	file.WriteString(str)
+	file.Close()
 }

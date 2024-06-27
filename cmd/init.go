@@ -14,6 +14,7 @@ var (
 	modal = tview.NewModal()
 	form = tview.NewForm()
 	table = tview.NewTable().SetFixed(1, 1)
+	file_table = tview.NewTable().SetBorders(false)
 )
 
 func check(err error) {

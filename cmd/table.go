@@ -80,7 +80,7 @@ func FillTable(request string) {
 	table.Select(1, 1).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
 		FillForm(column_count, row, false)
 
-		pages.AddPage("Modal", Modal(form, 20, 50), true, true)
+		pages.AddPage("Form", Modal(form, 20, 50), true, true)
 	})
 
 	table.SetBorders(false).
@@ -96,7 +96,7 @@ func AddToTable() {
 		check(errors.New("Account and category must be created"))
 	}
 	FillForm(column_count, newRow, true)
-	pages.AddPage("Modal", Modal(form, 20, 50), true, true)
+	pages.AddPage("Form", Modal(form, 20, 50), true, true)
 
 	app.SetFocus(form)
 }

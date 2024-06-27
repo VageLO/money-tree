@@ -116,7 +116,7 @@ func AddAccount(a *account_type) {
 	created_id, _ := result.LastInsertId()
 	balance := fmt.Sprintf("%v %v", a.balance, a.currency)
 	accounts.AddItem(a.title, balance, 0, func() { SelectedAccount(created_id) })
-	pages.RemovePage("Modal")
+	pages.RemovePage("Form")
 	defer db.Close()
 }
 
