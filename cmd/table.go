@@ -27,9 +27,7 @@ func InsertCell(c *cell_type) {
 		SetTextColor(c.color).
 		SetAlign(align).
 		SetSelectable(c.selectable)
-	if c.column >= 1 && c.column <= 3 {
-		tableCell.SetExpansion(1)
-	}
+	tableCell.SetExpansion(1)
 	if c.reference != nil {
 		tableCell.SetReference(c.reference)
 	}

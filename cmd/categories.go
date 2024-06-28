@@ -79,7 +79,8 @@ func TreeView() *tview.TreeView {
 			original := n.GetReference().(*node)
 			if original.expand {
 				n.SetExpanded(!n.IsExpanded())
-			} else if original.selected != nil {
+			}
+			if original.selected != nil {
 				original.selected()
 			}
 		})
@@ -105,6 +106,7 @@ func RenameNode(text string, n *tview.TreeNode) {
 	
 	n.SetText(text)
 	defer db.Close()
+	FillTable(transaction_query)
 }
 
 func RemoveNode() {
@@ -128,6 +130,7 @@ func RemoveNode() {
 	selected_node.ClearChildren()
 	node.parent.RemoveChild(selected_node)
 	defer db.Close()
+	FillTable(transaction_query)
 }
 
 func AddCategory(new_node *tview.TreeNode, parent_node *tview.TreeNode) {
@@ -196,12 +199,21 @@ func SelectCategories(request string) ([]string, []category_type, []*node) {
 			expand: true,
 			reference: &c,
 			children: []*node{},
+			selected: func() {
+				id := c.id
+				SelectedCategory(id)
+			},
 		})
 	}
 
 	defer root_categories.Close()
 	defer db.Close()
 	return category_titles, category_types, category_nodes
+}
+
+func SelectedCategory(id int64) {
+	request := fmt.Sprintf(`SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE category_id = %v`, id)
+	FillTable(request)
 }
 
 func isEmpty(n *tview.TreeNode) error {

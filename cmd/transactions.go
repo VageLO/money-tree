@@ -12,6 +12,9 @@ import (
 	"github.com/rivo/tview"
 )
 
+var transaction_query = `SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id
+INNER JOIN Accounts ON Accounts.id = Transactions.account_id`
+
 type Transaction struct {
 	id               int64
 	account_id int64
@@ -26,8 +29,7 @@ type Transaction struct {
 
 func Transactions() tview.Primitive {
 
-	FillTable(`SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id
-INNER JOIN Accounts ON Accounts.id = Transactions.account_id`)
+	FillTable(transaction_query)
 	
 	// List with accounts
 	accounts := AccountsList()

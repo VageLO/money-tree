@@ -3,6 +3,7 @@ AFTER UPDATE ON Transactions
 FOR EACH ROW
 
 BEGIN
+	-- TODO: Fix where transaction amount grater then balance
 	UPDATE Accounts
 	SET balance = CASE
 		WHEN new.account_id = old.account_id

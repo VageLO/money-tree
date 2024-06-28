@@ -76,6 +76,7 @@ func RenameAccount(value, field string, list *tview.List) {
 	
 	defer db.Close()
 	list.SetItemText(selected_item, title, balance + " " + currency)
+	FillTable(transaction_query)
 }
 
 func RemoveAccount() {
@@ -99,6 +100,7 @@ func RemoveAccount() {
 	
 	accounts.RemoveItem(selected_account)
 	defer db.Close()
+	FillTable(transaction_query)
 }
 
 func AddAccount(a *account_type) {
