@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"errors"
 	"time"
+	"fmt"
 	
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -183,7 +184,7 @@ func DeleteTransaction() {
 
 func (t Transaction) isEmpty() error {
 	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 {
-		return errors.New("Empty field or can't be zero")
+		return errors.New(fmt.Sprintf("%+v", t))
 	}
 	_, err := time.Parse("2006-01-02", t.date)
 	if err != nil {
