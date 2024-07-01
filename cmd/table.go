@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	columns = []string{"date", "transaction_type", "account", "category", "amount", "description"}
+	columns = []string{"description", "date", "account", "category", "amount", "transaction_type"}
 	column_count = len(columns)
 )
 

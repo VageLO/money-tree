@@ -28,7 +28,7 @@ func added(text string, label string, t *Transaction) {
 	}
 }
 	
-func FillForm( columns int, row int, IsEmptyForm bool) {
+func FillForm(columns int, row int, IsEmptyForm bool) {
 	form.Clear(true)
 	FormStyle("Transaction Information")
 
@@ -57,14 +57,11 @@ func emptyForm(index int, t *Transaction) {
 	column_name := table.GetCell(0, index).Text
 	
 	if column_name == "transaction_type" {
-		types := []string{ "debit", "credit" }
-		
-		form.AddDropDown(column_name, types, 0, func(option string, optionIndex int) { 
-			if types[optionIndex] != option {
-				return
-			}
-			t.transaction_type = types[optionIndex]
-		})
+		if exist := IsTransfer(nil, t); !exist {
+			TranTypes("debit", t)
+			return
+		}
+		ToAccount(nil, t)
 		return
 	}
 	if column_name == "category" {
@@ -86,23 +83,13 @@ func emptyForm(index int, t *Transaction) {
 func filledForm(index, row int, t *Transaction) {
 	column_name := table.GetCell(0, index).Text
 	cell := table.GetCell(row, index)
-	
-	if column_name == "transaction_type" {
-		types := []string{ "debit", "credit" }
-		initial := 0
 
-		for idx, title := range types {
-			if title == cell.Text {
-				initial = idx
-			}
+	if column_name == "transaction_type" {
+		if exist := IsTransfer(cell, t); !exist {
+			TranTypes(cell.Text, t)
+			return
 		}
-		
-		form.AddDropDown(column_name, types, initial, func(option string, optionIndex int) { 
-			if types[optionIndex] != option {
-				return
-			}
-			t.transaction_type = types[optionIndex]
-		})
+		ToAccount(cell, t)
 		return
 	}
 	if column_name == "category" {
@@ -285,4 +272,12 @@ func C_Selected(option string, optionIndex int, c_types []category_type, t *Tran
 	}
 	t.category_id = selected_c.id
 	t.category = selected_c.title
+}
+
+func T_Selected(option string, optionIndex int, a_types []account_type, t *Transaction) {
+	selected_a := a_types[optionIndex]
+	if selected_a.title != option {
+		return
+	}
+	t.to_account_id.Scan(selected_a.id)
 }

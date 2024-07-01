@@ -6,29 +6,36 @@ import (
 	"errors"
 	"time"
 	"fmt"
+	"os"
 	
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 )
 
-var transaction_query = `SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id
-INNER JOIN Accounts ON Accounts.id = Transactions.account_id`
+var transaction_query string
 
 type Transaction struct {
 	id               int64
-	account_id int64
-	category_id int64
+	account_id 		 int64
+	to_account_id 	 sql.NullInt64
+	category_id 	 int64
 	transaction_type string
 	date             string
 	amount           float64
+	to_amount		 sql.NullFloat64
 	account          string
+	to_account 		 sql.NullString
 	category         string
 	description		 string
 }
 
 func Transactions() tview.Primitive {
-
+	
+	query, err := os.ReadFile("./sql/Select_On_Transactions.sql")
+	transaction_query = string(query)
+    check(err)
+	
 	FillTable(transaction_query)
 	
 	// List with accounts
@@ -80,6 +87,7 @@ func SelectTransactions(request string) {
 	check(err)
 
 	rows, err := db.Query(request)
+	
 	check(err)
 	
 	for i, column_title := range columns {
@@ -94,12 +102,12 @@ func SelectTransactions(request string) {
 	
 	for i := 1; rows.Next(); i++ {
 		var t Transaction
-		err := rows.Scan(&t.id, &t.account_id, &t.category_id, &t.transaction_type, &t.date, &t.amount, &t.description, &t.account, &t.category)
+		err := rows.Scan(&t.id, &t.account_id, &t.to_account_id, &t.category_id, &t.transaction_type, &t.date, &t.amount, &t.to_amount, &t.description, &t.account, &t.to_account, &t.category)
 		
 		check(err)
 		
-		row := []string{t.date, t.transaction_type, t.account, t.category,
-			strconv.FormatFloat(t.amount, 'f', 2, 32), t.description}
+		row := []string{t.description, t.date, t.account, t.category,
+			strconv.FormatFloat(t.amount, 'f', 2, 32), t.transaction_type}
 		InsertRows(columns, i, row, t)
 	}
 
@@ -193,4 +201,87 @@ func (t Transaction) isEmpty() error {
 		return errors.New("Allowed date format (YYYY-MM-DD)")
 	}
 	return nil
+}
+
+func IsTransfer(cell *tview.TableCell, t *Transaction) bool {
+	transfer := false
+	tran_type := "debit"
+	
+	if cell != nil {
+		reference := cell.GetReference().(Transaction)
+		transfer = reference.to_account_id.Valid
+		tran_type = reference.transaction_type
+	}
+	
+	form.AddCheckbox("transfer", transfer, func(checked bool) {
+		if !checked {
+			TranTypes(tran_type, t)
+			
+			to_account_index := form.GetFormItemIndex("to_account")
+			form.RemoveFormItem(to_account_index)
+			
+			to_amount_index := form.GetFormItemIndex("to_amount")
+			form.RemoveFormItem(to_amount_index)
+			return
+		}
+		
+		if cell != nil {
+			ToAccount(cell, t)
+		} else {
+			ToAccount(nil, t)
+		}
+
+		type_index := form.GetFormItemIndex("transaction_type")
+		if type_index != -1 {
+			form.RemoveFormItem(type_index)
+		}
+	})
+	return transfer
+}
+
+func TranTypes(label string, t *Transaction) {
+	types := []string{ "debit", "credit" }
+	initial := 0
+
+	for idx, title := range types {
+		if title == label {
+			initial = idx
+		}
+	}
+	
+	form.AddDropDown("transaction_type", types, initial, func(option string, optionIndex int) { 
+		if types[optionIndex] != option {
+			return
+		}
+		t.transaction_type = types[optionIndex]
+	})
+}
+
+func ToAccount(cell *tview.TableCell, t *Transaction) {
+	var label string
+	var reference Transaction
+	var amount string
+	initial := 0
+	
+	if cell != nil {
+		reference = cell.GetReference().(Transaction)
+		label = reference.to_account.String
+		amount = strconv.FormatFloat(reference.to_amount.Float64, 'f', 2, 32)
+	}
+	
+	accounts, a_types := SelectAccounts()
+	
+	for idx, title := range accounts {
+		if title == label {
+			initial = idx
+		}
+	}
+	T_Selected(accounts[initial], initial, a_types, t)
+	
+	form.AddDropDown("to_account", accounts, initial, func(option string, optionIndex int) { T_Selected(option, optionIndex, a_types, t) })
+	
+	form.AddInputField("to_amount", amount, 0, nil, func(text string) { 
+		amount, _ := strconv.ParseFloat(text, 64)
+		t.to_amount.Scan(amount)
+	})
 }

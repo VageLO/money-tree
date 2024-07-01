@@ -7,6 +7,7 @@ import (
 	"strings"
 	"errors"
 	"strconv"
+	"os"
 	
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
@@ -150,7 +151,13 @@ func SelectAccounts() ([]string, []account_type) {
 }
 
 func SelectedAccount(id int64) {
-	request := fmt.Sprintf(`SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE account_id = %v`, id)
+	query, err := os.ReadFile("./sql/Select_On_Transactions_Where_AccountID.sql")
+    check(err)
+	
+	str_id := strconv.FormatInt(id, 10)
+
+	request := string(query)
+	request = strings.ReplaceAll(request, "?", str_id)
 	FillTable(request)
 }
 

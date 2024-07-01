@@ -5,6 +5,9 @@ import (
 	"log"
 	"fmt"
 	"errors"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -212,7 +215,13 @@ func SelectCategories(request string) ([]string, []category_type, []*node) {
 }
 
 func SelectedCategory(id int64) {
-	request := fmt.Sprintf(`SELECT Transactions.*, Accounts.title, Categories.title FROM Transactions INNER JOIN Categories ON Categories.id = Transactions.category_id INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE category_id = %v`, id)
+	query, err := os.ReadFile("./sql/Select_On_Transactions_Where_CategoryID.sql")
+    check(err)
+	
+	str_id := strconv.FormatInt(id, 10)
+
+	request := string(query)
+	request = strings.ReplaceAll(request, "?", str_id)
 	FillTable(request)
 }
 
