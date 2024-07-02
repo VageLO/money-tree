@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"main/parser"
+	"main/forms"
 	"os"
 	"reflect"
 	"strconv"
@@ -116,20 +117,20 @@ func insertIntoDb(path string, t *Transaction) {
 
 func selectForm(path string, t *Transaction) {
 	form.Clear(true)
-	FormStyle("Select account and category")
+	forms.FormStyle("Select account and category")
 
-	categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`)
+	categories, c_types, _, _ := SelectCategories(`SELECT * FROM Categories`)
 	accounts, a_types := SelectAccounts()
 
-	C_Selected(categories[0], 0, c_types, t)
-	A_Selected(accounts[0], 0, a_types, t)
+	SelectedCategory(categories[0], 0, c_types, t)
+	SelectedAccount(accounts[0], 0, a_types, t)
 
-	form.AddDropDown("Category", categories, 0, func(option string, optionIndex int) { C_Selected(option, optionIndex, c_types, t) })
+	form.AddDropDown("Category", categories, 0, func(option string, optionIndex int) { SelectedCategory(option, optionIndex, c_types, t) })
 
-	form.AddDropDown("Account", accounts, 0, func(option string, optionIndex int) { A_Selected(option, optionIndex, a_types, t) })
+	form.AddDropDown("Account", accounts, 0, func(option string, optionIndex int) { SelectedAccount(option, optionIndex, a_types, t) })
 
 	form.AddButton("Import", func() { insertIntoDb(path, t) })
-	pages.AddPage("Form", Modal(form, 20, 50), true, true)
+	pages.AddPage("Form", Modal(form, 30, 50), true, true)
 }
 
 func contains(s []string, str string) bool {

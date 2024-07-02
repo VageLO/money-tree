@@ -13,7 +13,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 		if tree.HasFocus() {
-			FormAddNode()
+			FormAddCategory()
 			return nil
 		}
 		if accounts.HasFocus() {

@@ -1,4 +1,4 @@
-package cmd
+package modal
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ func Modal(p tview.Primitive, hight, width int) tview.Primitive {
 		AddItem(nil, 0, 1, false)
 }
 
-func ErrorModal() {
+func ErrorModal(pages *tview.Pages, modal *tview.Modal) {
 	if r := recover(); r != nil {
 		//if pages.HasPage("Modal") {
 		//	pages.RemovePage("Modal")

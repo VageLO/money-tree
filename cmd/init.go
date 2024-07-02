@@ -5,8 +5,6 @@ import (
 	"github.com/rivo/tview"
 )
 
-
-
 var (
 	_ = InitDB()
 	app   = tview.NewApplication()
@@ -27,12 +25,10 @@ func Init() {
 	
 	pages.AddPage("Transactions", Transactions(), true, true)
 
-	// Shortcuts
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		return Shortcuts(event)
 	})
 
-	// Start the application.
 	err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run() 
 	check(err)
 }
