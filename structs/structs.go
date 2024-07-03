@@ -4,23 +4,23 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/rivo/tview"
 	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 )
 
 type Transaction struct {
-	id               int64
-	account_id       int64
-	to_account_id    sql.NullInt64
-	category_id      int64
-	transaction_type string
-	date             string
-	amount           float64
-	to_amount        sql.NullFloat64
-	account          string
-	to_account       sql.NullString
-	category         string
-	description      string
+	Id               int64
+	AccountId        int64
+	ToAccountId      sql.NullInt64
+	CategoryId       int64
+	Transaction_type string
+	Date             string
+	Amount           float64
+	ToAmount         sql.NullFloat64
+	ToAccount        sql.NullString
+	Account          string
+	Category         string
+	Description      string
 }
 
 type Account struct {
@@ -31,9 +31,9 @@ type Account struct {
 }
 
 type Category struct {
-	Id        int64
-	Parent_id sql.NullInt64
-	Title     string
+	Id       int64
+	ParentId sql.NullInt64
+	Title    string
 }
 
 type Cell struct {
@@ -52,6 +52,18 @@ type TreeNode struct {
 	Children  []*TreeNode
 	Parent    *tview.TreeNode
 	Reference *Category
+}
+
+type Source struct {
+	App          *tview.Application
+	AccountList  *tview.List
+	CategoryTree *tview.TreeView
+	Form         *tview.Form
+	Table        *tview.Table
+	FileTable    *tview.Table
+	Modal        *tview.Modal
+	Pages        *tview.Pages
+	Columns      []string
 }
 
 func (a *Account) isEmpty() error {

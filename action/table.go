@@ -2,18 +2,16 @@ package action
 
 import (
 	"errors"
+	m "main/modal"
 	s "main/structs"
-	
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-var (
-	columns = []string{"description", "date", "account", "category", "amount", "transaction_type"}
-	column_count = len(columns)
-)
+var ()
 
-func InsertCell(c *s.Cell) {
+func InsertCell(c *s.Cell, table *tview.Table) {
 	align := tview.AlignLeft
 	tableCell := tview.NewTableCell(c.Text).
 		SetTextColor(c.Color).
@@ -26,7 +24,7 @@ func InsertCell(c *s.Cell) {
 	table.SetCell(c.Row, c.Column, tableCell)
 }
 
-func UpdateCell (c *s.Cell) {
+func UpdateCell(c *s.Cell, table *tview.Table) {
 	tableCell := table.GetCell(c.Row, c.Column)
 	tableCell.SetText(c.Text)
 	if c.Reference != nil {
@@ -38,12 +36,12 @@ func InsertRows(column_row []string, row int, data_row []string, transaction s.T
 
 	for i, data := range data_row {
 		InsertCell(&s.Cell{
-			Row: row,
-			Column: i,
-			Text: data,
+			Row:        row,
+			Column:     i,
+			Text:       data,
 			Selectable: true,
-			Color: tcell.ColorWhite,
-			Reference: transaction,
+			Color:      tcell.ColorWhite,
+			Reference:  transaction,
 		})
 	}
 }
@@ -52,17 +50,15 @@ func UpdateRows(column_row []string, row int, data_row []string, transaction s.T
 
 	for i, data := range data_row {
 		UpdateCell(&s.Cell{
-			Row: row,
-			Column: i,
-			Text: data,
+			Row:       row,
+			Column:    i,
+			Text:      data,
 			Reference: transaction,
 		})
 	}
 }
 
-func AddToTable() {
-	defer ErrorModal()
-
+func AddToTable(table *tview.Table) {
 	newRow := table.GetRowCount()
 	if tree.GetRowCount() <= 0 || accounts.GetItemCount() <= 0 {
 		check(errors.New("Account and category must be created"))

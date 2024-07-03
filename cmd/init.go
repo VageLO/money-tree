@@ -3,16 +3,22 @@ package cmd
 import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	s "main/structs"
 )
 
 var (
-	_ = InitDB()
-	app   = tview.NewApplication()
-	pages = tview.NewPages()
-	modal = tview.NewModal()
-	form = tview.NewForm()
-	table = tview.NewTable().SetFixed(1, 1)
-	file_table = tview.NewTable().SetBorders(false)
+	_      = InitDB()
+	source = &s.Source{
+		App:          tview.NewApplication(),
+		AccountList:  tview.NewList(),
+		CategoryTree: tview.NewTreeView(),
+		Form:         tview.NewForm(),
+		Table:        tview.NewTable().SetFixed(1, 1),
+		FileTable:    tview.NewTable().SetBorders(false),
+		Modal:        tview.NewModal(),
+		Pages:        tview.NewPages(),
+		Columns:      []string{"description", "date", "account", "category", "amount", "transaction_type"},
+	}
 )
 
 func check(err error) {
@@ -22,13 +28,13 @@ func check(err error) {
 }
 
 func Init() {
-	
-	pages.AddPage("Transactions", Transactions(), true, true)
 
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	source.Pages.AddPage("Transactions", Transactions(), true, true)
+
+	source.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		return Shortcuts(event)
 	})
 
-	err := app.SetRoot(pages, true).EnableMouse(true).EnablePaste(true).Run() 
+	err := source.App.SetRoot(source.Pages, true).EnableMouse(true).EnablePaste(true).Run()
 	check(err)
 }
