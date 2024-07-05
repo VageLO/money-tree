@@ -19,7 +19,7 @@ func Transactions() tview.Primitive {
 	check(err)
 
 	action.LoadTransactions(transaction_query, source)
-	AccountsList()
+	action.LoadAccounts(source)
 	CategoryTree()
 
 	flex := tview.NewFlex()

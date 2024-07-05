@@ -1,31 +1,38 @@
-package forms
+package action
 
 import (
 	s "main/structs"
+	m "main/modal"
 	
 	"github.com/rivo/tview"
 )
 
-func FillNodeForm(node *tview.TreeNode) {
+func FillNodeForm(node *tview.TreeNode, source *s.Source) {
+	form := source.Form
 	form.Clear(true)
 
-	FormStyle("Category Information")
+	formStyle("Category Information", form)
 	title := node.GetText()
 	form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameNode(text, node) })
 }
 
-func FormAddCategory() {
+func FormAddCategory(source *s.Source) {
+	form := source.Form
+	pages := source.Pages
+	tree := source.CategoryTree
+	
 	form.Clear(true)
-	formStyle("Add Category")
+	formStyle("Add Category", form)
+	
 	root := tree.GetRoot()
 
-	n := &TreeNode{
-		text:   "",
-		expand: true,
-		reference: &s.Category{},
-		children: []*TreeNode{},
+	n := &s.TreeNode{
+		Text:   "",
+		Expand: true,
+		Reference: &s.Category{},
+		Children: []*s.TreeNode{},
 	}
-	new_node := add(n, root)
+	new_node := AddNode(n, root)
 
 	form.AddInputField("Title: ", "", 0, nil, func(text string) { 
 		new_node.SetText(text)
@@ -53,8 +60,8 @@ func FormAddCategory() {
 	form.AddDropDown("Categories", options, initial, func(option string, optionIndex int) {
 		if root.GetText() == option {
 			selected_dropdown = root
-			reference := new_node.GetReference().(*TreeNode)
-			reference.parent = root
+			reference := new_node.GetReference().(*s.TreeNode)
+			reference.Parent = root
 			new_node.SetReference(reference)
 			return
 		}
@@ -62,8 +69,8 @@ func FormAddCategory() {
 		for _, children := range root.GetChildren() {
 			if children.GetText() == option {
 				selected_dropdown = children
-				reference := new_node.GetReference().(*TreeNode)
-				reference.parent = children
+				reference := new_node.GetReference().(*s.TreeNode)
+				reference.Parent = children
 				new_node.SetReference(reference)
 				return
 			}
@@ -74,23 +81,27 @@ func FormAddCategory() {
 		AddCategory(new_node, selected_dropdown)
 		pages.RemovePage("Form")
 	})
-	pages.AddPage("Form", Modal(form, 30, 50), true, true)
+	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
-func FormRenameCategory() {
+func FormRenameCategory(source *s.Source) {
+	form := source.Form
+	pages := source.Pages
+	tree := source.CategoryTree
+	
 	node := tree.GetCurrentNode()
 	if node == nil {
 		return
 	}
-	FillNodeForm(node)
-	pages.AddPage("Form", Modal(form, 30, 50), true, true)
+	FillNodeForm(node, source)
+	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
 func SelectedCategory(option string, optionIndex int, c_types []s.Category, t *s.Transaction) {
 	selected_c := c_types[optionIndex]
-	if selected_c.title != option {
+	if selected_c.Title != option {
 		return
 	}
-	t.category_id = selected_c.id
-	t.category = selected_c.title
+	t.CategoryId = selected_c.Id
+	t.Category = selected_c.Title
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	s "main/structs"
+	m "main/modal"
 	"os"
 	"strconv"
 	"strings"
@@ -12,6 +13,24 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 )
+
+func LoadAccounts(source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+	source.AccountList.Clear()
+
+	_, account_types := SelectAccounts(source)
+
+	source.AccountList.
+		SetBorderPadding(1, 1, 2, 2).
+		SetBorder(true).
+		SetTitle("Account List")
+
+	for _, a := range account_types {
+		account_id := a.Id
+		second_title := fmt.Sprintf("%v %v", strconv.FormatFloat(a.Balance, 'f', 2, 32), a.Currency)
+		source.AccountList.AddItem(a.Title, second_title, 0, func() { WhereAccount(account_id, source) })
+	}
+}
 
 func RenameAccount(value, field string, list *tview.List) error {
 	if value == "" {
@@ -78,12 +97,13 @@ func RemoveAccount(accounts *tview.List) error {
 	return nil
 }
 
-func AddAccount(a *s.Account, accounts *tview.List) error {
+func AddAccount(a *s.Account, source *s.Source) error {
 	err := a.isEmpty()
 	if err != nil {
 		return err
 	}
-
+	accounts := source.AccountList
+	
 	db, err := sql.Open("sqlite3", "./database.db")
 	if err != nil {
 		return err
@@ -100,31 +120,28 @@ func AddAccount(a *s.Account, accounts *tview.List) error {
 	created_id, _ := result.LastInsertId()
 	balance := fmt.Sprintf("%v %v", a.Balance, a.Currency)
 
-	accounts.AddItem(a.Title, balance, 0, func() { WhereAccount(created_id) })
+	accounts.AddItem(a.Title, balance, 0, func() { WhereAccount(created_id, source) })
 
 	defer db.Close()
 	return nil
 }
 
-func SelectAccounts() ([]string, []s.Account, error) {
+func SelectAccounts(source *s.Source) ([]string, []s.Account) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+	
 	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		return nil, nil, err
-	}
+	check(err)
 
 	root_accounts, err := db.Query(`SELECT * FROM Accounts`)
-	if err != nil {
-		return nil, nil, err
-	}
+	check(err)
 
 	var account_titles []string
 	var account_types []s.Account
 
 	for root_accounts.Next() {
 		var a s.Account
-		if err := root_accounts.Scan(&a.Id, &a.Title, &a.Currency, &a.Balance); err != nil {
-			return nil, nil, err
-		}
+		err := root_accounts.Scan(&a.Id, &a.Title, &a.Currency, &a.Balance)
+		check(err)
 
 		account_titles = append(account_titles, a.Title)
 		account_types = append(account_types, a)
@@ -132,10 +149,10 @@ func SelectAccounts() ([]string, []s.Account, error) {
 
 	defer db.Close()
 	defer root_accounts.Close()
-	return account_titles, account_types, nil
+	return account_titles, account_types
 }
 
-func WhereAccount(id int64) error {
+func WhereAccount(id int64, source *s.Source) error {
 	query, err := os.ReadFile("./sql/Select_On_Transactions_Where_AccountID.sql")
 	if err != nil {
 		return err
@@ -145,7 +162,7 @@ func WhereAccount(id int64) error {
 
 	request := string(query)
 	request = strings.ReplaceAll(request, "?", str_id)
-	FillTable(request)
+	LoadTransactions(request, source)
 
 	return nil
 }

@@ -6,12 +6,7 @@ import (
 	m "main/modal"
 	s "main/structs"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-)
-
-var (
-	add func(target *s.TreeNode, parent *tview.TreeNode) *tview.TreeNode
 )
 
 func MakeTree() *s.TreeNode {
@@ -39,26 +34,7 @@ func CategoryTree() {
 	source.CategoryTree.SetBorder(true).
 		SetTitle("Category Tree")
 
-	// Add nodes
-	add = func(target *s.TreeNode, parent *tview.TreeNode) *tview.TreeNode {
-		node := tview.NewTreeNode(target.Text).
-			SetSelectable(target.Expand || target.Selected != nil).
-			SetExpanded(target == rootNode).
-			SetReference(target)
-		if target.Expand {
-			node.SetColor(tcell.ColorPurple)
-		} else if target.Selected != nil {
-			node.SetColor(tcell.ColorGreen)
-		}
-		if parent != nil {
-			target.Parent = parent
-		}
-		for _, child := range target.Children {
-			node.AddChild(add(child, node))
-		}
-		return node
-	}
-	root := add(rootNode, nil)
+	root := action.AddNode(rootNode, nil)
 	source.CategoryTree.SetRoot(root).
 		SetCurrentNode(root).
 		SetSelectedFunc(func(n *tview.TreeNode) {
@@ -73,4 +49,3 @@ func CategoryTree() {
 
 	source.CategoryTree.GetRoot().ExpandAll()
 }
-

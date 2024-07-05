@@ -13,7 +13,7 @@ type Transaction struct {
 	AccountId        int64
 	ToAccountId      sql.NullInt64
 	CategoryId       int64
-	Transaction_type string
+	TransactionType string
 	Date             string
 	Amount           float64
 	ToAmount         sql.NullFloat64
@@ -43,6 +43,13 @@ type Cell struct {
 	Selectable bool
 	Color      tcell.Color
 	Reference  interface{}
+}
+
+type Row struct {
+	Columns []string
+	Index int
+	Data []string
+	Transaction Transaction
 }
 
 type TreeNode struct {

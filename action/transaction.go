@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	s "main/structs"
+	m "main/modal"
 	"strconv"
 	"time"
 
@@ -13,143 +14,175 @@ import (
 	"github.com/rivo/tview"
 )
 
-func SelectTransactions(request string) error {
-	if db, err := sql.Open("sqlite3", "./database.db"); err != nil {
-		return err
+func check(err error) {
+	if err != nil {
+		panic(err.Error())
 	}
+}
 
-	if rows, err := db.Query(request); err != nil {
-		return err
-	}
+func LoadTransactions(request string, source *s.Source) {
+	source.Table.Clear()
 
-	for i, column_title := range columns {
-		InsertCell(&s.Cell{
-			row:        0,
-			column:     i,
-			text:       column_title,
-			selectable: false,
-			color:      tcell.ColorYellow,
-		})
+	source.Table.SetTitle("Transactions")
+
+	SelectTransactions(request, source)
+
+	source.Table.Select(1, 1).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
+		Fill(len(source.Columns), row, false, source)
+
+		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)
+	})
+
+	source.Table.SetBorders(false).
+		SetSelectable(true, false).
+		SetSeparator('|')
+}
+
+func SelectTransactions(request string, source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+
+	rows, err := db.Query(request)
+	check(err)
+
+	for i, columnTitle := range source.Columns {
+		InsertCell(s.Cell{
+			Row:        0,
+			Column:     i,
+			Text:       columnTitle,
+			Selectable: false,
+			Color:      tcell.ColorYellow,
+		}, source.Table)
 	}
 
 	for i := 1; rows.Next(); i++ {
 		var t s.Transaction
 
-		err := rows.Scan(&t.id, &t.account_id, &t.to_account_id, &t.category_id, &t.transaction_type, &t.date, &t.amount, &t.to_amount, &t.description, &t.account, &t.to_account, &t.category)
+		err := rows.Scan(&t.Id, &t.AccountId, &t.ToAccountId, &t.CategoryId, &t.TransactionType, &t.Date, &t.Amount, &t.ToAmount, &t.Description, &t.Account, &t.ToAccount, &t.Category)
+		check(err)
 
-		if err != nil {
-			return err
-		}
-
-		row := []string{t.description, t.date, t.account, t.category,
-			strconv.FormatFloat(t.amount, 'f', 2, 32), t.transaction_type}
-		InsertRows(columns, i, row, t)
+		row := []string{t.Description, t.Date, t.Account, t.Category,
+			strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
+		InsertRows(s.Row {
+			Columns: source.Columns, 
+			Index: i,
+			Data: row, 
+			Transaction: t,
+		}, source.Table)
 	}
 
 	defer rows.Close()
 	defer db.Close()
-
-	return nil
 }
 
-func UpdateTransaction(t s.Transaction, row int) error {
-	if err := t.isEmpty(); err != nil {
-		return err
-	}
+func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
+	pages := source.Pages
+	modal := source.Modal
+	table := source.Table
+	
+	defer m.ErrorModal(pages, modal)
+	
+	check(t.isEmpty())
 
-	if db, err := sql.Open("sqlite3", "./database.db"); err != nil {
-		return err
-	}
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
 
 	cell := table.GetCell(row, 0)
-	transaction := cell.GetReference().(Transaction)
+	transaction := cell.GetReference().(s.Transaction)
 
 	query := `Update Transactions SET account_id = ?, category_id = ?, 
 	transaction_type = ?, date = ?, amount = ?, description = ? WHERE id = ?`
 
-	_, err = db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, strconv.FormatFloat(t.amount, 'f', 2, 32), t.description, transaction.id)
+	_, err = db.Exec(query, t.AccountId, t.CategoryId, t.TransactionType, t.Date, strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description, transaction.Id)
 
-	if err != nil {
-		return err
-	}
+	check(err)
 
-	t.id = transaction.id
+	t.Id = transaction.Id
 
-	data := []string{t.date, t.transaction_type, t.account, t.category,
-		strconv.FormatFloat(t.amount, 'f', 2, 32), t.description}
+	data := []string{t.Date, t.TransactionType, t.Account, t.Category,
+		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description}
 
-	UpdateRows(columns, row, data, t)
-	AccountsList()
+	UpdateRows(s.Row {
+		Columns: source.Columns, 
+		Index: row,
+		Data: data, 
+		Transaction: t,
+	}, source.Table)
+	
+	LoadAccounts(source)
 
 	pages.RemovePage("Form")
 	defer db.Close()
-
-	return nil
 }
 
-func AddTransaction(t s.Transaction, newRow int) {
-	if err := t.isEmpty(); err != nil {
-		return err
-	}
+func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
+	pages := source.Pages
+	modal := source.Modal
+	
+	defer m.ErrorModal(pages, modal)
+	
+	check(t.isEmpty())
 
-	if db, err := sql.Open("sqlite3", "./database.db"); err != nil {
-		return err
-	}
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
 
 	var result sql.Result
-	if t.to_account_id.Valid && t.to_amount.Valid {
+	if t.ToAccountId.Valid && t.ToAmount.Valid {
 		query := `INSERT INTO Transactions (account_id, category_id, transaction_type, date, amount, description, to_amount, to_account_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-		result, err = db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, strconv.FormatFloat(t.amount, 'f', 2, 32), t.description, strconv.FormatFloat(t.to_amount.Float64, 'f', 2, 32), t.to_account_id.Int64)
+		result, err = db.Exec(query, t.AccountId, t.CategoryId, t.TransactionType, t.Date, strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description, strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32), t.ToAccountId.Int64)
 	} else {
 		query := `INSERT INTO Transactions (account_id, category_id, transaction_type, date, amount, description) VALUES (?, ?, ?, ?, ?, ?)`
-		result, err = db.Exec(query, t.account_id, t.category_id, t.transaction_type, t.date, strconv.FormatFloat(t.amount, 'f', 2, 32), t.description)
+		result, err = db.Exec(query, t.AccountId, t.CategoryId, t.TransactionType, t.Date, strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description)
 	}
 
-	if err != nil {
-		return err
-	}
+	check(err)
 
-	if created_id, err := result.LastInsertId(); err != nil {
-		return err
-	}
+	created_id, err := result.LastInsertId()
+	check(err)
 
-	t.id = created_id
+	t.Id = created_id
 
-	row := []string{t.description, t.date, t.account, t.category,
-		strconv.FormatFloat(t.amount, 'f', 2, 32), t.transaction_type}
+	row := []string{t.Description, t.Date, t.Account, t.Category,
+		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
-	InsertRows(columns, newRow, row, t)
-	AccountsList()
+	InsertRows(s.Row {
+		Columns: source.Columns, 
+		Index: newRow,
+		Data: row, 
+		Transaction: t,
+	}, source.Table)
+	
+	LoadAccounts(source)
 	pages.RemovePage("Form")
 
 	defer db.Close()
-	return nil
 }
 
-func DeleteTransaction() error {
+func DeleteTransaction(source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+	table := source.Table
+	
 	row, _ := table.GetSelection()
 
 	if table.GetRowCount() <= 1 {
-		return errors.New("Table Empty")
+		check(errors.New("Table Empty"))
 	}
 
 	cell := table.GetCell(row, 0)
 	transaction := cell.GetReference().(s.Transaction)
 
-	if db, err := sql.Open("sqlite3", "./database.db"); err != nil {
-		return err
-	}
-
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+	
 	query := `DELETE FROM Transactions WHERE id = ?`
 
-	if _, err = db.Exec(query, transaction.id); err != nil {
-		return err
-	}
+	_, err = db.Exec(query, transaction.id)
+	check(err)
 
 	defer db.Close()
-	AccountsList()
+	LoadAccounts(source)
 	table.RemoveRow(row)
-	return nil
 }
 
 func (t s.Transaction) isEmpty() error {
@@ -244,22 +277,3 @@ func ToAccount(form *tview.Form, cell *tview.TableCell, t *s.Transaction) {
 		added(text, "to_amount", t)
 	})
 }
-
-func LoadTransactions(request string, source *s.Source) {
-	source.Table.Clear()
-
-	source.Table.SetTitle("Transactions")
-
-	SelectTransactions(request)
-
-	source.Table.Select(1, 1).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
-		forms.Fill(len(source.Columns), row, false)
-
-		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)
-	})
-
-	source.Table.SetBorders(false).
-		SetSelectable(true, false).
-		SetSeparator('|')
-}
-

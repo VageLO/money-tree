@@ -9,9 +9,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-var ()
-
-func InsertCell(c *s.Cell, table *tview.Table) {
+func InsertCell(c s.Cell, table *tview.Table) {
 	align := tview.AlignLeft
 	tableCell := tview.NewTableCell(c.Text).
 		SetTextColor(c.Color).
@@ -32,39 +30,45 @@ func UpdateCell(c *s.Cell, table *tview.Table) {
 	}
 }
 
-func InsertRows(column_row []string, row int, data_row []string, transaction s.Transaction) {
+func InsertRows(row s.Row, table *tview.Table) {
 
-	for i, data := range data_row {
-		InsertCell(&s.Cell{
-			Row:        row,
+	for i, data := range row.Data {
+		InsertCell(s.Cell{
+			Row:        row.Index,
 			Column:     i,
 			Text:       data,
 			Selectable: true,
 			Color:      tcell.ColorWhite,
-			Reference:  transaction,
-		})
+			Reference:  row.Transaction,
+		}, table)
 	}
 }
 
-func UpdateRows(column_row []string, row int, data_row []string, transaction s.Transaction) {
+func UpdateRows(row s.Row, table *tview.Table) {
 
-	for i, data := range data_row {
+	for i, data := range row.Data {
 		UpdateCell(&s.Cell{
-			Row:       row,
+			Row:       row.Index,
 			Column:    i,
 			Text:      data,
-			Reference: transaction,
-		})
+			Reference: row.Transaction,
+		}, table)
 	}
 }
 
-func AddToTable(table *tview.Table) {
-	newRow := table.GetRowCount()
-	if tree.GetRowCount() <= 0 || accounts.GetItemCount() <= 0 {
+func AddToTable(source *s.Source) {
+	form := source.Form
+	pages := source.Pages
+	tree := source.CategoryTree
+	
+	defer m.ErrorModal(pages, source.Modal)
+
+	newRow := source.Table.GetRowCount()
+	if tree.GetRowCount() <= 0 || source.AccountList.GetItemCount() <= 0 {
 		check(errors.New("Account and category must be created"))
 	}
-	FillForm(column_count, newRow, true)
-	pages.AddPage("Form", Modal(form, 30, 50), true, true)
+	Fill(len(source.Columns), newRow, true, source)
+	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 
-	app.SetFocus(form)
+	source.App.SetFocus(form)
 }

@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"main/parser"
-	"main/forms"
+	"main/action"
 	"os"
 	"reflect"
 	"strconv"
@@ -117,7 +117,7 @@ func insertIntoDb(path string, t *Transaction) {
 
 func selectForm(path string, t *Transaction) {
 	form.Clear(true)
-	forms.FormStyle("Select account and category")
+	action.FormStyle("Select account and category")
 
 	categories, c_types, _, _ := SelectCategories(`SELECT * FROM Categories`)
 	accounts, a_types := SelectAccounts()
