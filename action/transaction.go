@@ -25,6 +25,9 @@ func LoadTransactions(request string, source *s.Source) {
 	SelectTransactions(request, source)
 
 	source.Table.Select(1, 1).SetFixed(0, 1).SetSelectedFunc(func(row int, column int) {
+		if row <= 0 {
+			return
+		}
 		Fill(len(source.Columns), row, false, source)
 
 		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)

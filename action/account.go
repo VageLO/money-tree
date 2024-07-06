@@ -99,8 +99,8 @@ func RemoveAccount(accounts *tview.List) error {
 
 func AddAccount(a *s.Account, source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
-	// TODO: Transaction Struct
-	// check(a.isEmpty())
+	check(a.IsEmpty())
+
 	accounts := source.AccountList
 
 	db, err := sql.Open("sqlite3", "./database.db")

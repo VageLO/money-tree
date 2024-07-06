@@ -42,7 +42,7 @@ func Fill(columns int, row int, IsEmptyForm bool, source *s.Source) {
 	var transaction s.Transaction
 
 	form.SetCancelFunc(func() {
-		source.Pages.RemovePage("Modal")
+		source.Pages.RemovePage("Form")
 	})
 
 	for i := 0; i < columns; i++ {
