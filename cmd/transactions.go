@@ -57,4 +57,3 @@ func Transactions() tview.Primitive {
 
 	return flex
 }
-

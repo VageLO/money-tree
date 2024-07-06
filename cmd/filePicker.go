@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"errors"
-	"main/parser"
 	"main/action"
+	m "main/modal"
+	"main/parser"
+	s "main/structs"
 	"os"
 	"reflect"
 	"strconv"
@@ -13,7 +15,12 @@ import (
 )
 
 func FilePicker(path string) {
-	defer ErrorModal()
+	pages := source.Pages
+	file_table := source.FileTable
+	tree := source.CategoryTree
+	accounts := source.AccountList
+
+	defer m.ErrorModal(source.Pages, source.Modal)
 
 	file_table.Clear()
 	file_table.SetTitle("Pdf files")
@@ -53,29 +60,30 @@ func FilePicker(path string) {
 			path string
 		})
 
-		var transaction Transaction
+		var transaction s.Transaction
 		selectForm(ref.path, &transaction)
 
 		pages.RemovePage("Files")
 	})
 	x, _, _, _ := file_table.GetRect()
-	pages.AddPage("Files", Modal(file_table, 30, x), true, true)
+	pages.AddPage("Files", m.Modal(file_table, 30, x), true, true)
 }
 
-func insertIntoDb(path string, t *Transaction) {
+func insertIntoDb(path string, t *s.Transaction) {
 	transactions := parser.ParsePdf(path)
+	table := source.Table
 
 	for _, import_transaction := range transactions {
 		newRow := table.GetRowCount()
-		var transaction Transaction
+		var transaction s.Transaction
 
 		debit := []string{"Безналичная операция", "Отправление средств", "Банкомат"}
 		credit := []string{"Поступление", "Получение средств", "Поступление (Credit)", "Внесение наличных"}
 
-		transaction.account_id = t.account_id
-		transaction.category_id = t.category_id
-		transaction.account = t.account
-		transaction.category = t.category
+		transaction.AccountId = t.AccountId
+		transaction.CategoryId = t.CategoryId
+		transaction.Account = t.Account
+		transaction.Category = t.Category
 
 		r := reflect.ValueOf(&import_transaction).Elem()
 		rt := r.Type()
@@ -91,19 +99,19 @@ func insertIntoDb(path string, t *Transaction) {
 				err_status = true
 			}
 			if field.Name == "date" {
-				transaction.date = value.String()
+				transaction.Date = value.String()
 			}
 			if field.Name == "price" {
 				amount, _ := strconv.ParseFloat(value.String(), 64)
-				transaction.amount = amount
+				transaction.Amount = amount
 			}
 			if field.Name == "description" {
-				transaction.description = value.String()
+				transaction.Description = value.String()
 			}
 			if field.Name == "typeof" && contains(debit, value.String()) {
-				transaction.transaction_type = "debit"
+				transaction.TransactionType = "debit"
 			} else if field.Name == "typeof" && contains(credit, value.String()) {
-				transaction.transaction_type = "credit"
+				transaction.TransactionType = "credit"
 			}
 		}
 
@@ -111,26 +119,33 @@ func insertIntoDb(path string, t *Transaction) {
 			continue
 		}
 
-		AddTransaction(transaction, newRow)
+		action.AddTransaction(transaction, newRow, source)
 	}
 }
 
-func selectForm(path string, t *Transaction) {
+func selectForm(path string, t *s.Transaction) {
+	form := source.Form
+	pages := source.Pages
+
 	form.Clear(true)
-	action.FormStyle("Select account and category")
+	action.FormStyle("Select account and category", form)
 
-	categories, c_types, _, _ := SelectCategories(`SELECT * FROM Categories`)
-	accounts, a_types := SelectAccounts()
+	categories, c_types, _ := action.SelectCategories(`SELECT * FROM Categories`, source)
+	accounts, a_types := action.SelectAccounts(source)
 
-	SelectedCategory(categories[0], 0, c_types, t)
-	SelectedAccount(accounts[0], 0, a_types, t)
+	action.SelectedCategory(categories[0], 0, c_types, t)
+	action.SelectedAccount(accounts[0], 0, a_types, t)
 
-	form.AddDropDown("Category", categories, 0, func(option string, optionIndex int) { SelectedCategory(option, optionIndex, c_types, t) })
+	form.AddDropDown("Category", categories, 0, func(option string, optionIndex int) {
+		action.SelectedCategory(option, optionIndex, c_types, t)
+	})
 
-	form.AddDropDown("Account", accounts, 0, func(option string, optionIndex int) { SelectedAccount(option, optionIndex, a_types, t) })
+	form.AddDropDown("Account", accounts, 0, func(option string, optionIndex int) {
+		action.SelectedAccount(option, optionIndex, a_types, t)
+	})
 
 	form.AddButton("Import", func() { insertIntoDb(path, t) })
-	pages.AddPage("Form", Modal(form, 30, 50), true, true)
+	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
 func contains(s []string, str string) bool {

@@ -3,24 +3,26 @@ package structs
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 type Transaction struct {
-	Id               int64
-	AccountId        int64
-	ToAccountId      sql.NullInt64
-	CategoryId       int64
+	Id              int64
+	AccountId       int64
+	ToAccountId     sql.NullInt64
+	CategoryId      int64
 	TransactionType string
-	Date             string
-	Amount           float64
-	ToAmount         sql.NullFloat64
-	ToAccount        sql.NullString
-	Account          string
-	Category         string
-	Description      string
+	Date            string
+	Amount          float64
+	ToAmount        sql.NullFloat64
+	ToAccount       sql.NullString
+	Account         string
+	Category        string
+	Description     string
 }
 
 type Account struct {
@@ -46,9 +48,9 @@ type Cell struct {
 }
 
 type Row struct {
-	Columns []string
-	Index int
-	Data []string
+	Columns     []string
+	Index       int
+	Data        []string
 	Transaction Transaction
 }
 
@@ -73,9 +75,20 @@ type Source struct {
 	Columns      []string
 }
 
-func (a *Account) isEmpty() error {
+func (a Account) isEmpty() error {
 	if a.Title == "" || a.Currency == "" {
 		return errors.New("Empty field or can't be zero")
+	}
+	return nil
+}
+
+func (t Transaction) isEmpty() error {
+	if t.AccountId == 0 || t.CategoryId == 0 || t.TransactionType == "" || t.Date == "" || t.Amount == 0 {
+		return errors.New(fmt.Sprintf("%+v", t))
+	}
+	_, err := time.Parse("2006-01-02", t.Date)
+	if err != nil {
+		return errors.New("Allowed date format (YYYY-MM-DD)")
 	}
 	return nil
 }

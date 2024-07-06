@@ -1,15 +1,14 @@
 package action
 
 import (
-	s "main/structs"
 	m "main/modal"
+	s "main/structs"
 	"strconv"
-	"strings"
 
 	"github.com/rivo/tview"
 )
 
-func formStyle(formTitle string, form *tview.Form) {
+func FormStyle(formTitle string, form *tview.Form) {
 	form.SetBorder(true).SetTitle(formTitle)
 }
 
@@ -38,7 +37,7 @@ func added(text string, label string, t *s.Transaction, source *s.Source) {
 func Fill(columns int, row int, IsEmptyForm bool, source *s.Source) {
 	form := source.Form
 	form.Clear(true)
-	formStyle("Transaction Information", form)
+	FormStyle("Transaction Information", form)
 
 	var transaction s.Transaction
 
@@ -66,11 +65,11 @@ func Empty(index int, t *s.Transaction, source *s.Source) {
 	column_name := table.GetCell(0, index).Text
 
 	if column_name == "transaction_type" {
-		if exist := IsTransfer(form, nil, t); !exist {
+		if exist := IsTransfer(source, nil, t); !exist {
 			TranTypes(form, "debit", t)
 			return
 		}
-		ToAccount(form, nil, t)
+		ToAccount(source, nil, t)
 		return
 	}
 	if column_name == "category" {
@@ -97,11 +96,11 @@ func Filled(index, row int, t *s.Transaction, source *s.Source) {
 	cell := table.GetCell(row, index)
 
 	if column_name == "transaction_type" {
-		if exist := IsTransfer(form, cell, t); !exist {
+		if exist := IsTransfer(source, cell, t); !exist {
 			TranTypes(form, cell.Text, t)
 			return
 		}
-		ToAccount(form, cell, t)
+		ToAccount(source, cell, t)
 		return
 	}
 	if column_name == "category" {
@@ -145,4 +144,3 @@ func SelectedTransfer(option string, optionIndex int, a_types []s.Account, t *s.
 	}
 	t.ToAccountId.Scan(selected_a.Id)
 }
-

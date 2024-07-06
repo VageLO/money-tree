@@ -2,44 +2,48 @@ package cmd
 
 import (
 	"github.com/gdamore/tcell/v2"
+	"main/action"
 )
 
 func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
+	table := source.Table
+	tree := source.CategoryTree
+	accounts := source.AccountList
 
 	switch key := event.Key(); key {
 	case tcell.KeyCtrlA, tcell.KeyInsert:
 		if table.HasFocus() {
-			AddToTable()
+			action.AddToTable(source)
 			return nil
 		}
 		if tree.HasFocus() {
-			FormAddCategory()
+			action.FormAddCategory(source)
 			return nil
 		}
 		if accounts.HasFocus() {
-			FormAddAccount()
+			action.FormAddAccount(source)
 			return nil
 		}
 	case tcell.KeyCtrlD, tcell.KeyDelete, tcell.KeyBackspace:
 		if table.HasFocus() {
-			DeleteTransaction()
+			action.DeleteTransaction(source)
 			return nil
 		}
 		if tree.HasFocus() {
-			RemoveNode()
+			action.RemoveCategory(tree)
 			return nil
 		}
 		if accounts.HasFocus() {
-			RemoveAccount()
+			action.RemoveAccount(accounts)
 			return nil
 		}
 	case tcell.KeyCtrlR:
 		if tree.HasFocus() {
-			FormRenameNode()
+			action.FormRenameCategory(source)
 			return nil
 		}
 		if accounts.HasFocus() {
-			FormRenameAccount()
+			action.FormRenameAccount(source)
 			return nil
 		}
 	case tcell.KeyF2:

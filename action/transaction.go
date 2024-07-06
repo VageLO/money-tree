@@ -3,11 +3,9 @@ package action
 import (
 	"database/sql"
 	"errors"
-	"fmt"
-	s "main/structs"
 	m "main/modal"
+	s "main/structs"
 	"strconv"
-	"time"
 
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -22,12 +20,11 @@ func check(err error) {
 
 func LoadTransactions(request string, source *s.Source) {
 	source.Table.Clear()
-
 	source.Table.SetTitle("Transactions")
 
 	SelectTransactions(request, source)
 
-	source.Table.Select(1, 1).SetFixed(1, 1).SetSelectedFunc(func(row int, column int) {
+	source.Table.Select(1, 1).SetFixed(0, 1).SetSelectedFunc(func(row int, column int) {
 		Fill(len(source.Columns), row, false, source)
 
 		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)
@@ -64,10 +61,10 @@ func SelectTransactions(request string, source *s.Source) {
 
 		row := []string{t.Description, t.Date, t.Account, t.Category,
 			strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
-		InsertRows(s.Row {
-			Columns: source.Columns, 
-			Index: i,
-			Data: row, 
+		InsertRows(s.Row{
+			Columns:     source.Columns,
+			Index:       i,
+			Data:        row,
 			Transaction: t,
 		}, source.Table)
 	}
@@ -80,10 +77,11 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 	pages := source.Pages
 	modal := source.Modal
 	table := source.Table
-	
+
 	defer m.ErrorModal(pages, modal)
-	
-	check(t.isEmpty())
+
+	// TODO: Transaction struct
+	//check(t.isEmpty())
 
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -103,13 +101,13 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 	data := []string{t.Date, t.TransactionType, t.Account, t.Category,
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description}
 
-	UpdateRows(s.Row {
-		Columns: source.Columns, 
-		Index: row,
-		Data: data, 
+	UpdateRows(s.Row{
+		Columns:     source.Columns,
+		Index:       row,
+		Data:        data,
 		Transaction: t,
 	}, source.Table)
-	
+
 	LoadAccounts(source)
 
 	pages.RemovePage("Form")
@@ -119,10 +117,11 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 	pages := source.Pages
 	modal := source.Modal
-	
+
 	defer m.ErrorModal(pages, modal)
-	
-	check(t.isEmpty())
+
+	// TODO: Transaction struct
+	//check(t.isEmpty())
 
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -146,13 +145,13 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 	row := []string{t.Description, t.Date, t.Account, t.Category,
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
-	InsertRows(s.Row {
-		Columns: source.Columns, 
-		Index: newRow,
-		Data: row, 
+	InsertRows(s.Row{
+		Columns:     source.Columns,
+		Index:       newRow,
+		Data:        row,
 		Transaction: t,
 	}, source.Table)
-	
+
 	LoadAccounts(source)
 	pages.RemovePage("Form")
 
@@ -162,7 +161,7 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 func DeleteTransaction(source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 	table := source.Table
-	
+
 	row, _ := table.GetSelection()
 
 	if table.GetRowCount() <= 1 {
@@ -174,10 +173,10 @@ func DeleteTransaction(source *s.Source) {
 
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
-	
+
 	query := `DELETE FROM Transactions WHERE id = ?`
 
-	_, err = db.Exec(query, transaction.id)
+	_, err = db.Exec(query, transaction.Id)
 	check(err)
 
 	defer db.Close()
@@ -185,48 +184,38 @@ func DeleteTransaction(source *s.Source) {
 	table.RemoveRow(row)
 }
 
-func (t s.Transaction) isEmpty() error {
-	if t.account_id == 0 || t.category_id == 0 || t.transaction_type == "" || t.date == "" || t.amount == 0 {
-		return errors.New(fmt.Sprintf("%+v", t))
-	}
-	_, err := time.Parse("2006-01-02", t.date)
-	if err != nil {
-		return errors.New("Allowed date format (YYYY-MM-DD)")
-	}
-	return nil
-}
-
-func IsTransfer(form *tview.Form, cell *tview.TableCell, t *s.Transaction) bool {
+func IsTransfer(source *s.Source, cell *tview.TableCell, t *s.Transaction) bool {
 	transfer := false
-	tran_type := "debit"
+	tranType := "debit"
+	form := source.Form
 
 	if cell != nil {
 		reference := cell.GetReference().(s.Transaction)
-		transfer = reference.to_account_id.Valid
-		tran_type = reference.transaction_type
+		transfer = reference.ToAccountId.Valid
+		tranType = reference.TransactionType
 	}
 
 	form.AddCheckbox("transfer", transfer, func(checked bool) {
 		if !checked {
-			TranTypes(tran_type, t)
+			TranTypes(form, tranType, t)
 
-			to_account_index := form.GetFormItemIndex("to_account")
-			form.RemoveFormItem(to_account_index)
+			ToAccountIndex := form.GetFormItemIndex("to_account")
+			form.RemoveFormItem(ToAccountIndex)
 
-			to_amount_index := form.GetFormItemIndex("to_amount")
-			form.RemoveFormItem(to_amount_index)
+			ToAmountIndex := form.GetFormItemIndex("to_amount")
+			form.RemoveFormItem(ToAmountIndex)
 			return
 		}
 
 		if cell != nil {
-			ToAccount(cell, t)
+			ToAccount(source, cell, t)
 		} else {
-			ToAccount(nil, t)
+			ToAccount(source, nil, t)
 		}
 
-		type_index := form.GetFormItemIndex("transaction_type")
-		if type_index != -1 {
-			form.RemoveFormItem(type_index)
+		typeIndex := form.GetFormItemIndex("transaction_type")
+		if typeIndex != -1 {
+			form.RemoveFormItem(typeIndex)
 		}
 	})
 	return transfer
@@ -246,34 +235,36 @@ func TranTypes(form *tview.Form, label string, t *s.Transaction) {
 		if types[optionIndex] != option {
 			return
 		}
-		t.transaction_type = types[optionIndex]
+		t.TransactionType = types[optionIndex]
 	})
 }
 
-func ToAccount(form *tview.Form, cell *tview.TableCell, t *s.Transaction) {
+func ToAccount(source *s.Source, cell *tview.TableCell, t *s.Transaction) {
 	var label string
-	var reference Transaction
+	var reference s.Transaction
 	var amount string
 	initial := 0
+	form := source.Form
 
 	if cell != nil {
-		reference = cell.GetReference().(Transaction)
-		label = reference.to_account.String
-		amount = strconv.FormatFloat(reference.to_amount.Float64, 'f', 2, 32)
+		reference = cell.GetReference().(s.Transaction)
+		label = reference.ToAccount.String
+		amount = strconv.FormatFloat(reference.ToAmount.Float64, 'f', 2, 32)
 	}
 
-	accounts, a_types := SelectAccounts()
+	accounts, a_types := SelectAccounts(source)
 
 	for idx, title := range accounts {
 		if title == label {
 			initial = idx
 		}
 	}
-	T_Selected(accounts[initial], initial, a_types, t)
+	SelectedTransfer(accounts[initial], initial, a_types, t)
 
-	form.AddDropDown("to_account", accounts, initial, func(option string, optionIndex int) { T_Selected(option, optionIndex, a_types, t) })
+	form.AddDropDown("to_account", accounts, initial, func(option string, optionIndex int) { SelectedTransfer(option, optionIndex, a_types, t) })
 
 	form.AddInputField("to_amount", amount, 0, nil, func(text string) {
-		added(text, "to_amount", t)
+		added(text, "to_amount", t, source)
 	})
 }
+

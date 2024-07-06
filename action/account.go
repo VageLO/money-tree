@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	s "main/structs"
 	m "main/modal"
+	s "main/structs"
 	"os"
 	"strconv"
 	"strings"
@@ -97,25 +97,20 @@ func RemoveAccount(accounts *tview.List) error {
 	return nil
 }
 
-func AddAccount(a *s.Account, source *s.Source) error {
-	err := a.isEmpty()
-	if err != nil {
-		return err
-	}
+func AddAccount(a *s.Account, source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+	// TODO: Transaction Struct
+	// check(a.isEmpty())
 	accounts := source.AccountList
-	
+
 	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		return err
-	}
+	check(err)
 
 	query := `
 	INSERT INTO Accounts (title, currency, balance) VALUES (?, ?, ?)`
 
 	result, err := db.Exec(query, a.Title, a.Currency, a.Balance)
-	if err != nil {
-		return err
-	}
+	check(err)
 
 	created_id, _ := result.LastInsertId()
 	balance := fmt.Sprintf("%v %v", a.Balance, a.Currency)
@@ -123,12 +118,11 @@ func AddAccount(a *s.Account, source *s.Source) error {
 	accounts.AddItem(a.Title, balance, 0, func() { WhereAccount(created_id, source) })
 
 	defer db.Close()
-	return nil
 }
 
 func SelectAccounts(source *s.Source) ([]string, []s.Account) {
 	defer m.ErrorModal(source.Pages, source.Modal)
-	
+
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -152,17 +146,14 @@ func SelectAccounts(source *s.Source) ([]string, []s.Account) {
 	return account_titles, account_types
 }
 
-func WhereAccount(id int64, source *s.Source) error {
+func WhereAccount(id int64, source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
 	query, err := os.ReadFile("./sql/Select_On_Transactions_Where_AccountID.sql")
-	if err != nil {
-		return err
-	}
+	check(err)
 
 	str_id := strconv.FormatInt(id, 10)
 
 	request := string(query)
 	request = strings.ReplaceAll(request, "?", str_id)
 	LoadTransactions(request, source)
-
-	return nil
 }
