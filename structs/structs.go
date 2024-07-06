@@ -75,14 +75,14 @@ type Source struct {
 	Columns      []string
 }
 
-func (a Account) isEmpty() error {
+func (a Account) IsEmpty() error {
 	if a.Title == "" || a.Currency == "" {
 		return errors.New("Empty field or can't be zero")
 	}
 	return nil
 }
 
-func (t Transaction) isEmpty() error {
+func (t Transaction) IsEmpty() error {
 	if t.AccountId == 0 || t.CategoryId == 0 || t.TransactionType == "" || t.Date == "" || t.Amount == 0 {
 		return errors.New(fmt.Sprintf("%+v", t))
 	}

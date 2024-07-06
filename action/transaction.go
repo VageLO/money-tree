@@ -80,8 +80,7 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 
 	defer m.ErrorModal(pages, modal)
 
-	// TODO: Transaction struct
-	//check(t.isEmpty())
+	check(t.IsEmpty())
 
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -120,8 +119,7 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 
 	defer m.ErrorModal(pages, modal)
 
-	// TODO: Transaction struct
-	//check(t.isEmpty())
+	check(t.IsEmpty())
 
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
@@ -267,4 +265,3 @@ func ToAccount(source *s.Source, cell *tview.TableCell, t *s.Transaction) {
 		added(text, "to_amount", t, source)
 	})
 }
-
