@@ -100,7 +100,8 @@ func RemoveAccount(accounts *tview.List) error {
 func AddAccount(a *s.Account, source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 	check(a.IsEmpty())
-
+	
+	pages := source.Pages
 	accounts := source.AccountList
 
 	db, err := sql.Open("sqlite3", "./database.db")
@@ -112,11 +113,12 @@ func AddAccount(a *s.Account, source *s.Source) {
 	result, err := db.Exec(query, a.Title, a.Currency, a.Balance)
 	check(err)
 
-	created_id, _ := result.LastInsertId()
-	balance := fmt.Sprintf("%v %v", a.Balance, a.Currency)
+	createdId, _ := result.LastInsertId()
+	balance := fmt.Sprintf("%v %v", strconv.FormatFloat(a.Balance, 'f', 2, 32), a.Currency)
 
-	accounts.AddItem(a.Title, balance, 0, func() { WhereAccount(created_id, source) })
-
+	accounts.AddItem(a.Title, balance, 0, func() { WhereAccount(createdId, source) })
+	
+	pages.RemovePage("Form")
 	defer db.Close()
 }
 

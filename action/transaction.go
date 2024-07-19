@@ -92,16 +92,16 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 	transaction := cell.GetReference().(s.Transaction)
 
 	query := `Update Transactions SET account_id = ?, category_id = ?, 
-	transaction_type = ?, date = ?, amount = ?, description = ? WHERE id = ?`
+	transaction_type = ?, date = ?, amount = ?, description = ?, to_account_id = ?, to_amount = ? WHERE id = ?`
 
-	_, err = db.Exec(query, t.AccountId, t.CategoryId, t.TransactionType, t.Date, strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description, transaction.Id)
+	_, err = db.Exec(query, t.AccountId, t.CategoryId, t.TransactionType, t.Date, strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description, t.ToAccountId.Int64, strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32), transaction.Id)
 
 	check(err)
 
 	t.Id = transaction.Id
 
-	data := []string{t.Date, t.TransactionType, t.Account, t.Category,
-		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.Description}
+	data := []string{t.Description, t.Date, t.Account, t.Category,
+		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
 	UpdateRows(s.Row{
 		Columns:     source.Columns,
@@ -138,10 +138,10 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 
 	check(err)
 
-	created_id, err := result.LastInsertId()
+	createdId, err := result.LastInsertId()
 	check(err)
 
-	t.Id = created_id
+	t.Id = createdId
 
 	row := []string{t.Description, t.Date, t.Account, t.Category,
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
@@ -195,6 +195,8 @@ func IsTransfer(source *s.Source, cell *tview.TableCell, t *s.Transaction) bool 
 		transfer = reference.ToAccountId.Valid
 		tranType = reference.TransactionType
 	}
+
+	t.TransactionType = tranType
 
 	form.AddCheckbox("transfer", transfer, func(checked bool) {
 		if !checked {

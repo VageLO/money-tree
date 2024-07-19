@@ -65,4 +65,13 @@ BEGIN
 			END
 		ELSE RAISE(IGNORE)
 	END WHERE id = old.account_id;
+	
+	UPDATE Accounts
+	SET balance = CASE
+		WHEN new.to_account_id IS NOT NULL AND new.to_amount IS NOT NULL
+		THEN (SELECT balance FROM Accounts WHERE id = new.to_account_id) + new.to_amount
+		ELSE RAISE(IGNORE)
+	END WHERE id = new.to_account_id;
+	
+
 END;
