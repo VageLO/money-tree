@@ -189,6 +189,7 @@ func IsTransfer(source *s.Source, cell *tview.TableCell, t *s.Transaction) bool 
 	transfer := false
 	tranType := "debit"
 	form := source.Form
+	columns := source.Columns
 
 	if cell != nil {
 		reference := cell.GetReference().(s.Transaction)
@@ -200,10 +201,10 @@ func IsTransfer(source *s.Source, cell *tview.TableCell, t *s.Transaction) bool 
 		if !checked {
 			TranTypes(form, tranType, t)
 
-			ToAccountIndex := form.GetFormItemIndex("to_account")
+			ToAccountIndex := form.GetFormItemIndex("To Account")
 			form.RemoveFormItem(ToAccountIndex)
 
-			ToAmountIndex := form.GetFormItemIndex("to_amount")
+			ToAmountIndex := form.GetFormItemIndex("To Amount")
 			form.RemoveFormItem(ToAmountIndex)
 			return
 		}
@@ -214,7 +215,7 @@ func IsTransfer(source *s.Source, cell *tview.TableCell, t *s.Transaction) bool 
 			ToAccount(source, nil, t)
 		}
 
-		typeIndex := form.GetFormItemIndex("transaction_type")
+		typeIndex := form.GetFormItemIndex(columns[5])
 		if typeIndex != -1 {
 			form.RemoveFormItem(typeIndex)
 		}
@@ -232,7 +233,7 @@ func TranTypes(form *tview.Form, label string, t *s.Transaction) {
 		}
 	}
 
-	form.AddDropDown("transaction_type", types, initial, func(option string, optionIndex int) {
+	form.AddDropDown("Transaction Type", types, initial, func(option string, optionIndex int) {
 		if types[optionIndex] != option {
 			return
 		}
@@ -262,9 +263,9 @@ func ToAccount(source *s.Source, cell *tview.TableCell, t *s.Transaction) {
 	}
 	SelectedTransfer(accounts[initial], initial, a_types, t)
 
-	form.AddDropDown("to_account", accounts, initial, func(option string, optionIndex int) { SelectedTransfer(option, optionIndex, a_types, t) })
+	form.AddDropDown("To Account", accounts, initial, func(option string, optionIndex int) { SelectedTransfer(option, optionIndex, a_types, t) })
 
-	form.AddInputField("to_amount", amount, 0, nil, func(text string) {
-		added(text, "to_amount", t, source)
+	form.AddInputField("To Amount", amount, 0, nil, func(text string) {
+		added(text, "To Amount", t, source)
 	})
 }

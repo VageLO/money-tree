@@ -17,7 +17,7 @@ var (
 		FileTable:    tview.NewTable().SetBorders(false),
 		Modal:        tview.NewModal(),
 		Pages:        tview.NewPages(),
-		Columns:      []string{"description", "date", "account", "category", "amount", "transaction_type"},
+		Columns:      []string{"Description", "Date", "Account", "Category", "Amount", "Transaction Type"},
 	}
 )
 

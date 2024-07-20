@@ -76,4 +76,3 @@ func SelectedAccount(option string, optionIndex int, a_types []s.Account, t *s.T
 	t.AccountId = selected_a.Id
 	t.Account = selected_a.Title
 }
-
