@@ -63,6 +63,8 @@ func Empty(index int, t *s.Transaction, source *s.Source) {
 	table := source.Table
 	columns := source.Columns
 	form := source.Form
+	accountsList := source.AccountList
+	tree := source.CategoryTree
 	column_name := table.GetCell(0, index).Text
 
 	if column_name == columns[5] {
@@ -75,14 +77,25 @@ func Empty(index int, t *s.Transaction, source *s.Source) {
 	}
 	if column_name == columns[3] {
 		categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`, source)
-
-		form.AddDropDown(table.GetCell(0, index).Text, categories, 0, func(option string, optionIndex int) { SelectedCategory(option, optionIndex, c_types, t) })
+		
+		initial := 0
+		
+		selectedNode := tree.GetCurrentNode()
+		if selectedNode != nil {
+			for idx, title := range categories {
+				if title == selectedNode.GetText() {
+					initial = idx
+				}
+			}
+		}
+		
+		form.AddDropDown(table.GetCell(0, index).Text, categories, initial, func(option string, optionIndex int) { SelectedCategory(option, optionIndex, c_types, t) })
 		return
 	}
 	if column_name == columns[2] {
 		accounts, a_types := SelectAccounts(source)
-
-		form.AddDropDown(table.GetCell(0, index).Text, accounts, 0, func(option string, optionIndex int) { SelectedAccount(option, optionIndex, a_types, t) })
+		
+		form.AddDropDown(table.GetCell(0, index).Text, accounts, accountsList.GetCurrentItem(), func(option string, optionIndex int) { SelectedAccount(option, optionIndex, a_types, t) })
 		return
 	}
 
