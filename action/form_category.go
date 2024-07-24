@@ -7,15 +7,6 @@ import (
 	"github.com/rivo/tview"
 )
 
-func FillNodeForm(node *tview.TreeNode, source *s.Source) {
-	form := source.Form
-	form.Clear(true)
-
-	FormStyle("Category Information", form)
-	title := node.GetText()
-	form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameNode(text, node) })
-}
-
 func FormAddCategory(source *s.Source) {
 	form := source.Form
 	pages := source.Pages
@@ -78,7 +69,7 @@ func FormAddCategory(source *s.Source) {
 	})
 
 	form.AddButton("Add", func() {
-		AddCategory(newNode, selectedDropdown)
+		AddCategory(newNode, selectedDropdown, source)
 		pages.RemovePage("Form")
 	})
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
@@ -93,7 +84,21 @@ func FormRenameCategory(source *s.Source) {
 	if node == nil {
 		return
 	}
-	FillNodeForm(node, source)
+
+	form.Clear(true)
+	FormStyle("Category Details", form)
+
+	title := node.GetText()
+	form.AddInputField("Title: ", title, 0, nil, func(text string) {
+		if text == "" {
+			return
+		}
+		title = text
+	})
+
+	form.AddButton("Save", func() {
+		RenameNode(title, node, source)
+	})
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
@@ -105,4 +110,3 @@ func SelectedCategory(option string, optionIndex int, c_types []s.Category, t *s
 	t.CategoryId = selected_c.Id
 	t.Category = selected_c.Title
 }
-

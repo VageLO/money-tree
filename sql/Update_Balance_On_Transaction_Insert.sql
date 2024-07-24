@@ -5,7 +5,7 @@ FOR EACH ROW
 BEGIN
 	UPDATE Accounts
 	SET balance = CASE
-		WHEN new.transaction_type = 'debit'
+		WHEN new.transaction_type = 'debit' OR new.transaction_type = 'transfer'
 		THEN IIF(((SELECT balance FROM Accounts WHERE id = new.account_id) - new.amount) < 0,
 			RAISE(ABORT, "Not enough money"),
 			(SELECT balance FROM Accounts WHERE id = new.account_id) - new.amount)

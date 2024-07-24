@@ -14,7 +14,7 @@ var (
 		CategoryTree: tview.NewTreeView(),
 		Form:         tview.NewForm(),
 		Table:        tview.NewTable().SetFixed(1, 1),
-		FileTable:    tview.NewTable().SetBorders(false),
+		FileTable:    tview.NewTable(),
 		Modal:        tview.NewModal(),
 		Pages:        tview.NewPages(),
 		Columns:      []string{"Description", "Date", "Account", "Category", "Amount", "Transaction Type"},
@@ -23,11 +23,15 @@ var (
 
 func check(err error) {
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 }
 
 func Init() {
+
+	source.Form.SetCancelFunc(func() {
+		source.Pages.RemovePage("Form")
+	})
 
 	source.Pages.AddPage("Transactions", Transactions(), true, true)
 
@@ -37,4 +41,5 @@ func Init() {
 
 	err := source.App.SetRoot(source.Pages, true).EnableMouse(true).EnablePaste(true).Run()
 	check(err)
+
 }

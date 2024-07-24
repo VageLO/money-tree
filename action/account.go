@@ -2,7 +2,6 @@ package action
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	m "main/modal"
 	s "main/structs"
@@ -11,7 +10,6 @@ import (
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rivo/tview"
 )
 
 func LoadAccounts(source *s.Source) {
@@ -23,7 +21,11 @@ func LoadAccounts(source *s.Source) {
 	source.AccountList.
 		SetBorderPadding(1, 1, 2, 2).
 		SetBorder(true).
-		SetTitle("Account List")
+		SetTitle("Accounts")
+
+	query, err := os.ReadFile("./sql/Select_On_Transactions.sql")
+	check(err)
+	source.AccountList.AddItem("All Transactions", "----------------", 0, func() { LoadTransactions(string(query), source) })
 
 	for _, a := range account_types {
 		account_id := a.Id
@@ -32,75 +34,60 @@ func LoadAccounts(source *s.Source) {
 	}
 }
 
-func RenameAccount(value, field string, list *tview.List) error {
-	if value == "" {
-		return errors.New("Can't be empty")
-	}
-	selected_item := list.GetCurrentItem()
+func RenameAccount(a s.Account, source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
 
-	title, second := list.GetItemText(selected_item)
-	split := strings.Split(second, " ")
-	balance := split[0]
-	currency := split[1]
+	pages := source.Pages
+	list := source.AccountList
+
+	selectedItem := list.GetCurrentItem()
+	title, _ := list.GetItemText(selectedItem)
 
 	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		return err
-	}
+	check(err)
 
-	query := fmt.Sprintf(`UPDATE Accounts SET %v = ? WHERE title = ?`, field)
+	query := `UPDATE Accounts SET title = ?, currency = ?, balance = ? WHERE title = ?`
 
-	if _, err = db.Exec(query, value, title); err != nil {
-		return err
-	}
+	_, err = db.Exec(query, a.Title, a.Currency, a.Balance, title)
+	check(err)
 
-	// Shame
-	if field == "currency" {
-		currency = value
-	}
-	if field == "balance" {
-		balance = value
-	}
-	if field == "title" {
-		title = value
-	}
+	list.SetItemText(selectedItem, a.Title, strconv.FormatFloat(a.Balance, 'f', 2, 32)+" "+a.Currency)
+
+	pages.RemovePage("Form")
+	source.App.SetFocus(source.AccountList)
 
 	defer db.Close()
-	list.SetItemText(selected_item, title, balance+" "+currency)
-
-	return nil
 }
 
-func RemoveAccount(accounts *tview.List) error {
-	if accounts.GetItemCount() <= 0 {
-		return errors.New("GetItemCount on account list is <= 0")
-	}
+func RemoveAccount(source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
 
-	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		return err
-	}
+	accounts := source.AccountList
 
 	selected_account := accounts.GetCurrentItem()
 	title, _ := accounts.GetItemText(selected_account)
 
-	query := `
-	DELETE FROM Accounts WHERE title = ?`
-
-	if _, err = db.Exec(query, title); err != nil {
-		return err
+	if accounts.GetItemCount() <= 1 || title == "All Transactions" {
+		return
 	}
+
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+
+	query := `DELETE FROM Accounts WHERE title = ?`
+
+	_, err = db.Exec(query, title)
+	check(err)
 
 	accounts.RemoveItem(selected_account)
 
 	defer db.Close()
-	return nil
 }
 
 func AddAccount(a *s.Account, source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 	check(a.IsEmpty())
-	
+
 	pages := source.Pages
 	accounts := source.AccountList
 
@@ -117,8 +104,10 @@ func AddAccount(a *s.Account, source *s.Source) {
 	balance := fmt.Sprintf("%v %v", strconv.FormatFloat(a.Balance, 'f', 2, 32), a.Currency)
 
 	accounts.AddItem(a.Title, balance, 0, func() { WhereAccount(createdId, source) })
-	
+
 	pages.RemovePage("Form")
+	source.App.SetFocus(source.AccountList)
+
 	defer db.Close()
 }
 
@@ -144,6 +133,7 @@ func SelectAccounts(source *s.Source) ([]string, []s.Account) {
 	}
 
 	defer db.Close()
+	db.Close()
 	defer root_accounts.Close()
 	return account_titles, account_types
 }

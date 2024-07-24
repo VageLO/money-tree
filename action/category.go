@@ -3,74 +3,70 @@ package action
 import (
 	"database/sql"
 	"errors"
-	s "main/structs"
 	m "main/modal"
+	s "main/structs"
 	"os"
 	"strconv"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/gdamore/tcell/v2"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/rivo/tview"
 )
 
-func RenameNode(text string, n *tview.TreeNode) error {
-	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		return err
-	}
+func RenameNode(text string, node *tview.TreeNode, source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
 
-	nodeReference := n.GetReference().(*s.TreeNode)
+	db, err := sql.Open("sqlite3", "./database.db")
+	check(err)
+
+	nodeReference := node.GetReference().(*s.TreeNode)
 	id := nodeReference.Reference.Id
 
 	query := `UPDATE Categories SET title = ? WHERE id = ?`
 
-	if _, err = db.Exec(query, text, id); err != nil {
-		return err
-	}
+	_, err = db.Exec(query, text, id)
+	check(err)
 
-	n.SetText(text)
+	node.SetText(text)
 	defer db.Close()
 
-	return nil
+	source.Pages.RemovePage("Form")
 }
 
-func RemoveCategory(tree *tview.TreeView) error {
+func RemoveCategory(source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+	tree := source.CategoryTree
+
 	selectedNode := tree.GetCurrentNode()
 	if selectedNode == nil {
-		return nil
+		return
 	}
 
 	node := selectedNode.GetReference().(*s.TreeNode)
 	id := node.Reference.Id
 
 	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		return err
-	}
+	check(err)
 
 	query := `DELETE FROM Categories WHERE id = ? OR parent_id = ?`
 
-	if _, err = db.Exec(query, id, id); err != nil {
-		return err
-	}
+	_, err = db.Exec(query, id, id)
+	check(err)
 
 	selectedNode.ClearChildren()
 	node.Parent.RemoveChild(selectedNode)
 	defer db.Close()
-
-	return nil
 }
 
-func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode) error {
-	if err := isEmpty(newNode); err != nil {
-		return err
-	}
+func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode, source *s.Source) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+
+	err := isEmpty(newNode)
+	check(err)
 
 	db, err := sql.Open("sqlite3", "./database.db")
-	if err != nil {
-		return err
-	}
+	check(err)
 
 	title := newNode.GetText()
 
@@ -90,9 +86,7 @@ func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode) error {
 		result, err = db.Exec(query, title)
 	}
 
-	if err != nil {
-		return err
-	}
+	check(err)
 
 	createdId, _ := result.LastInsertId()
 
@@ -104,13 +98,11 @@ func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode) error {
 
 	parentNode.AddChild(newNode)
 	defer db.Close()
-
-	return nil
 }
 
 func SelectCategories(request string, source *s.Source) ([]string, []s.Category, []*s.TreeNode) {
 	defer m.ErrorModal(source.Pages, source.Modal)
-	
+
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
@@ -125,7 +117,7 @@ func SelectCategories(request string, source *s.Source) ([]string, []s.Category,
 		var c s.Category
 		err := rootCategories.Scan(&c.Id, &c.ParentId, &c.Title)
 		check(err)
-		
+
 		categoryTitles = append(categoryTitles, c.Title)
 		categoryTypes = append(categoryTypes, c)
 		categoryNodes = append(categoryNodes, &s.TreeNode{
@@ -145,19 +137,15 @@ func SelectCategories(request string, source *s.Source) ([]string, []s.Category,
 	return categoryTitles, categoryTypes, categoryNodes
 }
 
-func SelecteByCategoryId(id int64, source *s.Source) error {
+func SelecteByCategoryId(id int64, source *s.Source) {
 	query, err := os.ReadFile("./sql/Select_On_Transactions_Where_CategoryID.sql")
-	if err != nil {
-		return err
-	}
+	check(err)
 
 	strId := strconv.FormatInt(id, 10)
 
 	request := string(query)
 	request = strings.ReplaceAll(request, "?", strId)
 	LoadTransactions(request, source)
-
-	return nil
 }
 
 func isEmpty(n *tview.TreeNode) error {
@@ -185,4 +173,3 @@ func AddNode(target *s.TreeNode, parent *tview.TreeNode) *tview.TreeNode {
 	}
 	return node
 }
-

@@ -30,11 +30,11 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 		if tree.HasFocus() {
-			action.RemoveCategory(tree)
+			action.RemoveCategory(source)
 			return nil
 		}
 		if accounts.HasFocus() {
-			action.RemoveAccount(accounts)
+			action.RemoveAccount(source)
 			return nil
 		}
 	case tcell.KeyCtrlR:

@@ -27,7 +27,7 @@ func MakeTree() *s.TreeNode {
 func CategoryTree() {
 	rootNode := MakeTree()
 	source.CategoryTree.SetBorder(true).
-		SetTitle("Category Tree")
+		SetTitle("Categories")
 
 	root := action.AddNode(rootNode, nil)
 	source.CategoryTree.SetRoot(root).
@@ -44,4 +44,3 @@ func CategoryTree() {
 
 	source.CategoryTree.GetRoot().ExpandAll()
 }
-

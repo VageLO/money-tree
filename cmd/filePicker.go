@@ -24,6 +24,8 @@ func FilePicker(path string) {
 
 	file_table.Clear()
 	file_table.SetTitle("Pdf files")
+	file_table.SetBorder(true)
+	file_table.SetBorders(false)
 	file_table.SetSelectable(true, false)
 
 	folder, err := os.Open(path)

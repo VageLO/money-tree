@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+	//	"fmt"
 	m "main/modal"
 	s "main/structs"
 
@@ -60,14 +61,15 @@ func AddToTable(source *s.Source) {
 	form := source.Form
 	pages := source.Pages
 	tree := source.CategoryTree
-	
+
 	defer m.ErrorModal(pages, source.Modal)
 
+	//	check(errors.New(fmt.Sprintf("%v", source.AccountList.GetItemCount())))
 	newRow := source.Table.GetRowCount()
-	if tree.GetRowCount() <= 0 || source.AccountList.GetItemCount() <= 0 {
+	if tree.GetRowCount() <= 1 || source.AccountList.GetItemCount() <= 1 {
 		check(errors.New("Account and category must be created"))
 	}
-	Fill(len(source.Columns), newRow, true, source)
+	FillForm(len(source.Columns), newRow, true, source)
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 
 	source.App.SetFocus(form)

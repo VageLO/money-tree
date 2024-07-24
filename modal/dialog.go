@@ -1,7 +1,7 @@
 package modal
 
 import (
-	"fmt"
+	//"fmt"
 
 	"github.com/rivo/tview"
 )
@@ -17,13 +17,12 @@ func Modal(p tview.Primitive, hight, width int) tview.Primitive {
 }
 
 func ErrorModal(pages *tview.Pages, modal *tview.Modal) {
-	if r := recover(); r != nil {
-		//if pages.HasPage("Modal") {
-		//	pages.RemovePage("Modal")
-		//}
-		err := fmt.Sprintf("Error: %v", r)
-		modal.SetText(err)
-		pages.AddPage("Modal", Modal(modal, 20, 40), true, true)
-	}
+	//if r := recover(); r != nil {
+	//	//if pages.HasPage("Modal") {
+	//	//	pages.RemovePage("Modal")
+	//	//}
+	//	err := fmt.Sprintf("Error: %v", r)
+	//	modal.SetText(err)
+	//	pages.AddPage("Modal", Modal(modal, 20, 40), true, true)
+	//}
 }
-

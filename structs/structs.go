@@ -77,15 +77,19 @@ type Source struct {
 
 func (a Account) IsEmpty() error {
 	if a.Title == "" || a.Currency == "" {
-		return errors.New("Empty field or can't be zero")
+		return errors.New("Title or currency field can't be empty")
 	}
 	return nil
 }
 
 func (t Transaction) IsEmpty() error {
 	if t.AccountId == 0 || t.CategoryId == 0 || t.TransactionType == "" || t.Date == "" || t.Amount == 0 {
+		// TODO: Fix error message
 		return errors.New(fmt.Sprintf("%+v", t))
+	} else if t.AccountId == t.ToAccountId.Int64 {
+		return errors.New("Incorrent Account")
 	}
+
 	_, err := time.Parse("2006-01-02", t.Date)
 	if err != nil {
 		return errors.New("Allowed date format (YYYY-MM-DD)")

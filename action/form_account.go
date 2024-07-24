@@ -4,27 +4,7 @@ import (
 	m "main/modal"
 	s "main/structs"
 	"strconv"
-	"strings"
 )
-
-func FillListForm(source *s.Source) {
-	form := source.Form
-	list := source.AccountList
-
-	form.Clear(true)
-	FormStyle("Account Information", form)
-
-	title, second := list.GetItemText(list.GetCurrentItem())
-	split := strings.Split(second, " ")
-	balance := split[0]
-	currency := split[1]
-
-	form.AddInputField("Title: ", title, 0, nil, func(text string) { RenameAccount(text, "title", list) })
-
-	form.AddInputField("Currency: ", currency, 0, nil, func(text string) { RenameAccount(text, "currency", list) })
-
-	form.AddInputField("Balance: ", balance, 0, nil, func(text string) { RenameAccount(text, "balance", list) })
-}
 
 func FormAddAccount(source *s.Source) {
 	form := source.Form
@@ -57,14 +37,49 @@ func FormAddAccount(source *s.Source) {
 }
 
 func FormRenameAccount(source *s.Source) {
-	accounts := source.AccountList
+
+	accountList := source.AccountList
 	form := source.Form
 	pages := source.Pages
 
-	if accounts.GetItemCount() <= 0 {
+	title, _ := accountList.GetItemText(accountList.GetCurrentItem())
+
+	if accountList.GetItemCount() <= 1 || title == "All Transactions" {
 		return
 	}
-	FillListForm(source)
+
+	form.Clear(true)
+	FormStyle("Account Details", form)
+
+	var a s.Account
+
+	_, accounts := SelectAccounts(source)
+	for _, account := range accounts {
+		if account.Title == title {
+			a = account
+		}
+	}
+	form.AddInputField("Title: ", a.Title, 0, nil, func(text string) {
+		a.Title = text
+	})
+
+	form.AddInputField("Currency: ", a.Currency, 0, nil, func(text string) {
+		a.Currency = text
+	})
+
+	form.AddInputField("Balance: ", strconv.FormatFloat(a.Balance, 'f', 2, 32), 0, nil, func(text string) {
+		if text == "" {
+			a.Balance = 0
+			return
+		}
+		defer m.ErrorModal(pages, source.Modal)
+
+		balance, err := strconv.ParseFloat(text, 64)
+		check(err)
+		a.Balance = balance
+	})
+
+	form.AddButton("Save", func() { RenameAccount(a, source) })
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
