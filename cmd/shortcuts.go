@@ -47,7 +47,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyF2:
-		FilePicker("./sql")
+		FilePicker("./imports")
 	}
 	return event
 }
