@@ -105,7 +105,7 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 	cell := table.GetCell(row, 0)
 	transaction := cell.GetReference().(s.Transaction)
 
-	if t.ToAccountId.Valid && t.ToAmount.Valid {
+	if t.ToAccountId.Valid {
 		query := `Update Transactions SET account_id = ?, category_id = ?, 
 	transaction_type = ?, date = ?, amount = ?, description = ?, to_account_id = ?, to_amount = ? WHERE id = ?`
 
@@ -115,10 +115,10 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 			t.CategoryId,
 			t.TransactionType,
 			t.Date,
-			strconv.FormatFloat(t.Amount, 'f', 2, 32),
+			t.Amount,
 			t.Description,
 			t.ToAccountId.Int64,
-			strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32),
+			t.ToAmount.Float64,
 			transaction.Id,
 		)
 	} else {
@@ -168,7 +168,7 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 	check(err)
 
 	var result sql.Result
-	if t.ToAccountId.Valid && t.ToAmount.Valid {
+	if t.ToAccountId.Valid {
 		query := `INSERT INTO Transactions (account_id, category_id, transaction_type, date, amount, description, to_amount, to_account_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 		result, err = db.Exec(
 			query,
@@ -176,9 +176,9 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 			t.CategoryId,
 			t.TransactionType,
 			t.Date,
-			strconv.FormatFloat(t.Amount, 'f', 2, 32),
+			t.Amount,
 			t.Description,
-			strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32),
+			t.ToAmount.Float64,
 			t.ToAccountId.Int64,
 		)
 	} else {

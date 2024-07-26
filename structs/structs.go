@@ -83,7 +83,10 @@ func (a Account) IsEmpty() error {
 }
 
 func (t Transaction) IsEmpty() error {
-	if t.AccountId == 0 || t.CategoryId == 0 || t.TransactionType == "" || t.Date == "" || t.Amount == 0 {
+	if t.AccountId == 0 || t.CategoryId == 0 || t.TransactionType == "" || t.Date == "" || t.Amount <= 0 {
+		if t.Amount <= 0 {
+			return errors.New("Amount can't be negative or zero!")
+		}
 		// TODO: Fix error message
 		return errors.New(fmt.Sprintf("%+v", t))
 	} else if t.AccountId == t.ToAccountId.Int64 {

@@ -48,6 +48,8 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 		}
 	case tcell.KeyF2:
 		FilePicker("./imports")
+	case tcell.KeyF3:
+		DrawStats(source)
 	}
 	return event
 }

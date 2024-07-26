@@ -12,24 +12,7 @@ import (
 func InitDB() error {
 	defer m.ErrorModal(source.Pages, source.Modal)
 	url := "./database.db"
-
-	transactions, err := os.ReadFile("./sql/Transactions.sql")
-	check(err)
-
-	accounts, err := os.ReadFile("./sql/Accounts.sql")
-	check(err)
-
-	categories, err := os.ReadFile("./sql/Categories.sql")
-	check(err)
-
-	trigger_insert, err := os.ReadFile("./sql/Update_Balance_On_Transaction_Insert.sql")
-	check(err)
-
-	trigger_update, err := os.ReadFile("./sql/Update_Balance_On_Transaction_Update.sql")
-	check(err)
-
-	trigger_delete, err := os.ReadFile("./sql/Update_Balance_On_Transaction_Delete.sql")
-	check(err)
+	dir := "./sql/init"
 
 	// Check if database file exist, if exist return.
 	fileInfo, _ := os.Stat(url)
@@ -43,23 +26,15 @@ func InitDB() error {
 	db, err := sql.Open("sqlite3", url)
 	check(err)
 
-	_, err = db.Exec(string(transactions))
+	files, err := os.ReadDir(dir)
 	check(err)
 
-	_, err = db.Exec(string(accounts))
-	check(err)
-
-	_, err = db.Exec(string(categories))
-	check(err)
-
-	_, err = db.Exec(string(trigger_insert))
-	check(err)
-
-	_, err = db.Exec(string(trigger_update))
-	check(err)
-
-	_, err = db.Exec(string(trigger_delete))
-	check(err)
+	for _, file := range files {
+		query, err := os.ReadFile(dir + "/" + file.Name())
+		check(err)
+		_, err = db.Exec(string(query))
+		check(err)
+	}
 
 	defer db.Close()
 	return nil
