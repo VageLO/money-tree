@@ -42,14 +42,20 @@ func Transactions() tview.Primitive {
 
 	source.App.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
 		if event.Buttons() == tcell.Button1 {
-			if source.Form.InRect(event.Position()) == false {
+			if source.Form.InRect(event.Position()) == false &&
+				!source.Pages.HasPage("FileExplorer") {
 				source.Pages.RemovePage("Form")
 			}
 			if source.Modal.InRect(event.Position()) == false {
 				source.Pages.RemovePage("Modal")
 			}
-			if source.FileTable.InRect(event.Position()) == false {
+			if source.FileTable.InRect(event.Position()) == false &&
+				source.Pages.HasPage("Files") {
 				source.Pages.RemovePage("Files")
+			}
+			if source.FileTable.InRect(event.Position()) == false &&
+				source.Pages.HasPage("Attachments") {
+				source.Pages.RemovePage("Attachments")
 			}
 		}
 		return event, action

@@ -1,11 +1,15 @@
 package action
 
 import (
+	"bytes"
 	"database/sql"
 	"errors"
+	"fmt"
 	m "main/modal"
 	s "main/structs"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
@@ -140,6 +144,14 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 
 	t.Id = transaction.Id
 
+	attachments := findAttachments(source, t.Id)
+
+	if len(attachments) >= 0 {
+		compareAttachments(source, attachments, source.Attachments, t.Id)
+	} else {
+		Attachments(source, t.Id, source.Attachments)
+	}
+
 	data := []string{t.Description, t.Date, t.Account, t.Category,
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
@@ -201,6 +213,11 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 
 	t.Id = createdId
 
+	// Load Attachments if exist
+	if len(source.Attachments) > 0 {
+		Attachments(source, t.Id, source.Attachments)
+	}
+
 	row := []string{t.Description, t.Date, t.Account, t.Category,
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
@@ -238,7 +255,91 @@ func DeleteTransaction(source *s.Source) {
 	_, err = db.Exec(query, transaction.Id)
 	check(err)
 
+	deleteAttachments(source, findAttachments(source, transaction.Id))
+
 	defer db.Close()
 	LoadAccounts(source)
 	table.RemoveRow(row)
+}
+
+func Attachments(source *s.Source, id int64, attachments []string) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+
+	for index, att := range attachments {
+		bytes, err := os.ReadFile(att)
+		check(err)
+
+		file, err := os.OpenFile(att, os.O_RDONLY, 0644)
+		check(err)
+
+		extension := strings.Split(file.Name(), ".")
+
+		err = os.WriteFile(fmt.Sprintf("./attachments/%v_%v.%v", id, index, extension[len(extension)-1]), bytes, 0644)
+		check(err)
+	}
+}
+
+func deleteAttachments(source *s.Source, attachments []string) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+
+	for _, attachment := range attachments {
+		err := os.Remove(attachment)
+		check(err)
+	}
+}
+
+func findAttachments(source *s.Source, id int64) []string {
+	defer m.ErrorModal(source.Pages, source.Modal)
+
+	folder := "./attachments"
+	files, err := os.ReadDir(folder)
+
+	check(err)
+
+	var attachments []string
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		} else if !strings.Contains(file.Name(), fmt.Sprintf("%v", id)) {
+			continue
+		}
+
+		attachments = append(attachments, folder+"/"+file.Name())
+	}
+
+	return attachments
+}
+
+func compareAttachments(source *s.Source, existedAttachments []string, newAttachments []string, id int64) {
+	defer m.ErrorModal(source.Pages, source.Modal)
+
+	existedBuffs := makeBuffs(source, existedAttachments)
+	newBuffs := makeBuffs(source, newAttachments)
+
+	for i, existedBuff := range existedBuffs {
+		for j, newBuff := range newBuffs {
+			res := bytes.Compare(existedBuff, newBuff)
+			if res == 0 {
+				continue
+			}
+			deleteAttachments(source, []string{existedAttachments[i]})
+			Attachments(source, id, []string{newAttachments[j]})
+		}
+	}
+}
+
+func makeBuffs(source *s.Source, attachments []string) [][]byte {
+	defer m.ErrorModal(source.Pages, source.Modal)
+
+	var buffs [][]byte
+
+	for _, attachment := range attachments {
+		buff, err := os.ReadFile(attachment)
+		check(err)
+
+		buffs = append(buffs, buff)
+	}
+
+	return buffs
 }

@@ -3,7 +3,7 @@ package structs
 import (
 	"database/sql"
 	"errors"
-	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -73,29 +73,35 @@ type Source struct {
 	Modal        *tview.Modal
 	Pages        *tview.Pages
 	Columns      []string
+	Attachments  []string
+	Imports      []string
 }
 
-func (a Account) IsEmpty() error {
+func (a *Account) IsEmpty() error {
 	if a.Title == "" || a.Currency == "" {
-		return errors.New("Title or currency field can't be empty")
+		return errors.New("Fields [Title, Currency] can't be empty")
 	}
+	a.Title = strings.TrimSpace(a.Title)
+	a.Currency = strings.TrimSpace(a.Currency)
 	return nil
 }
 
-func (t Transaction) IsEmpty() error {
-	if t.AccountId == 0 || t.CategoryId == 0 || t.TransactionType == "" || t.Date == "" || t.Amount <= 0 {
+func (t *Transaction) IsEmpty() error {
+	if t.Date == "" || t.Amount <= 0 {
 		if t.Amount <= 0 {
 			return errors.New("Amount can't be negative or zero!")
 		}
-		// TODO: Fix error message
-		return errors.New(fmt.Sprintf("%+v", t))
+		//test := fmt.Sprintf("%+v", t)
+		return errors.New("Fields [Date, Amount] must be filled")
 	} else if t.AccountId == t.ToAccountId.Int64 {
-		return errors.New("Incorrent Account")
+		return errors.New("Select different accounts")
 	}
 
 	_, err := time.Parse("2006-01-02", t.Date)
 	if err != nil {
 		return errors.New("Allowed date format (YYYY-MM-DD)")
 	}
+
+	t.Description = strings.TrimSpace(t.Description)
 	return nil
 }

@@ -3,6 +3,7 @@ package action
 import (
 	m "main/modal"
 	s "main/structs"
+	"strings"
 
 	"github.com/rivo/tview"
 )
@@ -26,7 +27,10 @@ func FormAddCategory(source *s.Source) {
 	newNode := AddNode(n, root)
 
 	form.AddInputField("Title: ", "", 0, nil, func(text string) {
-		newNode.SetText(text)
+		if text == "" {
+			return
+		}
+		newNode.SetText(strings.TrimSpace(text))
 	})
 
 	var selectedDropdown *tview.TreeNode
@@ -93,7 +97,7 @@ func FormRenameCategory(source *s.Source) {
 		if text == "" {
 			return
 		}
-		title = text
+		title = strings.TrimSpace(text)
 	})
 
 	form.AddButton("Save", func() {

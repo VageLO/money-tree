@@ -10,23 +10,14 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/rivo/tview"
 )
 
 func FilePicker(path string) {
 	pages := source.Pages
-	file_table := source.FileTable
 	tree := source.CategoryTree
 	accounts := source.AccountList
 
-	defer m.ErrorModal(source.Pages, source.Modal)
-
-	file_table.Clear()
-	file_table.SetTitle("Pdf files")
-	file_table.SetBorder(true)
-	file_table.SetBorders(false)
-	file_table.SetSelectable(true, false)
+	defer m.ErrorModal(pages, source.Modal)
 
 	folder, err := os.Open(path)
 	check(err)
@@ -34,41 +25,28 @@ func FilePicker(path string) {
 	files, err := folder.Readdir(0)
 	check(err)
 
-	count := 0
+	var pdfFiles []string
 	for _, v := range files {
 		slice := strings.Split(v.Name(), ".")
 		if v.IsDir() || slice[len(slice)-1] != "pdf" {
 			continue
 		}
 
-		tableCell := tview.NewTableCell(v.Name())
-		tableCell.SetReference(struct {
-			path string
-		}{path + "/" + v.Name()})
-		tableCell.SetSelectable(true)
-
-		file_table.SetCell(count, 0, tableCell)
-		count++
+		pdfFiles = append(pdfFiles, path+"/"+v.Name())
 	}
 
-	file_table.SetSelectedFunc(func(row int, column int) {
+	selected := func(path string, source *s.Source) {
+		defer m.ErrorModal(source.Pages, source.Modal)
 		if tree.GetRowCount() <= 0 || accounts.GetItemCount() <= 0 {
 			check(errors.New("Account and category must be created"))
 		}
-
-		cell := file_table.GetCell(row, column)
-
-		ref := cell.GetReference().(struct {
-			path string
-		})
-
 		var transaction s.Transaction
-		selectForm(ref.path, &transaction)
+		selectForm(path, &transaction)
 
 		pages.RemovePage("Files")
-	})
-	x, _, _, _ := file_table.GetRect()
-	pages.AddPage("Files", m.Modal(file_table, 30, x), true, true)
+	}
+
+	m.FileTable(source, "Files", pdfFiles, selected)
 }
 
 func insertIntoDb(path string, t *s.Transaction) {

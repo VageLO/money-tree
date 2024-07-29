@@ -2,8 +2,10 @@ package modal
 
 import (
 	"fmt"
-
 	"github.com/rivo/tview"
+	s "main/structs"
+	"os/exec"
+	"path/filepath"
 )
 
 func Modal(p tview.Primitive, hight, width int) tview.Primitive {
@@ -24,5 +26,54 @@ func ErrorModal(pages *tview.Pages, modal *tview.Modal) {
 		err := fmt.Sprintf("Error: %v", r)
 		modal.SetText(err)
 		pages.AddPage("Modal", Modal(modal, 20, 40), true, true)
+	}
+}
+
+func FileTable(source *s.Source, pageName string, files []string,
+	selected func(path string, source *s.Source)) {
+	defer ErrorModal(source.Pages, source.Modal)
+
+	table := source.FileTable
+	table.SetTitle(pageName).SetBorder(true)
+	table.SetBorders(false).SetSelectable(true, false)
+
+	count := 0
+	for _, file := range files {
+		fileName := filepath.Base(file)
+
+		tableCell := tview.NewTableCell(fileName)
+		tableCell.SetReference(struct {
+			path string
+		}{file})
+		tableCell.SetSelectable(true)
+
+		table.SetCell(count, 0, tableCell)
+		count++
+	}
+
+	table.SetSelectedFunc(func(row, column int) {
+		cell := table.GetCell(row, column)
+
+		reference := cell.GetReference().(struct {
+			path string
+		})
+
+		selected(reference.path, source)
+	})
+
+	x, _, _, _ := table.GetRect()
+	source.Pages.AddPage(pageName, Modal(table, 35, x), true, true)
+}
+
+func OpenFiles(filePath string, source *s.Source) {
+	defer ErrorModal(source.Pages, source.Modal)
+
+	err := exec.Command("xdg-open", filePath).Start()
+	check(err)
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
 	}
 }

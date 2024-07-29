@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+	//"fmt"
 	m "main/modal"
 	s "main/structs"
 	"strconv"
@@ -12,28 +13,6 @@ import (
 
 func FormStyle(formTitle string, form *tview.Form) {
 	form.SetBorder(true).SetTitle(formTitle)
-}
-
-func added(text string, label string, t *s.Transaction, source *s.Source) {
-	if text == "" {
-		return
-	}
-	defer m.ErrorModal(source.Pages, source.Modal)
-
-	switch field := label; field {
-	case "Date":
-		t.Date = text
-	case "Description":
-		t.Description = text
-	case "Amount":
-		amount, err := strconv.ParseFloat(text, 64)
-		check(err)
-		t.Amount = amount
-	case "To Amount":
-		amount, err := strconv.ParseFloat(text, 64)
-		check(err)
-		t.ToAmount.Scan(amount)
-	}
 }
 
 func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
@@ -61,6 +40,7 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 
 	if IsEmptyForm {
 		form.AddButton("Add", func() { AddTransaction(transaction, row, source) })
+
 	} else if !IsEmptyForm {
 		form.AddButton("Save", func() {
 			defer m.ErrorModal(source.Pages, source.Modal)
@@ -70,6 +50,28 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 			UpdateTransaction(transaction, row, source)
 		})
 	}
+
+	form.AddButton("Select Attacments", func() {
+		defer m.ErrorModal(source.Pages, source.Modal)
+		//check(errors.New(fmt.Sprintf("%+v", source.Attachments)))
+		source.Pages.AddPage("FileExplorer", m.NewTree(source), true, true)
+	})
+	//form.AddButton("Add Attacments", func() {
+	//	defer m.ErrorModal(source.Pages, source.Modal)
+	//	//check(errors.New(fmt.Sprintf("%+v", source.Attachments)))
+	//	Attachments(source, transaction.Id, source.Attachments)
+	//})
+
+	// TODO: FileExplorer
+	form.AddButton("Attachments", func() {
+		attachments := findAttachments(source, transaction.Id)
+		m.FileTable(source, "Attachments", attachments, m.OpenFiles)
+		//source.Pages.AddPage("FileExplorer", m.NewTree(source), true, true)
+	})
+
+	form.AddButton("Cancel", func() {
+		source.Pages.RemovePage("Form")
+	})
 }
 
 func EmptyForm(index int, t *s.Transaction, source *s.Source) {
@@ -306,4 +308,26 @@ func Transfer(source *s.Source, t *s.Transaction) {
 		func(text string) {
 			added(text, "To Amount", t, source)
 		})
+}
+
+func added(text string, label string, t *s.Transaction, source *s.Source) {
+	if text == "" {
+		return
+	}
+	defer m.ErrorModal(source.Pages, source.Modal)
+
+	switch field := label; field {
+	case "Date":
+		t.Date = text
+	case "Description":
+		t.Description = text
+	case "Amount":
+		amount, err := strconv.ParseFloat(text, 64)
+		check(err)
+		t.Amount = amount
+	case "To Amount":
+		amount, err := strconv.ParseFloat(text, 64)
+		check(err)
+		t.ToAmount.Scan(amount)
+	}
 }
