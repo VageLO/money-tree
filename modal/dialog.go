@@ -29,6 +29,20 @@ func ErrorModal(pages *tview.Pages, modal *tview.Modal) {
 	}
 }
 
+func FileExporer(source *s.Source, pattern, pageName string) tview.Primitive {
+
+	tree := newTree(source, pattern, pageName)
+	button := tview.NewButton("Cancel")
+	button.SetSelectedFunc(func() {
+		source.Pages.RemovePage(pageName)
+	})
+
+	return tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(tree, 0, 15, true).
+		AddItem(button, 0, 1, false)
+}
+
 func FileTable(source *s.Source, pageName string, files []string,
 	selected func(path string, source *s.Source)) {
 	defer ErrorModal(source.Pages, source.Modal)
@@ -61,8 +75,18 @@ func FileTable(source *s.Source, pageName string, files []string,
 		selected(reference.path, source)
 	})
 
-	x, _, _, _ := table.GetRect()
-	source.Pages.AddPage(pageName, Modal(table, 35, x), true, true)
+	button := tview.NewButton("Cancel")
+	button.SetSelectedFunc(func() {
+		source.Pages.RemovePage(pageName)
+	})
+
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(table, 0, 15, true).
+		AddItem(button, 0, 1, false)
+
+		//	x, _, _, _ := flex.GetRect()
+	source.Pages.AddPage(pageName, flex, true, true)
 }
 
 func OpenFiles(filePath string, source *s.Source) {

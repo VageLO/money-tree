@@ -35,27 +35,17 @@ func Transactions() tview.Primitive {
 
 	modalFlex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(topFlex, 20, 1, false).
-		AddItem(bottomFlex, 0, 1, true)
+		AddItem(topFlex, 0, 1, false).
+		AddItem(bottomFlex, 0, 2, true)
 
 	flex.AddItem(modalFlex, 0, 2, true)
 
 	source.App.SetMouseCapture(func(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+		defer m.ErrorModal(source.Pages, source.Modal)
+		pages := source.Pages
 		if event.Buttons() == tcell.Button1 {
-			if source.Form.InRect(event.Position()) == false &&
-				!source.Pages.HasPage("FileExplorer") {
-				source.Pages.RemovePage("Form")
-			}
 			if source.Modal.InRect(event.Position()) == false {
-				source.Pages.RemovePage("Modal")
-			}
-			if source.FileTable.InRect(event.Position()) == false &&
-				source.Pages.HasPage("Files") {
-				source.Pages.RemovePage("Files")
-			}
-			if source.FileTable.InRect(event.Position()) == false &&
-				source.Pages.HasPage("Attachments") {
-				source.Pages.RemovePage("Attachments")
+				pages.RemovePage("Modal")
 			}
 		}
 		return event, action

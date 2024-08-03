@@ -39,10 +39,10 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 	initTransaction := transaction
 
 	if IsEmptyForm {
-		form.AddButton("Add", func() { AddTransaction(transaction, row, source) })
+		form.AddButton("➕", func() { AddTransaction(transaction, row, source) })
 
 	} else if !IsEmptyForm {
-		form.AddButton("Save", func() {
+		form.AddButton("💾", func() {
 			defer m.ErrorModal(source.Pages, source.Modal)
 			if initTransaction == transaction {
 				check(errors.New("Nothing Changed"))
@@ -51,25 +51,25 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 		})
 	}
 
-	form.AddButton("Select Attacments", func() {
+	form.AddButton("Add Attacments", func() {
 		defer m.ErrorModal(source.Pages, source.Modal)
-		//check(errors.New(fmt.Sprintf("%+v", source.Attachments)))
-		source.Pages.AddPage("FileExplorer", m.NewTree(source), true, true)
+
+		source.Attachments = []string{}
+		pageName := "FileExporer"
+		source.Pages.AddPage(
+			pageName,
+			m.FileExporer(source, "", pageName), true, true,
+		)
 	})
-	//form.AddButton("Add Attacments", func() {
-	//	defer m.ErrorModal(source.Pages, source.Modal)
-	//	//check(errors.New(fmt.Sprintf("%+v", source.Attachments)))
-	//	Attachments(source, transaction.Id, source.Attachments)
-	//})
 
 	// TODO: FileExplorer
-	form.AddButton("Attachments", func() {
+	form.AddButton("📎", func() {
 		attachments := findAttachments(source, transaction.Id)
 		m.FileTable(source, "Attachments", attachments, m.OpenFiles)
 		//source.Pages.AddPage("FileExplorer", m.NewTree(source), true, true)
 	})
 
-	form.AddButton("Cancel", func() {
+	form.AddButton("❌", func() {
 		source.Pages.RemovePage("Form")
 	})
 }

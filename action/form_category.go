@@ -76,6 +76,11 @@ func FormAddCategory(source *s.Source) {
 		AddCategory(newNode, selectedDropdown, source)
 		pages.RemovePage("Form")
 	})
+
+	form.AddButton("❌", func() {
+		source.Pages.RemovePage("Form")
+	})
+
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
@@ -103,6 +108,11 @@ func FormRenameCategory(source *s.Source) {
 	form.AddButton("Save", func() {
 		RenameNode(title, node, source)
 	})
+
+	form.AddButton("❌", func() {
+		source.Pages.RemovePage("Form")
+	})
+
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 

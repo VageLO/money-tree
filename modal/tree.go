@@ -21,7 +21,7 @@ type tree struct {
 
 var rootDir, _ = os.UserHomeDir()
 
-func NewTree(source *s.Source, pattern string) *tree {
+func newTree(source *s.Source, pattern, pageName string) *tree {
 	defer ErrorModal(source.Pages, source.Modal)
 
 	root := tview.NewTreeNode(rootDir).
@@ -38,18 +38,18 @@ func NewTree(source *s.Source, pattern string) *tree {
 	tree.addNode(root, rootDir, pattern)
 
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
-		tree.expandOrAddNode(node, source, pattern)
+		tree.expandOrAddNode(node, source, pattern, pageName)
 	})
 
 	return tree
 }
 
-func (tree *tree) addNode(directoryNode *tview.TreeNode, path string, pattern string) {
+func (tree *tree) addNode(directoryNode *tview.TreeNode, path, pattern string) {
 	files, err := os.ReadDir(path)
 	check(err)
 
 	for _, file := range files {
-		if filepath.Ext(file.Name()) != pattern {
+		if pattern != "" && !file.IsDir() && filepath.Ext(file.Name()) != pattern {
 			continue
 		}
 		node := createTreeNode(file.Name(), file.IsDir(), directoryNode)
@@ -57,7 +57,7 @@ func (tree *tree) addNode(directoryNode *tview.TreeNode, path string, pattern st
 	}
 }
 
-func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern string) {
+func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern, pageName string) {
 	defer ErrorModal(source.Pages, source.Modal)
 
 	reference := node.GetReference()
@@ -68,12 +68,12 @@ func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern
 	nodeReference := reference.(*nodeReference)
 	if !nodeReference.isDir && pattern == "" {
 		source.Attachments = append(source.Attachments, nodeReference.path)
-		source.Pages.RemovePage("FileExplorer")
+		source.Pages.RemovePage(pageName)
 		return
 
 	} else if !nodeReference.isDir && pattern != "" {
 		source.Imports = append(source.Imports, nodeReference.path)
-		source.Pages.RemovePage("FileExplorer")
+		source.Pages.RemovePage(pageName)
 		return
 
 	}

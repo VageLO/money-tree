@@ -19,7 +19,7 @@ func LoadAccounts(source *s.Source) {
 	_, account_types := SelectAccounts(source)
 
 	source.AccountList.
-		SetBorderPadding(1, 1, 2, 2).
+		SetBorderPadding(0, 0, 2, 0).
 		SetBorder(true).
 		SetTitle("Accounts")
 

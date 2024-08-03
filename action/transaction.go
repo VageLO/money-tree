@@ -22,14 +22,15 @@ func check(err error) {
 }
 
 func LoadTransactions(request string, source *s.Source) {
-	source.Table.Clear()
-	source.Table.SetBorder(true)
-	source.Table.SetTitle("Transactions")
+	table := source.Table
+	table.Clear()
+	table.SetBorder(true)
+	table.SetTitle("Transactions")
 
 	SelectTransactions(request, source)
 
-	source.Table.Select(1, 1).SetFixed(0, 1).SetSelectedFunc(func(row int, column int) {
-		if row <= 0 {
+	table.Select(0, 0).SetFixed(0, 1).SetSelectedFunc(func(row int, column int) {
+		if table.GetRowCount() <= 1 {
 			return
 		}
 		FillForm(len(source.Columns), row, false, source)
@@ -37,7 +38,7 @@ func LoadTransactions(request string, source *s.Source) {
 		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)
 	})
 
-	source.Table.SetBorders(false).
+	table.SetBorders(false).
 		SetSelectable(true, false).
 		SetSeparator('|')
 }
@@ -135,7 +136,7 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 			t.CategoryId,
 			t.TransactionType,
 			t.Date,
-			strconv.FormatFloat(t.Amount, 'f', 2, 32),
+			t.Amount,
 			t.Description, transaction.Id,
 		)
 	}
@@ -201,7 +202,7 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 			t.CategoryId,
 			t.TransactionType,
 			t.Date,
-			strconv.FormatFloat(t.Amount, 'f', 2, 32),
+			t.Amount,
 			t.Description,
 		)
 	}
