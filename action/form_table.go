@@ -58,7 +58,7 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 		pageName := "FileExporer"
 		source.Pages.AddPage(
 			pageName,
-			m.FileExporer(source, "", pageName), true, true,
+			FileExporer(source, "", pageName), true, true,
 		)
 	})
 

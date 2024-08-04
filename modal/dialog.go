@@ -2,10 +2,11 @@ package modal
 
 import (
 	"fmt"
-	"github.com/rivo/tview"
 	s "main/structs"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/rivo/tview"
 )
 
 func Modal(p tview.Primitive, hight, width int) tview.Primitive {
@@ -27,20 +28,6 @@ func ErrorModal(pages *tview.Pages, modal *tview.Modal) {
 		modal.SetText(err)
 		pages.AddPage("Modal", Modal(modal, 20, 40), true, true)
 	}
-}
-
-func FileExporer(source *s.Source, pattern, pageName string) tview.Primitive {
-
-	tree := newTree(source, pattern, pageName)
-	button := tview.NewButton("Cancel")
-	button.SetSelectedFunc(func() {
-		source.Pages.RemovePage(pageName)
-	})
-
-	return tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(tree, 0, 15, true).
-		AddItem(button, 0, 1, false)
 }
 
 func FileTable(source *s.Source, pageName string, files []string,

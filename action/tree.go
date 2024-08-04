@@ -1,11 +1,13 @@
-package modal
+package action
 
 import (
-	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	m "main/modal"
 	s "main/structs"
 	"os"
 	"path/filepath"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 )
 
 type nodeReference struct {
@@ -22,7 +24,7 @@ type tree struct {
 var rootDir, _ = os.UserHomeDir()
 
 func newTree(source *s.Source, pattern, pageName string) *tree {
-	defer ErrorModal(source.Pages, source.Modal)
+	defer m.ErrorModal(source.Pages, source.Modal)
 
 	root := tview.NewTreeNode(rootDir).
 		SetColor(tcell.ColorRed).
@@ -58,7 +60,7 @@ func (tree *tree) addNode(directoryNode *tview.TreeNode, path, pattern string) {
 }
 
 func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern, pageName string) {
-	defer ErrorModal(source.Pages, source.Modal)
+	defer m.ErrorModal(source.Pages, source.Modal)
 
 	reference := node.GetReference()
 	if reference == nil {
@@ -72,10 +74,9 @@ func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern
 		return
 
 	} else if !nodeReference.isDir && pattern != "" {
-		source.Imports = append(source.Imports, nodeReference.path)
 		source.Pages.RemovePage(pageName)
+		ImportForm(source, nodeReference.path)
 		return
-
 	}
 
 	children := node.GetChildren()
