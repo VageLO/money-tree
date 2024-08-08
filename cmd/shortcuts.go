@@ -64,10 +64,9 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 
 		pageName := "Imports"
 		pages.AddPage(pageName, action.FileExporer(source, ".pdf", pageName), true, true)
-		//case tcell.KeyF3:
-		//	check(ifFormExist(pages))
-
-		//	DrawStats(source)
+	case tcell.KeyF3:
+		check(ifFormExist(pages))
+		DrawStats(source)
 	}
 	return event
 }
