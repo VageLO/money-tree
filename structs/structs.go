@@ -77,6 +77,12 @@ type Source struct {
 	Imports      []string
 }
 
+type Statistics struct {
+	Debit int64
+	Credit int64
+	Category string
+}
+
 func (a *Account) IsEmpty() error {
 	if a.Title == "" || a.Currency == "" {
 		return errors.New("Fields [Title, Currency] can't be empty")

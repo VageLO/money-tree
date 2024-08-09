@@ -18,6 +18,11 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 	pages := source.Pages
 
 	switch key := event.Key(); key {
+	case tcell.KeyEscape:
+		if name, _ := source.Pages.GetFrontPage(); name != "" && name != "Transactions" {
+			source.Pages.RemovePage(name)
+			return nil
+		}
 	case tcell.KeyCtrlA, tcell.KeyInsert:
 		check(ifFormExist(pages))
 

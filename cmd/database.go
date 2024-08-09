@@ -30,6 +30,7 @@ func InitDB() error {
 	check(err)
 
 	for _, file := range files {
+		// TODO: change to filepath
 		query, err := os.ReadFile(dir + "/" + file.Name())
 		check(err)
 		_, err = db.Exec(string(query))
