@@ -83,6 +83,13 @@ func SelectTransactions(request string, source *s.Source) {
 		row := []string{t.Description, t.Date, t.Account, t.Category,
 			strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
+		if t.ToAccountId.Valid {
+			row[2] = fmt.Sprintf("%v > %v", t.Account, t.ToAccount.String)
+			if t.ToAmount.Valid && t.ToAmount.Float64 != 0 {
+				row[4] = fmt.Sprintf("%v > %v", t.Amount, t.ToAmount.Float64)
+			}
+		}
+
 		InsertRows(s.Row{
 			Columns:   source.Columns,
 			Index:     i,
@@ -155,6 +162,12 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 
 	data := []string{t.Description, t.Date, t.Account, t.Category,
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
+	if t.ToAccountId.Valid {
+		data[2] = fmt.Sprintf("%v > %v", t.Account, t.ToAccount.String)
+		if t.ToAmount.Valid && t.ToAmount.Float64 != 0 {
+			data[4] = fmt.Sprintf("%v > %v", t.Amount, t.ToAmount.Float64)
+		}
+	}
 
 	UpdateRows(s.Row{
 		Columns:   source.Columns,

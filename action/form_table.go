@@ -37,11 +37,12 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 
 	initTransaction := transaction
 
-	if IsEmptyForm {
-		form.AddButton("➕", func() { AddTransaction(transaction, row, source) })
+	switch IsEmptyForm {
+	case true:
+		form.AddButton("Add", func() { AddTransaction(transaction, row, source) })
 
-	} else if !IsEmptyForm {
-		form.AddButton("💾", func() {
+	case false:
+		form.AddButton("Save", func() {
 			defer m.ErrorModal(source.Pages, source.Modal)
 			if initTransaction == transaction {
 				check(errors.New("Nothing Changed"))
@@ -50,7 +51,7 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 		})
 	}
 
-	form.AddButton("Add Attacments", func() {
+	form.AddButton("➕", func() {
 		defer m.ErrorModal(source.Pages, source.Modal)
 
 		source.Attachments = []string{}
@@ -76,14 +77,14 @@ func EmptyForm(index int, t *s.Transaction, source *s.Source) {
 
 	columnName := table.GetCell(0, index).Text
 
-	// Transaction Type field
-	if columnName == columns[5] {
-		TransactionTypes(t, source)
-		return
-	}
+	switch columnName {
 
-	// Category field
-	if columnName == columns[3] {
+	case columns[5]:
+		// Transaction Type field
+		TransactionTypes(t, source)
+
+	case columns[3]:
+		// Category field
 		categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`, source)
 
 		initial := 0
@@ -104,11 +105,9 @@ func EmptyForm(index int, t *s.Transaction, source *s.Source) {
 			func(option string, optionIndex int) {
 				SelectedCategory(option, optionIndex, c_types, t)
 			})
-		return
-	}
 
-	// Account field
-	if columnName == columns[2] {
+	case columns[2]:
+		// Account field
 		accounts, a_types := SelectAccounts(source)
 
 		initial := 0
@@ -126,23 +125,21 @@ func EmptyForm(index int, t *s.Transaction, source *s.Source) {
 			func(option string, optionIndex int) {
 				SelectedAccount(option, optionIndex, a_types, t)
 			})
-		return
-	}
 
-	// Date field
-	if columnName == columns[1] {
+	case columns[1]:
+		// Date field
 		date := time.Now().Format("2006-01-02")
 		added(date, columnName, t, source)
 
 		form.AddInputField(table.GetCell(0, index).Text, date, 0, nil, func(text string) {
 			added(text, columnName, t, source)
 		})
-		return
-	}
 
-	form.AddInputField(table.GetCell(0, index).Text, "", 0, nil, func(text string) {
-		added(text, columnName, t, source)
-	})
+	default:
+		form.AddInputField(table.GetCell(0, index).Text, "", 0, nil, func(text string) {
+			added(text, columnName, t, source)
+		})
+	}
 }
 
 func FilledForm(index, row int, t *s.Transaction, source *s.Source) {
@@ -155,19 +152,19 @@ func FilledForm(index, row int, t *s.Transaction, source *s.Source) {
 	columnName := table.GetCell(0, index).Text
 	cell := table.GetCell(row, index)
 
-	// Transaction Type field
-	if columnName == columns[5] {
-		TransactionTypes(t, source)
-		return
-	}
+	switch columnName {
 
-	// Category field
-	if columnName == columns[3] {
+	case columns[5]:
+		// Transaction Type field
+		TransactionTypes(t, source)
+
+	case columns[3]:
+		// Category field
 		categories, c_types, _ := SelectCategories(`SELECT * FROM Categories`, source)
 		initial := 0
 
 		for idx, title := range categories {
-			if title == cell.Text {
+			if title == cell.GetReference().(s.Transaction).Category {
 				initial = idx
 			}
 		}
@@ -176,16 +173,14 @@ func FilledForm(index, row int, t *s.Transaction, source *s.Source) {
 		form.AddDropDown(columnName, categories, initial, func(option string, optionIndex int) {
 			SelectedCategory(option, optionIndex, c_types, t)
 		})
-		return
-	}
 
-	// Account field
-	if columnName == columns[2] {
+	case columns[2]:
+		// Account field
 		accounts, a_types := SelectAccounts(source)
 		initial := 0
 
 		for idx, title := range accounts {
-			if title == cell.Text {
+			if title == cell.GetReference().(s.Transaction).Account {
 				initial = idx
 			}
 		}
@@ -198,19 +193,33 @@ func FilledForm(index, row int, t *s.Transaction, source *s.Source) {
 			func(option string, optionIndex int) {
 				SelectedAccount(option, optionIndex, a_types, t)
 			})
-		return
+
+	case columns[4]:
+		// Amount field
+		amount := strconv.FormatFloat(cell.GetReference().(s.Transaction).Amount, 'f', 2, 32)
+		added(amount, columnName, t, source)
+
+		form.AddInputField(
+			columnName,
+			amount,
+			0,
+			nil,
+			func(text string) {
+				added(text, columnName, t, source)
+			})
+
+	default:
+		added(cell.Text, columnName, t, source)
+
+		form.AddInputField(
+			columnName,
+			cell.Text,
+			0,
+			nil,
+			func(text string) {
+				added(text, columnName, t, source)
+			})
 	}
-
-	added(cell.Text, columnName, t, source)
-
-	form.AddInputField(
-		columnName,
-		cell.Text,
-		0,
-		nil,
-		func(text string) {
-			added(text, columnName, t, source)
-		})
 }
 
 func SelectedTransfer(option string, optionIndex int, a_types []s.Account, t *s.Transaction) {
