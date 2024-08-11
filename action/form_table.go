@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	//"fmt"
 	m "main/modal"
 	s "main/structs"
 	"strconv"
@@ -56,10 +55,7 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 
 		source.Attachments = []string{}
 		pageName := "FileExporer"
-		source.Pages.AddPage(
-			pageName,
-			FileExporer(source, "", pageName), true, true,
-		)
+		FileExporer(source, "", pageName)
 	})
 
 	// TODO: FileExplorer
@@ -67,10 +63,6 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 		attachments := findAttachments(source, transaction.Id)
 		m.FileTable(source, "Attachments", attachments, m.OpenFiles)
 		//source.Pages.AddPage("FileExplorer", m.NewTree(source), true, true)
-	})
-
-	form.AddButton("❌", func() {
-		source.Pages.RemovePage("Form")
 	})
 }
 

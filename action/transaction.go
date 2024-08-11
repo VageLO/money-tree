@@ -84,10 +84,10 @@ func SelectTransactions(request string, source *s.Source) {
 			strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
 		InsertRows(s.Row{
-			Columns:     source.Columns,
-			Index:       i,
-			Data:        row,
-			Transaction: t,
+			Columns:   source.Columns,
+			Index:     i,
+			Data:      row,
+			Reference: t,
 		}, source.Table)
 	}
 
@@ -157,10 +157,10 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
 	UpdateRows(s.Row{
-		Columns:     source.Columns,
-		Index:       row,
-		Data:        data,
-		Transaction: t,
+		Columns:   source.Columns,
+		Index:     row,
+		Data:      data,
+		Reference: t,
 	}, source.Table)
 
 	LoadAccounts(source)
@@ -223,10 +223,10 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
 
 	InsertRows(s.Row{
-		Columns:     source.Columns,
-		Index:       newRow,
-		Data:        row,
-		Transaction: t,
+		Columns:   source.Columns,
+		Index:     newRow,
+		Data:      row,
+		Reference: t,
 	}, source.Table)
 
 	LoadAccounts(source)

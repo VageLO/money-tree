@@ -5,8 +5,6 @@ import (
 	"main/parser"
 	s "main/structs"
 	"strconv"
-
-	"github.com/rivo/tview"
 )
 
 func insertIntoDb(source *s.Source, path string, t *s.Transaction) {
@@ -87,16 +85,7 @@ func contains(s []string, str string) bool {
 	return false
 }
 
-func FileExporer(source *s.Source, pattern, pageName string) tview.Primitive {
-
+func FileExporer(source *s.Source, pattern, pageName string) {
 	tree := newTree(source, pattern, pageName)
-	button := tview.NewButton("Cancel")
-	button.SetSelectedFunc(func() {
-		source.Pages.RemovePage(pageName)
-	})
-
-	return tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(tree, 0, 15, true).
-		AddItem(button, 0, 1, false)
+	source.Pages.AddPage(pageName, tree, true, true)
 }

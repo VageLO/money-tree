@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	//	"fmt"
 	m "main/modal"
 	s "main/structs"
 
@@ -40,7 +39,7 @@ func InsertRows(row s.Row, table *tview.Table) {
 			Text:       data,
 			Selectable: true,
 			Color:      tcell.ColorWhite,
-			Reference:  row.Transaction,
+			Reference:  row.Reference,
 		}, table)
 	}
 }
@@ -52,7 +51,7 @@ func UpdateRows(row s.Row, table *tview.Table) {
 			Row:       row.Index,
 			Column:    i,
 			Text:      data,
-			Reference: row.Transaction,
+			Reference: row.Reference,
 		}, table)
 	}
 }
@@ -64,7 +63,6 @@ func AddToTable(source *s.Source) {
 
 	defer m.ErrorModal(pages, source.Modal)
 
-	//	check(errors.New(fmt.Sprintf("%v", source.AccountList.GetItemCount())))
 	newRow := source.Table.GetRowCount()
 	if tree.GetRowCount() <= 1 || source.AccountList.GetItemCount() <= 1 {
 		check(errors.New("Account and category must be created"))

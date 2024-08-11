@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"main/action"
 	m "main/modal"
 
@@ -66,19 +67,25 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 		}
 	case tcell.KeyF2:
 		check(ifFormExist(pages))
-
-		pageName := "Imports"
-		pages.AddPage(pageName, action.FileExporer(source, ".pdf", pageName), true, true)
+		if tree.GetRowCount() <= 1 || accounts.GetItemCount() <= 1 {
+			check(errors.New("Account and category must be created"))
+		}
+		action.FileExporer(source, ".pdf", "Imports")
+		return nil
 	case tcell.KeyF3:
 		check(ifFormExist(pages))
-		DrawStats(source)
+		if tree.GetRowCount() <= 1 || accounts.GetItemCount() <= 1 {
+			check(errors.New("Account and category must be created"))
+		}
+		Statistics(source)
+		return nil
 	}
 	return event
 }
 
 func ifFormExist(pages *tview.Pages) error {
 	if pages.HasPage("Form") {
-		return errors.New("Close 'Form' window")
+		return errors.New(fmt.Sprintf("Close '%v' by pressing Esc", source.Form.GetTitle()))
 	}
 	return nil
 }

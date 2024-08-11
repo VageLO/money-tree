@@ -48,10 +48,10 @@ type Cell struct {
 }
 
 type Row struct {
-	Columns     []string
-	Index       int
-	Data        []string
-	Transaction Transaction
+	Columns   []string
+	Index     int
+	Data      []string
+	Reference interface{}
 }
 
 type TreeNode struct {
@@ -78,8 +78,8 @@ type Source struct {
 }
 
 type Statistics struct {
-	Debit int64
-	Credit int64
+	Debit    float64
+	Credit   float64
 	Category string
 }
 

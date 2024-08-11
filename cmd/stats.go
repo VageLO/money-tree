@@ -1,64 +1,60 @@
 package cmd
 
 import (
-	s "main/structs"
-	m "main/modal"
-	"main/action"
 	"database/sql"
-	"strings"
-	"strconv"
-	"errors"
-	"time"
+	"main/action"
+	m "main/modal"
+	s "main/structs"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rivo/tview"
 )
 
-// TODO: Diagram
-func DrawStats(source *s.Source) {
+func Statistics(source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
-	
+
 	var t s.Transaction
 	var stats []s.Statistics
-	
-	box := tview.NewBox()
-	box.SetBorder(true)
-	
+
+	table := tview.NewTable()
+	table.
+		SetBorders(true).
+		SetBorder(true).
+		SetTitle("Statistics")
+
 	firstDay, lastDay := getCurrentMonth()
+	startDate := tview.NewInputField().SetLabel(" Start Date: ").SetText(firstDay)
+	endDate := tview.NewInputField().SetLabel(" End Date: ").SetText(lastDay)
 
-	startDate := tview.NewInputField().SetLabel("Start Date").SetText(firstDay)
-	endDate := tview.NewInputField().SetLabel("End Date").SetText(lastDay)
+	dropDown := tview.NewDropDown().SetLabel("Account: ")
 
-	dropDown := tview.NewDropDown().SetLabel("Account")
-	
 	// Flex
 	topFlex := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(dropDown, 0, 1, false).
 		AddItem(startDate, 0, 1, false).
 		AddItem(endDate, 0, 1, false)
+	topFlex.SetBorder(true)
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(topFlex, 0, 1, false).
-		AddItem(box, 0, 15, true)
-	
+		AddItem(table, 0, 10, true)
+
 	accounts, a_types := action.SelectAccounts(source)
-	
-	if len(accounts) <= 0 {
-		check(errors.New("Accounts len = 0"))
-	}
-	
+
 	reloadChart := func(text string, index int) {
 		action.SelectedAccount(text, index, a_types, &t)
 		stats = getStatistics(source, &t, startDate.GetText(), endDate.GetText())
-		flex.RemoveItem(flex.GetItem(1))
-		flex.AddItem(box, 0, 15, true)
+		loadStatictisTable(table, stats)
 	}
-	
-	// InputFields
+
+	// InputFields exit functions
 	startDate.SetDoneFunc(func(key tcell.Key) {
 		index, text := dropDown.GetCurrentOption()
 		reloadChart(text, index)
@@ -75,59 +71,41 @@ func DrawStats(source *s.Source) {
 		index, text := dropDown.GetCurrentOption()
 		reloadChart(text, index)
 	})
-	
+
 	dropDown.SetOptions(accounts, func(text string, index int) {
 		reloadChart(text, index)
 	})
 	dropDown.SetCurrentOption(0)
 
-	box.SetDrawFunc(func(screen tcell.Screen, x, y, width, height int) (int, int, int, int) {
-		width -= 5
-		height -= 5
-		y += 5
-		x += 5
-		count := 0
-		
-		for _, stat := range stats {
-			drawElement(screen, x+count, y, width, height/2, int(stat.Debit), tcell.ColorRed)
-			drawElement(screen, x+count, y, width, height, int(stat.Credit), tcell.ColorGreen)
-			count += 5
-		}
-		
-		drawGraph(screen, x, y, width, height)
-		drawGraph(screen, x, y, width, height/2)
-		
-		return x, y, width, height
-	})
-	
-	source.Pages.AddPage("Stats", flex, true, true)
+	source.Pages.AddPage("Statistics", flex, true, true)
 }
 
-func drawGraph(screen tcell.Screen, xx, yy, width, height int) {
+func loadStatictisTable(table *tview.Table, data []s.Statistics) {
+	table.Clear()
 
-	for y := yy; y <= height; y++ {
-		if y == height {
-			screen.SetContent(xx, y, '\u2514', nil, tcell.StyleDefault.Foreground(tcell.ColorWhite))
-		} else {
-			screen.SetContent(xx, y, '\u2502', nil, tcell.StyleDefault.Foreground(tcell.ColorWhite))
-		}
+	columns := []string{"Category", "Debit", "Credit", "Total"}
+	for i, columnTitle := range columns {
+		action.InsertCell(s.Cell{
+			Row:        0,
+			Column:     i,
+			Text:       columnTitle,
+			Selectable: false,
+			Color:      tcell.ColorYellow,
+		}, table)
 	}
 
-	// Draw the bottom side of the cube
-	for x := xx+1; x < width; x++ {
-		screen.SetContent(x, height, '\u2500', nil, tcell.StyleDefault.Foreground(tcell.ColorWhite))
-	}
-
-}
-
-func drawElement(screen tcell.Screen, xx, yy, width, height int, percentage int, color tcell.Color) {
-	percentageFloat := float64(percentage) / 100.0
-	fullSize := float64(height - yy)
-	percentageSize := int(fullSize * percentageFloat)
-	size := height - percentageSize
-
-	for y := height; y >= size; y-- {
-		screen.SetContent(xx + 5, y, ' ', nil, tcell.StyleDefault.Background(color))
+	for i, value := range data {
+		action.InsertRows(s.Row{
+			Columns: columns,
+			Index:   i + 1,
+			Data: []string{
+				value.Category,
+				strconv.FormatFloat(value.Debit, 'f', 2, 32),
+				strconv.FormatFloat(value.Credit, 'f', 2, 32),
+				strconv.FormatFloat(value.Credit-value.Debit, 'f', 2, 32),
+			},
+			Reference: value,
+		}, table)
 	}
 }
 
@@ -136,7 +114,7 @@ func getStatistics(source *s.Source, t *s.Transaction, firstDate, lastDate strin
 
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
-	
+
 	query, err := os.ReadFile("./sql/Select_Sum_Of_Account.sql")
 	check(err)
 
@@ -148,12 +126,12 @@ func getStatistics(source *s.Source, t *s.Transaction, firstDate, lastDate strin
 
 	result, err := db.Query(request)
 	check(err)
-	
+
 	var stats []s.Statistics
-	
+
 	for result.Next() {
 		var _s s.Statistics
-		
+
 		err := result.Scan(&_s.Debit, &_s.Credit, &_s.Category)
 		check(err)
 
@@ -161,17 +139,18 @@ func getStatistics(source *s.Source, t *s.Transaction, firstDate, lastDate strin
 	}
 	defer result.Close()
 	defer db.Close()
-	
+
 	return stats
 }
 
 func getCurrentMonth() (firstDay, lastDay string) {
 	now := time.Now()
-    currentYear, currentMonth, _ := now.Date()
-    currentLocation := now.Location()
+	currentYear, currentMonth, _ := now.Date()
+	currentLocation := now.Location()
 
-    firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
-    lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
+	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
+	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
 
-    return firstOfMonth.Format("2006-01-02"), lastOfMonth.Format("2006-01-02")
+	return firstOfMonth.Format("2006-01-02"), lastOfMonth.Format("2006-01-02")
 }
+
