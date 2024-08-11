@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+	"fmt"
 	m "main/modal"
 	s "main/structs"
 	"strconv"
@@ -54,15 +55,13 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 	form.AddButton("➕", func() {
 		defer m.ErrorModal(source.Pages, source.Modal)
 
-		source.Attachments = []string{}
-		pageName := "FileExporer"
-		FileExporer(source, "", pageName)
+		check(errors.New(fmt.Sprintf("%v", source.Attachments)))
 	})
 
 	// TODO: FileExplorer
 	form.AddButton("📎", func() {
-		attachments := findAttachments(source, transaction.Id)
-		m.FileTable(source, "Attachments", attachments, m.OpenFiles)
+		source.Attachments = findAttachments(source, transaction.Id)
+		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
 		//source.Pages.AddPage("FileExplorer", m.NewTree(source), true, true)
 	})
 }

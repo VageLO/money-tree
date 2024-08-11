@@ -8,6 +8,7 @@ import (
 	m "main/modal"
 	s "main/structs"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -154,7 +155,7 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 
 	attachments := findAttachments(source, t.Id)
 
-	if len(attachments) >= 0 {
+	if len(attachments) > 0 {
 		compareAttachments(source, attachments, source.Attachments, t.Id)
 	} else {
 		Attachments(source, t.Id, source.Attachments)
@@ -286,9 +287,10 @@ func Attachments(source *s.Source, id int64, attachments []string) {
 		file, err := os.OpenFile(att, os.O_RDONLY, 0644)
 		check(err)
 
-		extension := strings.Split(file.Name(), ".")
+		extension := filepath.Ext(file.Name())
 
-		err = os.WriteFile(fmt.Sprintf("./attachments/%v_%v.%v", id, index, extension[len(extension)-1]), bytes, 0644)
+		path := filepath.Join("./attachments", fmt.Sprintf("%v_%v%v", id, index, extension))
+		err = os.WriteFile(path, bytes, 0644)
 		check(err)
 	}
 }
@@ -319,7 +321,7 @@ func findAttachments(source *s.Source, id int64) []string {
 			continue
 		}
 
-		attachments = append(attachments, folder+"/"+file.Name())
+		attachments = append(attachments, filepath.Join(folder, file.Name()))
 	}
 
 	return attachments

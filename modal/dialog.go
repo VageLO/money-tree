@@ -35,6 +35,7 @@ func FileTable(source *s.Source, pageName string, files []string,
 	defer ErrorModal(source.Pages, source.Modal)
 
 	table := source.FileTable
+	table.Clear()
 	table.SetTitle(pageName).SetBorder(true)
 	table.SetBorders(false).SetSelectable(true, false)
 
@@ -62,18 +63,7 @@ func FileTable(source *s.Source, pageName string, files []string,
 		selected(reference.path, source)
 	})
 
-	button := tview.NewButton("Cancel")
-	button.SetSelectedFunc(func() {
-		source.Pages.RemovePage(pageName)
-	})
-
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(table, 0, 15, true).
-		AddItem(button, 0, 1, false)
-
-		//	x, _, _, _ := flex.GetRect()
-	source.Pages.AddPage(pageName, flex, true, true)
+	source.Pages.AddPage(pageName, table, true, true)
 }
 
 func OpenFiles(filePath string, source *s.Source) {

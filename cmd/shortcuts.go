@@ -17,14 +17,21 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 	tree := source.CategoryTree
 	accounts := source.AccountList
 	pages := source.Pages
+	attachments := source.FileTable
 
 	switch key := event.Key(); key {
+
 	case tcell.KeyEscape:
 		if name, _ := source.Pages.GetFrontPage(); name != "" && name != "Transactions" {
 			source.Pages.RemovePage(name)
 			return nil
 		}
+
 	case tcell.KeyCtrlA, tcell.KeyInsert:
+		if attachments.HasFocus() {
+			action.FileExporer(source, "", "FileExporer")
+			return nil
+		}
 		check(ifFormExist(pages))
 
 		if table.HasFocus() {
@@ -39,6 +46,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			action.FormAddAccount(source)
 			return nil
 		}
+
 	case tcell.KeyCtrlD, tcell.KeyDelete, tcell.KeyBackspace:
 		check(ifFormExist(pages))
 
@@ -54,6 +62,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			action.RemoveAccount(source)
 			return nil
 		}
+
 	case tcell.KeyCtrlR:
 		check(ifFormExist(pages))
 
@@ -65,6 +74,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			action.FormRenameAccount(source)
 			return nil
 		}
+
 	case tcell.KeyF2:
 		check(ifFormExist(pages))
 		if tree.GetRowCount() <= 1 || accounts.GetItemCount() <= 1 {
@@ -72,6 +82,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 		}
 		action.FileExporer(source, ".pdf", "Imports")
 		return nil
+
 	case tcell.KeyF3:
 		check(ifFormExist(pages))
 		if tree.GetRowCount() <= 1 || accounts.GetItemCount() <= 1 {
@@ -84,7 +95,8 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func ifFormExist(pages *tview.Pages) error {
-	if pages.HasPage("Form") {
+	name, _ := pages.GetFrontPage()
+	if name == "Form" {
 		return errors.New(fmt.Sprintf("Close '%v' by pressing Esc", source.Form.GetTitle()))
 	}
 	return nil

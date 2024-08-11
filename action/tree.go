@@ -62,6 +62,8 @@ func (tree *tree) addNode(directoryNode *tview.TreeNode, path, pattern string) {
 func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern, pageName string) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
+	pages := source.Pages
+
 	reference := node.GetReference()
 	if reference == nil {
 		return
@@ -70,11 +72,13 @@ func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern
 	nodeReference := reference.(*nodeReference)
 	if !nodeReference.isDir && pattern == "" {
 		source.Attachments = append(source.Attachments, nodeReference.path)
-		source.Pages.RemovePage(pageName)
+		pages.RemovePage(pageName)
+		pages.RemovePage("Attachments")
+		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
 		return
 
 	} else if !nodeReference.isDir && pattern != "" {
-		source.Pages.RemovePage(pageName)
+		pages.RemovePage(pageName)
 		ImportForm(source, nodeReference.path)
 		return
 	}
