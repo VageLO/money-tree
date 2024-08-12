@@ -27,16 +27,28 @@ func Statistics(source *s.Source) {
 		SetBorder(true).
 		SetTitle("Statistics")
 
-	firstDay, lastDay := getCurrentMonth()
-	startDate := tview.NewInputField().SetLabel(" Start Date: ").SetText(firstDay)
-	endDate := tview.NewInputField().SetLabel(" End Date: ").SetText(lastDay)
+    currentYear, currentMonth, _:= time.Now().Date()
+
+	startDate := tview.NewInputField().SetLabel(" Start Date: ")
+	endDate := tview.NewInputField().SetLabel(" End Date: ")
+
+    months := []time.Month{time.January, time.February, time.March, time.April, time.May, time.June, time.July,
+        time.August, time.September, time.October, time.November, time.December}
+
+    var strMonths []string
+    for _, month := range months {
+        strMonths = append(strMonths, month.String())
+    }
 
 	dropDown := tview.NewDropDown().SetLabel("Account: ")
+	monthsDropDown:= tview.NewDropDown().SetLabel("Months: ")
 
 	// Flex
 	topFlex := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(dropDown, 0, 1, false).
+        // TODO: Year inputfield
+		AddItem(monthsDropDown, 0, 1, false).
 		AddItem(startDate, 0, 1, false).
 		AddItem(endDate, 0, 1, false)
 	topFlex.SetBorder(true)
@@ -71,11 +83,24 @@ func Statistics(source *s.Source) {
 		index, text := dropDown.GetCurrentOption()
 		reloadChart(text, index)
 	})
+    
+    monthsDropDown.SetOptions(strMonths, func(text string, index int) {
+        accountIndex, accountText := dropDown.GetCurrentOption()
 
+        firstDay, lastDay := getMonth(currentYear, months[index])
+        startDate.SetText(firstDay)
+        endDate.SetText(lastDay)
+
+		reloadChart(accountText, accountIndex)
+	})
+    
 	dropDown.SetOptions(accounts, func(text string, index int) {
 		reloadChart(text, index)
 	})
 	dropDown.SetCurrentOption(0)
+
+    intMonth := int(currentMonth)
+	monthsDropDown.SetCurrentOption(intMonth - 1)
 
 	source.Pages.AddPage("Statistics", flex, true, true)
 }
@@ -143,14 +168,13 @@ func getStatistics(source *s.Source, t *s.Transaction, firstDate, lastDate strin
 	return stats
 }
 
-func getCurrentMonth() (firstDay, lastDay string) {
+func getMonth(year int, month time.Month) (firstDay, lastDay string) {
 	now := time.Now()
-	currentYear, currentMonth, _ := now.Date()
+
 	currentLocation := now.Location()
 
-	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
+	firstOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, currentLocation)
 	lastOfMonth := firstOfMonth.AddDate(0, 1, -1)
 
 	return firstOfMonth.Format("2006-01-02"), lastOfMonth.Format("2006-01-02")
 }
-
