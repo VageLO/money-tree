@@ -48,6 +48,19 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 		}
 
 	case tcell.KeyCtrlD, tcell.KeyDelete, tcell.KeyBackspace:
+
+		if attachments.HasFocus() {
+            row, column := attachments.GetSelection()
+            cell := attachments.GetCell(row, column)
+            reference := cell.GetReference().(m.Reference)
+            exist, index := action.Contains(source.Attachments, reference.Path)
+            if exist {
+                a := source.Attachments
+                source.Attachments = append(a[:index], a[index+1:]...)
+            }
+            attachments.RemoveRow(row)
+        }
+
 		check(ifFormExist(pages))
 
 		if table.HasFocus() {

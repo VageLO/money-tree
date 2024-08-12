@@ -9,6 +9,10 @@ import (
 	"github.com/rivo/tview"
 )
 
+type Reference struct {
+    Path string
+}
+
 func Modal(p tview.Primitive, hight, width int) tview.Primitive {
 	return tview.NewFlex().
 		AddItem(nil, 0, 1, false).
@@ -44,9 +48,7 @@ func FileTable(source *s.Source, pageName string, files []string,
 		fileName := filepath.Base(file)
 
 		tableCell := tview.NewTableCell(fileName)
-		tableCell.SetReference(struct {
-			path string
-		}{file})
+		tableCell.SetReference(Reference{file})
 		tableCell.SetSelectable(true)
 
 		table.SetCell(count, 0, tableCell)
@@ -56,11 +58,9 @@ func FileTable(source *s.Source, pageName string, files []string,
 	table.SetSelectedFunc(func(row, column int) {
 		cell := table.GetCell(row, column)
 
-		reference := cell.GetReference().(struct {
-			path string
-		})
+		reference := cell.GetReference().(Reference)
 
-		selected(reference.path, source)
+		selected(reference.Path, source)
 	})
 
 	source.Pages.AddPage(pageName, table, true, true)

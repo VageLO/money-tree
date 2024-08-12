@@ -1,7 +1,6 @@
 package action
 
 import (
-	"bytes"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -81,13 +80,15 @@ func SelectTransactions(request string, source *s.Source) {
 		)
 		check(err)
 
+        amount := strconv.FormatFloat(t.Amount, 'f', 2, 32) 
 		row := []string{t.Description, t.Date, t.Account, t.Category,
-			strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
+			amount, t.TransactionType}
 
 		if t.ToAccountId.Valid {
 			row[2] = fmt.Sprintf("%v > %v", t.Account, t.ToAccount.String)
 			if t.ToAmount.Valid && t.ToAmount.Float64 != 0 {
-				row[4] = fmt.Sprintf("%v > %v", t.Amount, t.ToAmount.Float64)
+                toAmount := strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32) 
+				row[4] = amount + " > " + toAmount
 			}
 		}
 
@@ -106,7 +107,6 @@ func SelectTransactions(request string, source *s.Source) {
 func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 	pages := source.Pages
 	modal := source.Modal
-	table := source.Table
 
 	defer m.ErrorModal(pages, modal)
 
@@ -115,13 +115,9 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	cell := table.GetCell(row, 0)
-	transaction := cell.GetReference().(s.Transaction)
-
 	if t.ToAccountId.Valid {
 		query := `Update Transactions SET account_id = ?, category_id = ?, 
 	transaction_type = ?, date = ?, amount = ?, description = ?, to_account_id = ?, to_amount = ? WHERE id = ?`
-
 		_, err = db.Exec(
 			query,
 			t.AccountId,
@@ -132,12 +128,11 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 			t.Description,
 			t.ToAccountId.Int64,
 			t.ToAmount.Float64,
-			transaction.Id,
+			t.Id,
 		)
 	} else {
 		query := `Update Transactions SET account_id = ?, category_id = ?, 
 	transaction_type = ?, date = ?, amount = ?, description = ?, to_account_id = NULL, to_amount = NULL WHERE id = ?`
-
 		_, err = db.Exec(
 			query,
 			t.AccountId,
@@ -145,28 +140,24 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 			t.TransactionType,
 			t.Date,
 			t.Amount,
-			t.Description, transaction.Id,
+			t.Description, 
+            t.Id,
 		)
 	}
 
 	check(err)
 
-	t.Id = transaction.Id
+    updateAttachments(source, source.Attachments, t.Id)    
 
-	attachments := findAttachments(source, t.Id)
-
-	if len(attachments) > 0 {
-		compareAttachments(source, attachments, source.Attachments, t.Id)
-	} else {
-		Attachments(source, t.Id, source.Attachments)
-	}
-
+    amount := strconv.FormatFloat(t.Amount, 'f', 2, 32) 
 	data := []string{t.Description, t.Date, t.Account, t.Category,
-		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
+		amount, t.TransactionType}
+
 	if t.ToAccountId.Valid {
 		data[2] = fmt.Sprintf("%v > %v", t.Account, t.ToAccount.String)
 		if t.ToAmount.Valid && t.ToAmount.Float64 != 0 {
-			data[4] = fmt.Sprintf("%v > %v", t.Amount, t.ToAmount.Float64)
+            toAmount := strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32) 
+			data[4] = amount + " > " + toAmount
 		}
 	}
 
@@ -230,7 +221,7 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 
 	// Load Attachments if exist
 	if len(source.Attachments) > 0 {
-		Attachments(source, t.Id, source.Attachments)
+		addAttachments(source, t.Id, source.Attachments)
 	}
 
 	row := []string{t.Description, t.Date, t.Account, t.Category,
@@ -277,10 +268,12 @@ func DeleteTransaction(source *s.Source) {
 	table.RemoveRow(row)
 }
 
-func Attachments(source *s.Source, id int64, attachments []string) {
+func addAttachments(source *s.Source, id int64, attachments []string) {
 	defer m.ErrorModal(source.Pages, source.Modal)
+    currentIndex := len(findAttachments(source, id))
 
 	for index, att := range attachments {
+        index += currentIndex
 		bytes, err := os.ReadFile(att)
 		check(err)
 
@@ -315,9 +308,12 @@ func findAttachments(source *s.Source, id int64) []string {
 	var attachments []string
 
 	for _, file := range files {
+        value, err := strconv.ParseInt(strings.Split(file.Name(), "_")[0], 10, 64)
+        check(err)
+
 		if file.IsDir() {
 			continue
-		} else if !strings.Contains(file.Name(), fmt.Sprintf("%v", id)) {
+		} else if value != id {
 			continue
 		}
 
@@ -327,35 +323,44 @@ func findAttachments(source *s.Source, id int64) []string {
 	return attachments
 }
 
-func compareAttachments(source *s.Source, existedAttachments []string, newAttachments []string, id int64) {
-	defer m.ErrorModal(source.Pages, source.Modal)
+func updateAttachments(source *s.Source, newAttachments []string, id int64) {
+    currentAttachments := findAttachments(source, id)
+    
+    var addArray []string
+    var deleteArray []string
 
-	existedBuffs := makeBuffs(source, existedAttachments)
-	newBuffs := makeBuffs(source, newAttachments)
+    // Check deleted attachments and delete them
+    for _, currentAttachment := range currentAttachments {
+        if exist, _ := Contains(newAttachments, currentAttachment); !exist {
+           deleteArray = append(deleteArray, currentAttachment) 
+        }
+    }
+    deleteAttachments(source, deleteArray) 
 
-	for i, existedBuff := range existedBuffs {
-		for j, newBuff := range newBuffs {
-			res := bytes.Compare(existedBuff, newBuff)
-			if res == 0 {
-				continue
-			}
-			deleteAttachments(source, []string{existedAttachments[i]})
-			Attachments(source, id, []string{newAttachments[j]})
-		}
-	}
+    renameAttachments(source, id)
+
+    for _, newAttachment := range newAttachments {
+        if exist, _ := Contains(currentAttachments, newAttachment); !exist {
+           addArray = append(addArray, newAttachment) 
+        }
+    }
+    addAttachments(source, id, addArray)
 }
 
-func makeBuffs(source *s.Source, attachments []string) [][]byte {
+func renameAttachments(source *s.Source, id int64) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	var buffs [][]byte
-
-	for _, attachment := range attachments {
-		buff, err := os.ReadFile(attachment)
-		check(err)
-
-		buffs = append(buffs, buff)
-	}
-
-	return buffs
+    attachments := findAttachments(source, id) 
+    
+    for index, attachment := range attachments {
+        extension := filepath.Ext(attachment)
+        err := os.Rename(
+            attachment, 
+            filepath.Join(
+                    filepath.Dir(attachment), 
+                    fmt.Sprintf("%v_%v%v", id, index, extension),
+            ),
+        )
+        check(err)
+    }
 }

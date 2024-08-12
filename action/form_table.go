@@ -42,6 +42,9 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 	case true:
 		form.AddButton("Add", func() { AddTransaction(transaction, row, source) })
 
+        // Clear attachments array
+        source.Attachments = []string{} 
+
 	case false:
 		form.AddButton("Save", func() {
 			defer m.ErrorModal(source.Pages, source.Modal)
@@ -50,19 +53,19 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
 			}
 			UpdateTransaction(transaction, row, source)
 		})
+
+        // Find attachments by trasaction ID
+		source.Attachments = findAttachments(source, transaction.Id)
 	}
 
 	form.AddButton("➕", func() {
 		defer m.ErrorModal(source.Pages, source.Modal)
-
-		check(errors.New(fmt.Sprintf("%v", source.Attachments)))
+		check(errors.New(fmt.Sprintf("%v %+v", source.Attachments, transaction)))
 	})
 
 	// TODO: FileExplorer
 	form.AddButton("📎", func() {
-		source.Attachments = findAttachments(source, transaction.Id)
 		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
-		//source.Pages.AddPage("FileExplorer", m.NewTree(source), true, true)
 	})
 }
 

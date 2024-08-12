@@ -36,9 +36,9 @@ func insertIntoDb(source *s.Source, path string, t *s.Transaction) {
 
 		transaction.Description = importTransaction.Description
 
-		if contains(debit, importTransaction.Typeof) {
+		if exist, _ := Contains(debit, importTransaction.Typeof); exist {
 			transaction.TransactionType = "debit"
-		} else if contains(credit, importTransaction.Typeof) {
+		} else if exist, _ := Contains(credit, importTransaction.Typeof); exist {
 			transaction.TransactionType = "credit"
 		}
 
@@ -76,13 +76,13 @@ func ImportForm(source *s.Source, path string) {
 	source.Pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
-func contains(s []string, str string) bool {
-	for _, v := range s {
+func Contains(s []string, str string) (bool, int) {
+	for i, v := range s {
 		if v == str {
-			return true
+			return true, i
 		}
 	}
-	return false
+	return false, -1
 }
 
 func FileExporer(source *s.Source, pattern, pageName string) {
