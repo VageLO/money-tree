@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+    // TODO: Change to slices go1.22
+    "golang.org/x/exp/slices"
 	"github.com/rivo/tview"
 )
 
@@ -46,24 +48,30 @@ func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
         source.Attachments = []string{} 
 
 	case false:
-		form.AddButton("Save", func() {
-			defer m.ErrorModal(source.Pages, source.Modal)
-			if initTransaction == transaction {
-				check(errors.New("Nothing Changed"))
-			}
-			UpdateTransaction(transaction, row, source)
-		})
-
         // Find attachments by trasaction ID
 		source.Attachments = findAttachments(source, transaction.Id)
+
+        initAttachments := source.Attachments
+
+		form.AddButton("Save", func() {
+			defer m.ErrorModal(source.Pages, source.Modal)
+
+			if initTransaction != transaction {
+			    UpdateTransaction(transaction, row, source)
+			} else if slices.Compare(initAttachments, source.Attachments) != 0 {
+                updateAttachments(source, source.Attachments, transaction.Id)    
+	            source.Pages.RemovePage("Form")
+            } else {
+		        check(errors.New("Change something"))
+            }
+		})
 	}
 
-	form.AddButton("➕", func() {
-		defer m.ErrorModal(source.Pages, source.Modal)
-		check(errors.New(fmt.Sprintf("%v %+v", source.Attachments, transaction)))
-	})
+	//form.AddButton("➕", func() {
+	//	defer m.ErrorModal(source.Pages, source.Modal)
+	//	check(errors.New(fmt.Sprintf("%v %+v", source.Attachments, transaction)))
+	//})
 
-	// TODO: FileExplorer
 	form.AddButton("📎", func() {
 		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
 	})
