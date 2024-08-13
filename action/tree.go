@@ -23,6 +23,7 @@ type tree struct {
 
 var rootDir, _ = os.UserHomeDir()
 
+//TODO: for all disks in system
 func newTree(source *s.Source, pattern, pageName string) *tree {
 	defer m.ErrorModal(source.Pages, source.Modal)
 

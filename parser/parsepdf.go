@@ -4,6 +4,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+    "errors"
 
 	"github.com/dslipak/pdf"
 )
@@ -35,7 +36,7 @@ func check(err error) {
 	}
 }
 
-func ParsePdf(filename string) []Transaction {
+func ParsePdf(filename string) (error, []Transaction) {
 	r, err := pdf.Open(filename)
 	check(err)
 
@@ -69,7 +70,9 @@ func ParsePdf(filename string) []Transaction {
 			if i+1 == len(texts) {
 				temp_str += parse(texts[tranID:len(texts)])
 				extractRegex(temp_str, &transaction)
-				transactions = append(transactions, transaction)
+				if !transaction.isEmpty() {
+                    transactions = append(transactions, transaction)
+                }
 			}
 			if !TransactionNum.MatchString(sentence.S) {
 				continue
@@ -79,7 +82,9 @@ func ParsePdf(filename string) []Transaction {
 				temp_str += parse(texts[tranID : i-(len(sentence.S)-1)])
 				tranID = i + 1
 				extractRegex(temp_str, &transaction)
-				transactions = append(transactions, transaction)
+                if !transaction.isEmpty() {
+				    transactions = append(transactions, transaction)
+                }
 				temp_str = ""
 				transaction = Transaction{}
 			}
@@ -89,7 +94,10 @@ func ParsePdf(filename string) []Transaction {
 		}
 	}
 	//csv(transactions)
-	return transactions
+    if len(transactions) <= 0 {
+        return errors.New("Can't find any transactions"), transactions
+    }
+	return nil, transactions
 }
 
 func parse(array []pdf.Text) string {
@@ -161,4 +169,12 @@ func csv(t []Transaction) {
 	}
 	file.WriteString(str)
 	file.Close()
+}
+
+func (t *Transaction) isEmpty() bool {
+    arr := []string{t.Id, t.Date, t.Time, t.Typeof, t.Status, t.Price, t.Acronym, t.Description}
+    for _, v := range arr {
+        if v == "" { return true }
+    }
+    return false
 }
