@@ -75,7 +75,7 @@ func OpenFiles(filePath string, source *s.Source) {
     case "linux":
         err := exec.Command("xdg-open", filePath).Start()
         check(err)
-    case "windows"
+    case "windows":
         cmd := exec.Command("cmd")
         cmd.SysProcAttr = &syscall.SysProcAttr{CmdLine: fmt.Sprintf(`/c start "" "%s"`, filePath)} 
         check(cmd.Run())
