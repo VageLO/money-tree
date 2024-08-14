@@ -2,8 +2,8 @@ package action
 
 import (
 	"errors"
-	m "main/modal"
-	s "main/structs"
+	m "github.com/VageLO/money-tree/modal"
+	s "github.com/VageLO/money-tree/structs"
 	"strconv"
 	"time"
 

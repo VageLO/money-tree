@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"main/action"
-	s "main/structs"
+	"github.com/VageLO/money-tree/action"
+	s "github.com/VageLO/money-tree/structs"
 
 	"github.com/rivo/tview"
 )

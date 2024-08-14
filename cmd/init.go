@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	s "main/structs"
+	s "github.com/VageLO/money-tree/structs"
 )
 
 var (

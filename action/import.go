@@ -1,9 +1,9 @@
 package action
 
 import (
-	m "main/modal"
-	"main/parser"
-	s "main/structs"
+	m "github.com/VageLO/money-tree/modal"
+	"github.com/VageLO/money-tree/parser"
+	s "github.com/VageLO/money-tree/structs"
 	"strconv"
 )
 

@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"database/sql"
-	"main/action"
-	m "main/modal"
-	s "main/structs"
+	"github.com/VageLO/money-tree/action"
+	m "github.com/VageLO/money-tree/modal"
+	s "github.com/VageLO/money-tree/structs"
 	"strconv"
 	"strings"
 	"time"

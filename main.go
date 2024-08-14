@@ -1,7 +1,7 @@
 package main
 
 import (
-	"main/cmd"
+	"github.com/VageLO/money-tree/cmd"
 )
 
 func main() {

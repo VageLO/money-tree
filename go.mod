@@ -1,4 +1,4 @@
-module main
+module github.com/VageLO/money-tree
 
 go 1.20
 

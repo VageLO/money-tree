@@ -3,8 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"main/action"
-	m "main/modal"
+	"github.com/VageLO/money-tree/action"
+	m "github.com/VageLO/money-tree/modal"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

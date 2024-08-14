@@ -2,7 +2,7 @@ package modal
 
 import (
 	"fmt"
-	s "main/structs"
+	s "github.com/VageLO/money-tree/structs"
 	"os/exec"
     "syscall"
 	"path/filepath"
