@@ -7,7 +7,6 @@ builds:
     goarch:
       - amd64
       - arm64
-    binary: money-tree
 nfpms:
 - maintainer: VageLO <48802151+VageLO@users.noreply.github.com>
   description: Money-tree
