@@ -2,7 +2,7 @@ project_name: money-tree
 builds:
   - env: [CGO_ENABLED=0]
     goos:
-      - linux
+      #- linux
       - windows
     goarch:
       - amd64
