@@ -1,7 +1,7 @@
 project_name: money-tree
 builds:
     goos:
-      - linux
+      #- linux
       - windows
     goarch:
       - amd64
