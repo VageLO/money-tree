@@ -1,4 +1,3 @@
-project_name: money-tree
 builds:
     goos:
       #- linux
