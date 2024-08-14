@@ -4,10 +4,12 @@
 name: Go build
 
 on:
-  pull_request:
   push:
-    tags:
-      - "*"
+    branches:
+      - 'master'
+  #push:
+  #  tags:
+  #    - "*"
 
 permissions:
   contents: write
