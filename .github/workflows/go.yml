@@ -24,6 +24,12 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: stable
+      - name: Install dependencies
+        run: go mod download
+        
+      - name: Build
+        run: go build main.go
+        
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
