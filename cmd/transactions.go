@@ -3,7 +3,7 @@ package cmd
 import (
 	"main/action"
 	m "main/modal"
-	"os"
+	s "main/structs"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -14,11 +14,7 @@ var transaction_query string
 func Transactions() tview.Primitive {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	query, err := os.ReadFile("./sql/Select_On_Transactions.sql")
-	transaction_query = string(query)
-	check(err)
-
-	action.LoadTransactions(transaction_query, source)
+	action.LoadTransactions(s.Transactions, source)
 	action.LoadAccounts(source)
 	CategoryTree()
 

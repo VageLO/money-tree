@@ -85,8 +85,11 @@ func RemoveAccount(source *s.Source) {
     for _, account := range accountTypes {
         if account.Title == title {
             WhereAccount(account.Id, source)
+            return
         } 
     }
+
+    LoadTransactions(s.Transactions, source)
 	defer db.Close()
 }
 
