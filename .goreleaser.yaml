@@ -1,4 +1,3 @@
-project_name: money-tree
 builds:
     goos:
       - linux
@@ -6,8 +5,3 @@ builds:
     goarch:
       - amd64
       - arm64
-nfpms:
-- maintainer: VageLO<48802151+VageLO@users.noreply.github.com>
-  description: Money-tree.
-  homepage: https://github.com/VageLO/money-tree
-  license: MIT
