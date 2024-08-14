@@ -5,7 +5,6 @@ import (
 	"fmt"
 	m "main/modal"
 	s "main/structs"
-	"os"
 	"strconv"
 	"strings"
 
@@ -16,21 +15,19 @@ func LoadAccounts(source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 	source.AccountList.Clear()
 
-	_, account_types := SelectAccounts(source)
+	_, accountTypes := SelectAccounts(source)
 
 	source.AccountList.
 		SetBorderPadding(0, 0, 2, 0).
 		SetBorder(true).
 		SetTitle("Accounts")
 
-	query, err := os.ReadFile("./sql/Select_On_Transactions.sql")
-	check(err)
-	source.AccountList.AddItem("All Transactions", "----------------", 0, func() { LoadTransactions(string(query), source) })
+	source.AccountList.AddItem("All Transactions", "----------------", 0, func() { LoadTransactions(s.Transactions, source) })
 
-	for _, a := range account_types {
-		account_id := a.Id
-		second_title := fmt.Sprintf("%v %v", strconv.FormatFloat(a.Balance, 'f', 2, 32), a.Currency)
-		source.AccountList.AddItem(a.Title, second_title, 0, func() { WhereAccount(account_id, source) })
+	for _, a := range accountTypes {
+		accountId := a.Id
+		secondTitle := fmt.Sprintf("%v %v", strconv.FormatFloat(a.Balance, 'f', 2, 32), a.Currency)
+		source.AccountList.AddItem(a.Title, secondTitle, 0, func() { WhereAccount(accountId, source) })
 	}
 }
 
@@ -64,14 +61,14 @@ func RemoveAccount(source *s.Source) {
 
 	accounts := source.AccountList
 
-	selected_account := accounts.GetCurrentItem()
-	title, _ := accounts.GetItemText(selected_account)
+	selectedAccount := accounts.GetCurrentItem()
+	title, _ := accounts.GetItemText(selectedAccount)
 
 	if accounts.GetItemCount() <= 1 || title == "All Transactions" {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", "./database.db?_foreign_keys=on")
 	check(err)
 
 	query := `DELETE FROM Accounts WHERE title = ?`
@@ -79,8 +76,17 @@ func RemoveAccount(source *s.Source) {
 	_, err = db.Exec(query, title)
 	check(err)
 
-	accounts.RemoveItem(selected_account)
+	accounts.RemoveItem(selectedAccount)
 
+	newSelectedAccount := accounts.GetCurrentItem()
+	title, _ = accounts.GetItemText(newSelectedAccount)
+	_, accountTypes := SelectAccounts(source)
+
+    for _, account := range accountTypes {
+        if account.Title == title {
+            WhereAccount(account.Id, source)
+        } 
+    }
 	defer db.Close()
 }
 
@@ -94,8 +100,7 @@ func AddAccount(a *s.Account, source *s.Source) {
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	query := `
-	INSERT INTO Accounts (title, currency, balance) VALUES (?, ?, ?)`
+	query := `INSERT INTO Accounts (title, currency, balance) VALUES (?, ?, ?)`
 
 	result, err := db.Exec(query, a.Title, a.Currency, a.Balance)
 	check(err)
@@ -140,12 +145,9 @@ func SelectAccounts(source *s.Source) ([]string, []s.Account) {
 
 func WhereAccount(id int64, source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
-	query, err := os.ReadFile("./sql/Select_On_Transactions_Where_AccountID.sql")
-	check(err)
 
 	str_id := strconv.FormatInt(id, 10)
 
-	request := string(query)
-	request = strings.ReplaceAll(request, "?", str_id)
+	request := strings.ReplaceAll(s.TransactionsWhereAccountId, "?", str_id)
 	LoadTransactions(request, source)
 }

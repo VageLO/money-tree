@@ -5,7 +5,6 @@ import (
 	"errors"
 	m "main/modal"
 	s "main/structs"
-	"os"
 	"strconv"
 	"strings"
 
@@ -46,7 +45,7 @@ func RemoveCategory(source *s.Source) {
 	node := selectedNode.GetReference().(*s.TreeNode)
 	id := node.Reference.Id
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", "./database.db?_foreign_keys=on")
 	check(err)
 
 	query := `DELETE FROM Categories WHERE id = ? OR parent_id = ?`
@@ -56,6 +55,10 @@ func RemoveCategory(source *s.Source) {
 
 	selectedNode.ClearChildren()
 	node.Parent.RemoveChild(selectedNode)
+
+    // Reload transactions
+	LoadTransactions(s.Transactions, source)
+    
 	defer db.Close()
 }
 
@@ -93,10 +96,15 @@ func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode, source *s.
 	nodeReference.Reference.Id = createdId
 	nodeReference.Reference.ParentId.Scan(parentId)
 	nodeReference.Reference.Title = title
+    
+    nodeReference.Selected = func() {
+        SelecteByCategoryId(createdId, source)
+    }
 
 	newNode.SetReference(nodeReference)
-
 	parentNode.AddChild(newNode)
+    
+    source.App.SetFocus(source.CategoryTree)
 	defer db.Close()
 }
 
@@ -138,13 +146,9 @@ func SelectCategories(request string, source *s.Source) ([]string, []s.Category,
 }
 
 func SelecteByCategoryId(id int64, source *s.Source) {
-	query, err := os.ReadFile("./sql/Select_On_Transactions_Where_CategoryID.sql")
-	check(err)
-
 	strId := strconv.FormatInt(id, 10)
 
-	request := string(query)
-	request = strings.ReplaceAll(request, "?", strId)
+	request := strings.ReplaceAll(s.TransactionsWhereCategoryId, "?", strId)
 	LoadTransactions(request, source)
 }
 

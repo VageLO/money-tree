@@ -5,9 +5,14 @@ import (
 	s "main/structs"
 	"os"
 	"path/filepath"
+    "strings"
+    "unicode/utf16"
+    "runtime"
+    "errors"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+    "golang.org/x/sys/windows"
 )
 
 type nodeReference struct {
@@ -21,15 +26,11 @@ type tree struct {
 	rootNode *tview.TreeNode
 }
 
-var rootDir, _ = os.UserHomeDir()
-
-//TODO: for all disks in system
 func newTree(source *s.Source, pattern, pageName string) *tree {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	root := tview.NewTreeNode(rootDir).
-		SetColor(tcell.ColorRed).
-		SetReference(newNodeReference(rootDir, true, nil))
+    root := tview.NewTreeNode(".").
+		SetColor(tcell.ColorRed)
 
 	tree := &tree{
 		TreeView: tview.NewTreeView().
@@ -38,7 +39,18 @@ func newTree(source *s.Source, pattern, pageName string) *tree {
 		rootNode: root,
 	}
 
-	tree.addNode(root, rootDir, pattern)
+    disks := getDrives(source)
+    if len(disks) == 0 {
+        check(errors.New("list of disks is empty"))
+    }
+    
+    for _, disk := range disks {
+        diskNode := tview.NewTreeNode(disk).
+              SetColor(tcell.ColorRed).
+              SetReference(newNodeReference(disk, true, nil))
+        root.AddChild(diskNode)
+        tree.addNode(diskNode, disk, pattern)
+    }
 
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
 		tree.expandOrAddNode(node, source, pattern, pageName)
@@ -55,7 +67,7 @@ func (tree *tree) addNode(directoryNode *tview.TreeNode, path, pattern string) {
 		if pattern != "" && !file.IsDir() && filepath.Ext(file.Name()) != pattern {
 			continue
 		}
-		node := createTreeNode(file.Name(), file.IsDir(), directoryNode)
+		node := createTreeNode(file.Name(), file.IsDir(), directoryNode, path)
 		directoryNode.AddChild(node)
 	}
 }
@@ -93,15 +105,15 @@ func (tree tree) expandOrAddNode(node *tview.TreeNode, source *s.Source, pattern
 	}
 }
 
-func createTreeNode(fileName string, isDir bool, parent *tview.TreeNode) *tview.TreeNode {
+func createTreeNode(fileName string, isDir bool, parent *tview.TreeNode, path string) *tview.TreeNode {
 	var parentPath string
 
 	if parent == nil {
-		parentPath = rootDir
+		parentPath = path
 	} else {
 		reference, ok := parent.GetReference().(*nodeReference)
 		if !ok {
-			parentPath = rootDir
+			parentPath = path
 		} else {
 			parentPath = reference.path
 		}
@@ -132,4 +144,23 @@ func newNodeReference(path string, isDir bool, parent *tview.TreeNode) *nodeRefe
 		isDir:  isDir,
 		parent: parent,
 	}
+}
+
+func getDrives(source *s.Source) []string {
+    defer m.ErrorModal(source.Pages, source.Modal)
+
+    switch runtime.GOOS {
+    case "linux":
+        return []string{"/"}
+    case "windows":
+        n, err := windows.GetLogicalDriveStrings(0, nil)
+        check(err)
+
+        a := make([]uint16, n)
+        windows.GetLogicalDriveStrings(n, &a[0])
+        s := string(utf16.Decode(a))
+        return strings.Split(strings.TrimRight(s, "\x00"), "\x00")
+    default:
+        return []string{}
+    }
 }

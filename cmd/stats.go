@@ -5,7 +5,6 @@ import (
 	"main/action"
 	m "main/modal"
 	s "main/structs"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -168,11 +167,8 @@ func getStatistics(source *s.Source, t *s.Transaction, firstDate, lastDate strin
 	db, err := sql.Open("sqlite3", "./database.db")
 	check(err)
 
-	query, err := os.ReadFile("./sql/Select_Sum_Of_Account.sql")
-	check(err)
-
 	str_id := strconv.FormatInt(t.AccountId, 10)
-	request := string(query)
+	request := s.StatisticsQuery
 	request = strings.ReplaceAll(request, "?", str_id)
 	request = strings.ReplaceAll(request, "FIRST", firstDate)
 	request = strings.ReplaceAll(request, "LAST", lastDate)
