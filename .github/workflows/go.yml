@@ -5,11 +5,8 @@ name: Go build
 
 on:
   push:
-    branches:
-      - 'master'
-  #push:
-  #  tags:
-  #    - "*"
+    tags:
+      - "*"
 
 permissions:
   contents: write
