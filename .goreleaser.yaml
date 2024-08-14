@@ -1,4 +1,5 @@
 project_name: money-tree
+version: 2
 builds:
     goos:
       - linux
