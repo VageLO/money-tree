@@ -1,3 +1,8 @@
+before:
+  hooks:
+    - go mod download
+    - go mod tidy
+
 builds:
   - binary: money_tree
     goos:
