@@ -1,6 +1,6 @@
 before:
   hooks:
-    - go mod download
+    - go mod init github.com/VageLO/money-tree
     - go mod tidy
 
 builds:
