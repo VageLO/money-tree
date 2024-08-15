@@ -1,5 +1,5 @@
 builds:
-  - binary: doggo
+  - binary: money_tree
     goos:
       - windows
       - linux
