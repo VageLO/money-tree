@@ -12,7 +12,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-    "golang.org/x/sys/windows"
+    //"golang.org/x/sys/windows"
 )
 
 type nodeReference struct {
