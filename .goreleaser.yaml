@@ -4,5 +4,10 @@ before:
     - go mod tidy
 
 builds:
+    binary: money-tree
     goos: [linux, windows]
-    goarch: [amd64, arm64]
+    #goarch: [amd64, arm64]
+
+
+release:
+  draft: false
