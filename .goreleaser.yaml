@@ -1,6 +1,5 @@
 project_name: money-tree
 builds:
-    env: [CGO_ENABLED=1]
     goos:
       #- linux
       - windows
