@@ -1,13 +1,8 @@
-project_name: money-tree
+version: 2
+before:
+  hooks:
+    - go mod tidy
+
 builds:
-    goos:
-      #- linux
-      - windows
-    goarch:
-      - amd64
-      - arm64
-nfpms:
-- maintainer: VageLO <48802151+VageLO@users.noreply.github.com>
-  description: Money-tree
-  homepage: https://github.com/VageLO/money-tree
-  license: MIT
+    goos: [linux, windows]
+    goarch: [amd64, arm64]
