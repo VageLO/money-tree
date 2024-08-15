@@ -4,7 +4,6 @@ import (
 	"fmt"
 	s "github.com/VageLO/money-tree/structs"
 	"os/exec"
-    "syscall"
 	"path/filepath"
     "runtime"
 
@@ -76,9 +75,7 @@ func OpenFiles(filePath string, source *s.Source) {
         err := exec.Command("xdg-open", filePath).Start()
         check(err)
     case "windows":
-        cmd := exec.Command("cmd")
-        cmd.SysProcAttr = &syscall.SysProcAttr{CmdLine: fmt.Sprintf(`/c start "" "%s"`, filePath)} 
-        check(cmd.Run())
+        openWindowsFile(filePath, source)
     }
 }
 
