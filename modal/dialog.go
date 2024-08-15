@@ -3,9 +3,7 @@ package modal
 import (
 	"fmt"
 	s "github.com/VageLO/money-tree/structs"
-	"os/exec"
 	"path/filepath"
-    "runtime"
 
 	"github.com/rivo/tview"
 )
@@ -65,18 +63,6 @@ func FileTable(source *s.Source, pageName string, files []string,
 	})
 
 	source.Pages.AddPage(pageName, table, true, true)
-}
-
-func OpenFiles(filePath string, source *s.Source) {
-	defer ErrorModal(source.Pages, source.Modal)
-    
-    switch runtime.GOOS {
-    case "linux":
-        err := exec.Command("xdg-open", filePath).Start()
-        check(err)
-    case "windows":
-        openWindowsFile(filePath, source)
-    }
 }
 
 func check(err error) {

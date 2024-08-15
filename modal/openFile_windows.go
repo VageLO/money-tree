@@ -9,7 +9,7 @@ import (
     "syscall"
 )
 
-func openWindowsFile(filePath string, source *s.Source) {
+func OpenFiles(filePath string, source *s.Source) {
 	defer ErrorModal(source.Pages, source.Modal)
 
     cmd := exec.Command("cmd")
