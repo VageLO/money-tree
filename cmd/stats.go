@@ -164,7 +164,7 @@ func loadStatictisTable(table *tview.Table, data []s.Statistics) {
 func getStatistics(source *s.Source, t *s.Transaction, firstDate, lastDate string) []s.Statistics {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	str_id := strconv.FormatInt(t.AccountId, 10)

@@ -16,7 +16,7 @@ import (
 func RenameNode(text string, node *tview.TreeNode, source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	nodeReference := node.GetReference().(*s.TreeNode)
@@ -45,7 +45,7 @@ func RemoveCategory(source *s.Source) {
 	node := selectedNode.GetReference().(*s.TreeNode)
 	id := node.Reference.Id
 
-	db, err := sql.Open("sqlite3", "./database.db?_foreign_keys=on")
+	db, err := sql.Open("sqlite3", source.Config.Database + "?_foreign_keys=on")
 	check(err)
 
 	query := `DELETE FROM Categories WHERE id = ? OR parent_id = ?`
@@ -68,7 +68,7 @@ func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode, source *s.
 	err := isEmpty(newNode)
 	check(err)
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	title := newNode.GetText()
@@ -111,7 +111,7 @@ func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode, source *s.
 func SelectCategories(request string, source *s.Source) ([]string, []s.Category, []*s.TreeNode) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	rootCategories, err := db.Query(request)

@@ -40,7 +40,7 @@ func RenameAccount(a s.Account, source *s.Source) {
 	selectedItem := list.GetCurrentItem()
 	title, _ := list.GetItemText(selectedItem)
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	query := `UPDATE Accounts SET title = ?, currency = ?, balance = ? WHERE title = ?`
@@ -68,7 +68,7 @@ func RemoveAccount(source *s.Source) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", "./database.db?_foreign_keys=on")
+	db, err := sql.Open("sqlite3", source.Config.Database + "?_foreign_keys=on")
 	check(err)
 
 	query := `DELETE FROM Accounts WHERE title = ?`
@@ -100,7 +100,7 @@ func AddAccount(a *s.Account, source *s.Source) {
 	pages := source.Pages
 	accounts := source.AccountList
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	query := `INSERT INTO Accounts (title, currency, balance) VALUES (?, ?, ?)`
@@ -122,7 +122,7 @@ func AddAccount(a *s.Account, source *s.Source) {
 func SelectAccounts(source *s.Source) ([]string, []s.Account) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	root_accounts, err := db.Query(`SELECT * FROM Accounts`)

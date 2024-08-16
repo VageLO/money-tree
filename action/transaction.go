@@ -45,7 +45,7 @@ func LoadTransactions(request string, source *s.Source) {
 
 func SelectTransactions(request string, source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	rows, err := db.Query(request)
@@ -112,7 +112,7 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 
 	check(t.IsEmpty())
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	if t.ToAccountId.Valid {
@@ -182,7 +182,7 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 
 	check(t.IsEmpty())
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	var result sql.Result
@@ -253,7 +253,7 @@ func DeleteTransaction(source *s.Source) {
 	cell := table.GetCell(row, 0)
 	transaction := cell.GetReference().(s.Transaction)
 
-	db, err := sql.Open("sqlite3", "./database.db")
+	db, err := sql.Open("sqlite3", source.Config.Database)
 	check(err)
 
 	query := `DELETE FROM Transactions WHERE id = ?`
