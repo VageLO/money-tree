@@ -5,8 +5,8 @@ builds:
     goos:
       - windows
       - linux
-    goarch:
-      - amd64
+    #goarch:
+      #  - amd64
     goarm:
       - 6
       - 7
@@ -15,6 +15,6 @@ nfpms:
   description: Money tree
   homepage: https://github.com/VageLO/money-tree
   license: MIT
-  formats:
-  - deb
-  - rpm
+    #formats:
+    #- deb
+    #- rpm
