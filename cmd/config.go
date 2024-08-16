@@ -34,7 +34,7 @@ func readConfig() error {
 
     decoder := yaml.NewDecoder(file)    
     err = decoder.Decode(&source.Config)
-    
+    check(err) 
     return nil
 }
 

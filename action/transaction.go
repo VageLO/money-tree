@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+    "log"
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
 	"os"
@@ -16,7 +17,15 @@ import (
 )
 
 func check(err error) {
+    file, e := os.OpenFile("./tree.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+    if e != nil {
+        log.Fatalf("error opening log file: %v", e)
+    }
+    defer file.Close()
+    log.SetOutput(file)
+
 	if err != nil {
+        log.Println(err)
 		panic(err.Error())
 	}
 }

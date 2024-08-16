@@ -19,7 +19,8 @@ func initDB() error {
 		return nil
 	}
 
-	os.Create(url)
+	_, err := os.Create(url)
+    check(err)
 
 	db, err := sql.Open("sqlite3", url)
 	check(err)
