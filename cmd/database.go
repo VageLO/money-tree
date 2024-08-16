@@ -3,16 +3,14 @@ package cmd
 import (
 	"database/sql"
 	"log"
-	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func InitDB() error {
-	defer m.ErrorModal(source.Pages, source.Modal)
-	url := "./database.db"
+func initDB() error {
+	url := source.Config.Database 
 
 	// Check if database file exist, if exist return.
 	fileInfo, _ := os.Stat(url)

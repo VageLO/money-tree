@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	_      = InitDB()
+    _      = readConfig()   
+	_      = initDB()
 	source = &s.Source{
 		App:          tview.NewApplication(),
 		AccountList:  tview.NewList(),
@@ -18,6 +19,7 @@ var (
 		Modal:        tview.NewModal(),
 		Pages:        tview.NewPages(),
 		Columns:      []string{"Description", "Date", "Account", "Category", "Amount", "Transaction Type"},
+        Config:       s.Config{},
 	}
 )
 
