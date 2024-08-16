@@ -9,6 +9,11 @@ builds:
       - windows
     goarch:
       - amd64
+    overrides:
+      - goos: windows
+        goarch: amd64
+        env:
+          - CC=gcc
 nfpms:
 - maintainer: VageLO
   description: Money tree
