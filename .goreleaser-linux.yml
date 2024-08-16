@@ -9,7 +9,7 @@ builds:
       - linux
     goarch:
       - amd64
-      - 386
+      #- 386
     overrides:
       - goos: linux
         goarch: amd64
