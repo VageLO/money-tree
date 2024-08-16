@@ -1,5 +1,8 @@
 project_name: money-tree
-
+before:
+  hooks:
+    - go mod init github.com/VageLO/money-tree
+    - go mod tidy
 builds:
   - binary: money_tree
     goos:
