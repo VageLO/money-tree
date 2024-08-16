@@ -1,6 +1,7 @@
 project_name: money-tree
 before:
     hooks:
+        - go env -w CGO_ENABLED=1
         - go mod init github.com/VageLO/money-tree
         - go mod tidy
 builds:
@@ -8,8 +9,6 @@ builds:
     goos:
         - windows
         - linux
-    env:
-        - CGO_ENABLED=1
 nfpms:
 - maintainer: VageLO
   description: Money tree
