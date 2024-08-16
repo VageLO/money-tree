@@ -1,18 +1,14 @@
 package action
 
 import (
+	"errors"
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
 	"os"
 	"path/filepath"
-    //"strings"
-    //"unicode/utf16"
-    //"runtime"
-    //"errors"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-    //"golang.org/x/sys/windows"
 )
 
 type nodeReference struct {
@@ -29,7 +25,7 @@ type tree struct {
 func newTree(source *s.Source, pattern, pageName string) *tree {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-    root := tview.NewTreeNode(".").
+	root := tview.NewTreeNode(".").
 		SetColor(tcell.ColorRed)
 
 	tree := &tree{
@@ -39,18 +35,18 @@ func newTree(source *s.Source, pattern, pageName string) *tree {
 		rootNode: root,
 	}
 
-    // disks := getDrives(source)
-    // if len(disks) == 0 {
-    //     check(errors.New("list of disks is empty"))
-    // }
-    
-    // for _, disk := range disks {
-    //     diskNode := tview.NewTreeNode(disk).
-    //           SetColor(tcell.ColorRed).
-    //           SetReference(newNodeReference(disk, true, nil))
-    //     root.AddChild(diskNode)
-    //     tree.addNode(diskNode, disk, pattern)
-    // }
+	disks := getDrives(source)
+	if len(disks) == 0 {
+		check(errors.New("list of disks is empty"))
+	}
+
+	for _, disk := range disks {
+		diskNode := tview.NewTreeNode(disk).
+			SetColor(tcell.ColorRed).
+			SetReference(newNodeReference(disk, true, nil))
+		root.AddChild(diskNode)
+		tree.addNode(diskNode, disk, pattern)
+	}
 
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
 		tree.expandOrAddNode(node, source, pattern, pageName)
@@ -145,22 +141,3 @@ func newNodeReference(path string, isDir bool, parent *tview.TreeNode) *nodeRefe
 		parent: parent,
 	}
 }
-
-// func getDrives(source *s.Source) []string {
-//     defer m.ErrorModal(source.Pages, source.Modal)
-
-//     switch runtime.GOOS {
-//     case "linux":
-//         return []string{"/"}
-//     case "windows":
-//         n, err := windows.GetLogicalDriveStrings(0, nil)
-//         check(err)
-
-//         a := make([]uint16, n)
-//         windows.GetLogicalDriveStrings(n, &a[0])
-//         s := string(utf16.Decode(a))
-//         return strings.Split(strings.TrimRight(s, "\x00"), "\x00")
-//     default:
-//         return []string{}
-//     }
-// }
