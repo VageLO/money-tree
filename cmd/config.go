@@ -22,12 +22,6 @@ func readConfig() error {
         check(err)
     }
 
-    attachmentsPath := filepath.Join(pwd, "attachments")
-    if err = os.Mkdir(attachmentsPath, 0750); err != nil && !os.IsExist(err) {
-        check(err)
-    }
-    source.Config.Attachments = attachmentsPath
-
     configPath = filepath.Join(configPath, "config.yml")
     
     file, err := os.Open(configPath)
@@ -53,6 +47,12 @@ func initConfig(pwd, configPath string) {
     
     defer file.Close() 
 
+    attachmentsPath := filepath.Join(pwd, "attachments")
+    if err = os.Mkdir(attachmentsPath, 0750); err != nil && !os.IsExist(err) {
+        check(err)
+    }
+
+    source.Config.Attachments = attachmentsPath
     encoder := yaml.NewEncoder(file)
     err = encoder.Encode(&source.Config)
     check(err)
