@@ -4,11 +4,13 @@ before:
     - go mod init github.com/VageLO/money-tree
     - go mod tidy
 builds:
-  env: [CGO_ENABLED=1]
-  binary: money_tree
-  goos:
-    - windows
-    - linux
+  - binary: money_tree
+    goos:
+      - windows
+      - linux
+    overrides:
+      env:
+        - CGO_ENABLED=1
 nfpms:
 - maintainer: VageLO
   description: Money tree
