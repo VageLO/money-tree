@@ -18,10 +18,15 @@ func readConfig() error {
     source.Config.Database = filepath.Join(pwd, "database.db")
 
     configPath := filepath.Join(dir, "money-tree") 
-
     if err = os.Mkdir(configPath, 0750); err != nil && !os.IsExist(err) {
         check(err)
     }
+
+    attachmentsPath := filepath.Join(pwd, "attachments")
+    if err = os.Mkdir(attachmentsPath, 0750); err != nil && !os.IsExist(err) {
+        check(err)
+    }
+    source.Config.Attachments = attachmentsPath
 
     configPath = filepath.Join(configPath, "config.yml")
     

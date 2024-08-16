@@ -81,6 +81,7 @@ type Source struct {
 type Config struct {
     Path string `yaml:"path"`
     Database string `yaml:"database"`
+    Attachments string `yaml:"attachments"`
 }
 
 type Statistics struct {

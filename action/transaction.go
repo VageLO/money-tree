@@ -282,7 +282,7 @@ func addAttachments(source *s.Source, id int64, attachments []string) {
 
 		extension := filepath.Ext(file.Name())
 
-		path := filepath.Join("./attachments", fmt.Sprintf("%v_%v%v", id, index, extension))
+		path := filepath.Join(source.Config.Attachments, fmt.Sprintf("%v_%v%v", id, index, extension))
 		err = os.WriteFile(path, bytes, 0644)
 		check(err)
 	}
@@ -300,7 +300,7 @@ func deleteAttachments(source *s.Source, attachments []string) {
 func findAttachments(source *s.Source, id int64) []string {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-	folder := "./attachments"
+	folder := source.Config.Attachments
 	files, err := os.ReadDir(folder)
 
 	check(err)
