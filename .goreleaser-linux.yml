@@ -6,11 +6,15 @@ before:
 builds:
   - env: [CGO_ENABLED=1]
     goos:
-      - windows
       - linux
     goarch:
       - amd64
-      - arm64
+      - 386
+    overrides:
+      - goos: linux
+        goarch: amd64
+        env:
+          - CC=gcc
 nfpms:
 - maintainer: VageLO
   description: Money tree

@@ -1,0 +1,16 @@
+project_name: money-tree
+before:
+  hooks:
+    - go mod init github.com/VageLO/money-tree
+    - go mod tidy
+builds:
+  - env: [CGO_ENABLED=1]
+    goos:
+      - windows
+    goarch:
+      - amd64
+nfpms:
+- maintainer: VageLO
+  description: Money tree
+  homepage: https://github.com/VageLO/money-tree
+  license: MIT
