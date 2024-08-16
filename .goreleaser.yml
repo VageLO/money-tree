@@ -1,8 +1,4 @@
 project_name: money-tree
-before:
-  hooks:
-    - go mod init github.com/VageLO/money-tree
-    - go mod tidy
 
 builds:
   - binary: money_tree
@@ -19,3 +15,6 @@ nfpms:
   description: Money tree
   homepage: https://github.com/VageLO/money-tree
   license: MIT
+  formats:
+  - deb
+  - rpm
