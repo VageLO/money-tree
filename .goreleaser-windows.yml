@@ -1,4 +1,6 @@
 project_name: money-tree
+checksum:
+	disable: true
 before:
   hooks:
     - go mod init github.com/VageLO/money-tree
@@ -14,8 +16,6 @@ builds:
         goarch: amd64
         env:
           - CC=gcc
-checksum:
-	disable: true
 nfpms:
 - maintainer: VageLO
   description: Money tree
