@@ -37,15 +37,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release-windows-binary:
-      runs-on: ubuntu-latest
+      runs-on: windows-latest
+      defaults:
+        run:
+          shell: bash
       steps:
         - name: Checkout
           uses: actions/checkout@v4
           with:
             fetch-depth: 0
         
-        - name: Install cross-compiler
-          run: sudo apt-get -y install gcc-aarch64-linux-gnu
+        - name: Gcc
+          run: gcc --version
 
         - name: Set up Go
           uses: actions/setup-go@v5
