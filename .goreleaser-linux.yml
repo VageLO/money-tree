@@ -1,6 +1,6 @@
 project_name: money-tree
 checksum:
-	disable: true
+	- disable: true
 before:
   hooks:
     - go mod init github.com/VageLO/money-tree
