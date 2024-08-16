@@ -5,10 +5,10 @@ before:
     - go mod tidy
 builds:
   env: [CGO_ENABLED=1]
-  - binary: money_tree
-    goos:
-      - windows
-      - linux
+  binary: money_tree
+  goos:
+    - windows
+    - linux
 nfpms:
 - maintainer: VageLO
   description: Money tree
