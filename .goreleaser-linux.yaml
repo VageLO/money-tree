@@ -15,7 +15,7 @@ builds:
         - amd64
         #- 386
     overrides:
-        - goos: linux
+        goos: linux
         goarch: amd64
         env:
             - CC=gcc
