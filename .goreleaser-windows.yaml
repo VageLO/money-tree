@@ -18,8 +18,8 @@ builds:
         env:
           - CC=gcc
 checksum:
-  name_template: "{{ .ArtifactName }}_checksums.txt"
-	split: True
+  - name_template: "{{ .ArtifactName }}_checksums.txt"
+	split: true
 
 nfpms:
 - maintainer: VageLO
