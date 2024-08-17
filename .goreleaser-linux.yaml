@@ -24,7 +24,7 @@ checksum:
     name_template: "{{ .ArtifactName }}_checksums.txt"
 
 nfpms:
-    - maintainer: VageLO
+    maintainer: VageLO
     description: Money tree
     homepage: https://github.com/VageLO/money-tree
     license: MIT
