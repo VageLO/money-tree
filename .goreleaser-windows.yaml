@@ -1,25 +1,20 @@
----
 project_name: money-tree
-
 before:
-    hooks:
-        - go mod init github.com/VageLO/money-tree
-        - go mod tidy
-
+  hooks:
+    - go mod init github.com/VageLO/money-tree
+    - go mod tidy
 builds:
-    env: [CGO_ENABLED=1]
+  - env: [CGO_ENABLED=1]
     goos:
-        - windows
+      - windows
     goarch:
-        - amd64
+      - amd64
+      #- 386
     overrides:
-        goos: windows
+      - goos: windows
         goarch: amd64
         env:
-            - CC=gcc
-checksum:
-    name_template: "{{ .ArtifactName }}_checksums.txt"
-
+          - CC=gcc
 nfpms:
 - maintainer: VageLO
   description: Money tree
