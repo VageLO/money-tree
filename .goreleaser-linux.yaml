@@ -22,7 +22,7 @@ builds:
 
 checksum:
   name_template: "{{ .ArtifactName }}_checksums.txt"
-	split: true
+	split: True
 
 nfpms:
 - maintainer: VageLO
