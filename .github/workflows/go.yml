@@ -33,7 +33,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --config .goreleaser-linux.yml --clean
+          args: release --config .goreleaser-linux.yaml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release-windows-binary:
@@ -63,6 +63,6 @@ jobs:
           uses: goreleaser/goreleaser-action@v6
           with:
             version: latest
-            args: release --config .goreleaser-windows.yml --clean
+            args: release --config .goreleaser-windows.yaml --clean
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
