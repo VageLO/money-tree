@@ -4,8 +4,7 @@ before:
   hooks:
     - go mod init github.com/VageLO/money-tree
     - go mod tidy
-checksum:
-	disable: true
+
 builds:
   - env: [CGO_ENABLED=1]
     goos:
@@ -17,6 +16,10 @@ builds:
         goarch: amd64
         env:
           - CC=gcc
+checksum:
+  name_template: "{{ .ArtifactName }}_checksums.txt"
+	split: true
+
 nfpms:
 - maintainer: VageLO
   description: Money tree
