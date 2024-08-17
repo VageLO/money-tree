@@ -1,10 +1,12 @@
 project_name: money-tree
-checksum:
-	disable: true
+
 before:
   hooks:
     - go mod init github.com/VageLO/money-tree
     - go mod tidy
+checksum:
+	disable: true
+
 builds:
   - env: [CGO_ENABLED=1]
     goos:
