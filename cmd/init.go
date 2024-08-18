@@ -1,15 +1,16 @@
 package cmd
 
 import (
-    "os"
-    "log"
+	s "github.com/VageLO/money-tree/structs"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	s "github.com/VageLO/money-tree/structs"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 var (
-    _      = readConfig()   
+	_      = readConfig()
 	_      = initDB()
 	source = &s.Source{
 		App:          tview.NewApplication(),
@@ -21,20 +22,25 @@ var (
 		Modal:        tview.NewModal(),
 		Pages:        tview.NewPages(),
 		Columns:      []string{"Description", "Date", "Account", "Category", "Amount", "Transaction Type"},
-        Config:       s.Config{},
+		Config:       s.Config{},
 	}
 )
 
 func check(err error) {
-    file, e := os.OpenFile("./tree.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-    if e != nil {
-        log.Fatalf("error opening log file: %v", e)
-    }
-    defer file.Close()
-    log.SetOutput(file)
+	configPath, e := os.UserConfigDir()
+	if e != nil {
+		log.Fatalln(e)
+	}
+
+	file, e := os.OpenFile(filepath.Join(configPath, "money-tree", "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if e != nil {
+		log.Fatalf("error opening log file: %v", e)
+	}
+	defer file.Close()
+	log.SetOutput(file)
 
 	if err != nil {
-        log.Println(err)
+		log.Println(err)
 		panic(err)
 	}
 }

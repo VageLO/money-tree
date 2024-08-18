@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-    "log"
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -17,15 +17,20 @@ import (
 )
 
 func check(err error) {
-    file, e := os.OpenFile("./tree.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-    if e != nil {
-        log.Fatalf("error opening log file: %v", e)
-    }
-    defer file.Close()
-    log.SetOutput(file)
+	configPath, e := os.UserConfigDir()
+	if e != nil {
+		log.Fatalln(e)
+	}
+
+	file, e := os.OpenFile(filepath.Join(configPath, "money-tree", "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if e != nil {
+		log.Fatalf("error opening log file: %v", e)
+	}
+	defer file.Close()
+	log.SetOutput(file)
 
 	if err != nil {
-        log.Println(err)
+		log.Println(err)
 		panic(err.Error())
 	}
 }
@@ -89,14 +94,14 @@ func SelectTransactions(request string, source *s.Source) {
 		)
 		check(err)
 
-        amount := strconv.FormatFloat(t.Amount, 'f', 2, 32) 
+		amount := strconv.FormatFloat(t.Amount, 'f', 2, 32)
 		row := []string{t.Description, t.Date, t.Account, t.Category,
 			amount, t.TransactionType}
 
 		if t.ToAccountId.Valid {
 			row[2] = fmt.Sprintf("%v > %v", t.Account, t.ToAccount.String)
 			if t.ToAmount.Valid && t.ToAmount.Float64 != 0 {
-                toAmount := strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32) 
+				toAmount := strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32)
 				row[4] = amount + " > " + toAmount
 			}
 		}
@@ -149,23 +154,23 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 			t.TransactionType,
 			t.Date,
 			t.Amount,
-			t.Description, 
-            t.Id,
+			t.Description,
+			t.Id,
 		)
 	}
 
 	check(err)
 
-    updateAttachments(source, source.Attachments, t.Id)    
+	updateAttachments(source, source.Attachments, t.Id)
 
-    amount := strconv.FormatFloat(t.Amount, 'f', 2, 32) 
+	amount := strconv.FormatFloat(t.Amount, 'f', 2, 32)
 	data := []string{t.Description, t.Date, t.Account, t.Category,
 		amount, t.TransactionType}
 
 	if t.ToAccountId.Valid {
 		data[2] = fmt.Sprintf("%v > %v", t.Account, t.ToAccount.String)
 		if t.ToAmount.Valid && t.ToAmount.Float64 != 0 {
-            toAmount := strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32) 
+			toAmount := strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32)
 			data[4] = amount + " > " + toAmount
 		}
 	}
@@ -279,10 +284,10 @@ func DeleteTransaction(source *s.Source) {
 
 func addAttachments(source *s.Source, id int64, attachments []string) {
 	defer m.ErrorModal(source.Pages, source.Modal)
-    currentIndex := len(findAttachments(source, id))
+	currentIndex := len(findAttachments(source, id))
 
 	for index, att := range attachments {
-        index += currentIndex
+		index += currentIndex
 		bytes, err := os.ReadFile(att)
 		check(err)
 
@@ -317,8 +322,8 @@ func findAttachments(source *s.Source, id int64) []string {
 	var attachments []string
 
 	for _, file := range files {
-        value, err := strconv.ParseInt(strings.Split(file.Name(), "_")[0], 10, 64)
-        check(err)
+		value, err := strconv.ParseInt(strings.Split(file.Name(), "_")[0], 10, 64)
+		check(err)
 
 		if file.IsDir() {
 			continue
@@ -333,43 +338,43 @@ func findAttachments(source *s.Source, id int64) []string {
 }
 
 func updateAttachments(source *s.Source, newAttachments []string, id int64) {
-    currentAttachments := findAttachments(source, id)
-    
-    var addArray []string
-    var deleteArray []string
+	currentAttachments := findAttachments(source, id)
 
-    // Check deleted attachments and delete them
-    for _, currentAttachment := range currentAttachments {
-        if exist, _ := Contains(newAttachments, currentAttachment); !exist {
-           deleteArray = append(deleteArray, currentAttachment) 
-        }
-    }
-    deleteAttachments(source, deleteArray) 
+	var addArray []string
+	var deleteArray []string
 
-    renameAttachments(source, id)
+	// Check deleted attachments and delete them
+	for _, currentAttachment := range currentAttachments {
+		if exist, _ := Contains(newAttachments, currentAttachment); !exist {
+			deleteArray = append(deleteArray, currentAttachment)
+		}
+	}
+	deleteAttachments(source, deleteArray)
 
-    for _, newAttachment := range newAttachments {
-        if exist, _ := Contains(currentAttachments, newAttachment); !exist {
-           addArray = append(addArray, newAttachment) 
-        }
-    }
-    addAttachments(source, id, addArray)
+	renameAttachments(source, id)
+
+	for _, newAttachment := range newAttachments {
+		if exist, _ := Contains(currentAttachments, newAttachment); !exist {
+			addArray = append(addArray, newAttachment)
+		}
+	}
+	addAttachments(source, id, addArray)
 }
 
 func renameAttachments(source *s.Source, id int64) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 
-    attachments := findAttachments(source, id) 
-    
-    for index, attachment := range attachments {
-        extension := filepath.Ext(attachment)
-        err := os.Rename(
-            attachment, 
-            filepath.Join(
-                    filepath.Dir(attachment), 
-                    fmt.Sprintf("%v_%v%v", id, index, extension),
-            ),
-        )
-        check(err)
-    }
+	attachments := findAttachments(source, id)
+
+	for index, attachment := range attachments {
+		extension := filepath.Ext(attachment)
+		err := os.Rename(
+			attachment,
+			filepath.Join(
+				filepath.Dir(attachment),
+				fmt.Sprintf("%v_%v%v", id, index, extension),
+			),
+		)
+		check(err)
+	}
 }

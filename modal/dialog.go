@@ -2,16 +2,16 @@ package modal
 
 import (
 	"fmt"
-    "log"
-    "os"
 	s "github.com/VageLO/money-tree/structs"
+	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/rivo/tview"
 )
 
 type Reference struct {
-    Path string
+	Path string
 }
 
 func Modal(p tview.Primitive, hight, width int) tview.Primitive {
@@ -68,15 +68,20 @@ func FileTable(source *s.Source, pageName string, files []string,
 }
 
 func check(err error) {
-    file, e := os.OpenFile("./tree.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-    if e != nil {
-        log.Fatalf("error opening log file: %v", e)
-    }
-    defer file.Close()
-    log.SetOutput(file)
+	configPath, e := os.UserConfigDir()
+	if e != nil {
+		log.Fatalln(e)
+	}
+
+	file, e := os.OpenFile(filepath.Join(configPath, "money-tree", "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if e != nil {
+		log.Fatalf("error opening log file: %v", e)
+	}
+	defer file.Close()
+	log.SetOutput(file)
 
 	if err != nil {
-        log.Println(err)
+		log.Println(err)
 		panic(err)
 	}
 }

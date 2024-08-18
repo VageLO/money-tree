@@ -75,13 +75,13 @@ type Source struct {
 	Columns      []string
 	Attachments  []string
 	Imports      []string
-    Config       Config 
+	Config       Config
 }
 
 type Config struct {
-    Path string `yaml:"path"`
-    Database string `yaml:"database"`
-    Attachments string `yaml:"attachments"`
+	Path        string `yaml:"path"`
+	Database    string `yaml:"database"`
+	Attachments string `yaml:"attachments"`
 }
 
 type Statistics struct {

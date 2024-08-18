@@ -3,57 +3,63 @@ package cmd
 import (
 	"os"
 	"path/filepath"
-    
-    "gopkg.in/yaml.v3"
+
+	"gopkg.in/yaml.v3"
 )
+
+var pwd string
 
 func readConfig() error {
 
-    dir, err := os.UserConfigDir()
-    check(err)
+	pwd, err := os.Getwd()
+	check(err)
 
-    pwd, err := os.Getwd()
-    check(err)
-    
-    source.Config.Database = filepath.Join(pwd, "database.db")
+	dir, err := os.UserConfigDir()
+	check(err)
 
-    configPath := filepath.Join(dir, "money-tree") 
-    if err = os.Mkdir(configPath, 0750); err != nil && !os.IsExist(err) {
-        check(err)
-    }
+	source.Config.Database = filepath.Join(pwd, "database.db")
 
-    configPath = filepath.Join(configPath, "config.yml")
-    
-    file, err := os.Open(configPath)
-    if err != nil && !os.IsExist(err) {
-        initConfig(pwd, configPath)
-        return nil
-    }
+	configPath := filepath.Join(dir, "money-tree")
+	if err = os.Mkdir(configPath, 0750); err != nil && !os.IsExist(err) {
+		check(err)
+	}
 
-    defer file.Close()
+	configPath = filepath.Join(configPath, "config.yml")
 
-    decoder := yaml.NewDecoder(file)    
-    err = decoder.Decode(&source.Config)
-    check(err) 
-    return nil
+	file, err := os.Open(configPath)
+	if err != nil && !os.IsExist(err) {
+		initConfig(pwd, configPath)
+		return nil
+	}
+
+	defer file.Close()
+
+	decoder := yaml.NewDecoder(file)
+	err = decoder.Decode(&source.Config)
+	check(err)
+
+	if err = os.Mkdir(source.Config.Attachments, 0750); err != nil && !os.IsExist(err) {
+		check(err)
+	}
+	return nil
 }
 
 func initConfig(pwd, configPath string) {
 
-    file, err := os.Create(configPath)
-    check(err)
+	file, err := os.Create(configPath)
+	check(err)
 
-    source.Config.Path = pwd
-    
-    defer file.Close() 
+	source.Config.Path = pwd
 
-    attachmentsPath := filepath.Join(pwd, "attachments")
-    if err = os.Mkdir(attachmentsPath, 0750); err != nil && !os.IsExist(err) {
-        check(err)
-    }
+	defer file.Close()
 
-    source.Config.Attachments = attachmentsPath
-    encoder := yaml.NewEncoder(file)
-    err = encoder.Encode(&source.Config)
-    check(err)
+	attachmentsPath := filepath.Join(pwd, "attachments")
+	if err = os.Mkdir(attachmentsPath, 0750); err != nil && !os.IsExist(err) {
+		check(err)
+	}
+
+	source.Config.Attachments = attachmentsPath
+	encoder := yaml.NewEncoder(file)
+	err = encoder.Encode(&source.Config)
+	check(err)
 }
