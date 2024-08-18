@@ -16,7 +16,7 @@ builds:
         env:
           - CC=gcc
 checksum:
-  name_template: "{{ .ProjectName }}_windows_checksums.txt"
+  name_template: "{{ .ProjectName }}_{{ .Version }}_windows_checksums.txt"
 nfpms:
 - maintainer: VageLO
   description: Money tree
