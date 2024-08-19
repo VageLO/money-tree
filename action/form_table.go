@@ -321,7 +321,7 @@ func Transfer(source *s.Source, t *s.Transaction) {
 }
 
 func added(text string, label string, t *s.Transaction, source *s.Source) {
-	if text == "" {
+	if text == "" && label != "Description" {
 		return
 	}
 	defer m.ErrorModal(source.Pages, source.Modal)

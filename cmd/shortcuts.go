@@ -47,7 +47,7 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 
-	case tcell.KeyCtrlD, tcell.KeyDelete, tcell.KeyBackspace:
+	case tcell.KeyCtrlD:
 
 		if attachments.HasFocus() {
             row, column := attachments.GetSelection()
