@@ -17,22 +17,11 @@ import (
 )
 
 func check(err error) {
-	configPath, e := os.UserConfigDir()
-	if e != nil {
-		log.Fatalln(e)
-	}
-
-	file, e := os.OpenFile(filepath.Join(configPath, "money-tree", "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if e != nil {
-		log.Fatalf("error opening log file: %v", e)
-	}
-	defer file.Close()
-	log.SetOutput(file)
-
-	if err != nil {
-		log.Println(err)
-		panic(err.Error())
-	}
+    if err == nil {
+        return
+    }
+	log.Println(err)
+	panic(err)
 }
 
 func LoadTransactions(request string, source *s.Source) {

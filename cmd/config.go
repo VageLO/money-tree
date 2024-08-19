@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"path/filepath"
+    "log"
 
 	"gopkg.in/yaml.v3"
 )
@@ -12,28 +13,41 @@ var pwd string
 func readConfig() error {
 
 	pwd, err := os.Getwd()
-	check(err)
+	if err != nil {
+        log.Fatalln(err)
+    }
 
 	dir, err := os.UserConfigDir()
-	check(err)
+	if err != nil {
+        log.Fatalln(err)
+    }
+	configPath := filepath.Join(dir, "money-tree")
+
+    // Create money-tree directory in UserConfigDir
+	if err = os.Mkdir(configPath, 0750); err != nil && !os.IsExist(err) {
+		log.Fatalln(err)
+	}
+    
+    // Create log file
+    logFile, err := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening log file: %v\n", err)
+	}
+	defer logFile.Close()
+	log.SetOutput(logFile)
 
 	source.Config.Database = filepath.Join(pwd, "database.db")
 
-	configPath := filepath.Join(dir, "money-tree")
-	if err = os.Mkdir(configPath, 0750); err != nil && !os.IsExist(err) {
-		check(err)
-	}
-
+    // Create config.yml in config directory
 	configPath = filepath.Join(configPath, "config.yml")
-
 	file, err := os.Open(configPath)
 	if err != nil && !os.IsExist(err) {
 		initConfig(pwd, configPath)
 		return nil
 	}
-
 	defer file.Close()
 
+    // Read yaml from file
 	decoder := yaml.NewDecoder(file)
 	err = decoder.Decode(&source.Config)
 	check(err)
@@ -59,6 +73,8 @@ func initConfig(pwd, configPath string) {
 	}
 
 	source.Config.Attachments = attachmentsPath
+    
+    // Write yaml to file
 	encoder := yaml.NewEncoder(file)
 	err = encoder.Encode(&source.Config)
 	check(err)
