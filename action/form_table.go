@@ -40,8 +40,8 @@ func MultiSelectionForm(source *s.Source) {
             transaction.Id = reference.Id
 	        UpdateTransaction(transaction, row, source)
         }
-        for _, row := range SelectedRows {
-            SelectMultipleTransactions(row, source)
+        for i := 0; i <= len(SelectedRows) + 1; i++ {
+            SelectMultipleTransactions(SelectedRows[0], source)
         }
 	})
 

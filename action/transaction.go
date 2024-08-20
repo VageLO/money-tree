@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+    "golang.org/x/exp/slices"
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -282,6 +283,7 @@ func DeleteTransaction(source *s.Source) {
         remove(row)
     }
 
+    slices.Sort(SelectedRows)
     for i := len(SelectedRows)-1; i >= 0; i-- {
         table.RemoveRow(SelectedRows[i])
     }

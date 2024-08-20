@@ -75,8 +75,8 @@ func AddToTable(source *s.Source) {
 }
 
 func SelectMultipleTransactions(row int, source *s.Source) {
-
-	defer m.ErrorModal(source.Pages, source.Modal)
+	
+    defer m.ErrorModal(source.Pages, source.Modal)
     table := source.Table
     if table.GetRowCount() <= 1 {
 	    return
@@ -97,13 +97,14 @@ func SelectMultipleTransactions(row int, source *s.Source) {
             isTrue = true
         }
     }
+
     if isTrue {
         SelectedRows = append(SelectedRows, row)
-        slices.Sort(SelectedRows)
+        //slices.Sort(SelectedRows)
         return
     } 
     if value := slices.Index(SelectedRows, row); value != -1 {
         SelectedRows = slices.Delete(SelectedRows, value, value + 1) 
-        slices.Sort(SelectedRows)
+        //slices.Sort(SelectedRows)
     }
 }
