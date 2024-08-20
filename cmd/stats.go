@@ -135,7 +135,7 @@ func Statistics(source *s.Source) {
 func loadStatictisTable(table *tview.Table, data []s.Statistics) {
 	table.Clear()
 
-	columns := []string{"Category", "Debit", "Credit", "Total"}
+	columns := []string{"Category", "Withdrawal", "Deposit", "Total"}
 	for i, columnTitle := range columns {
 		action.InsertCell(s.Cell{
 			Row:        0,
@@ -152,9 +152,9 @@ func loadStatictisTable(table *tview.Table, data []s.Statistics) {
 			Index:   i + 1,
 			Data: []string{
 				value.Category,
-				strconv.FormatFloat(value.Debit, 'f', 2, 32),
-				strconv.FormatFloat(value.Credit, 'f', 2, 32),
-				strconv.FormatFloat(value.Credit-value.Debit, 'f', 2, 32),
+				strconv.FormatFloat(value.Withdrawal, 'f', 2, 32),
+				strconv.FormatFloat(value.Deposit, 'f', 2, 32),
+				strconv.FormatFloat(value.Deposit-value.Withdrawal, 'f', 2, 32),
 			},
 			Reference: value,
 		}, table)
@@ -181,7 +181,7 @@ func getStatistics(source *s.Source, t *s.Transaction, firstDate, lastDate strin
 	for result.Next() {
 		var _s s.Statistics
 
-		err := result.Scan(&_s.Debit, &_s.Credit, &_s.Category)
+		err := result.Scan(&_s.Withdrawal, &_s.Deposit, &_s.Category)
 		check(err)
 
 		stats = append(stats, _s)

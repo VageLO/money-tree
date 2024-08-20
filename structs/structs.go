@@ -85,8 +85,8 @@ type Config struct {
 }
 
 type Statistics struct {
-	Debit    float64
-	Credit   float64
+	Withdrawal    float64
+	Deposit   float64
 	Category string
 }
 

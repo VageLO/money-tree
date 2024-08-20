@@ -43,23 +43,23 @@ WHERE Transactions.to_account_id IS NOT NULL;
 const StatisticsQuery = `
 SELECT 
 	SUM(CASE 
-		WHEN transaction_type == 'debit'
+		WHEN transaction_type == 'Withdrawal'
 		THEN amount
 		
-		WHEN transaction_type == 'transfer' AND Transactions.account_id == ?
+		WHEN transaction_type == 'Transfer' AND Transactions.account_id == ?
 		THEN amount
 		
-		ELSE 0 END) as debit,
+		ELSE 0 END) as Withdrawal,
 	SUM (CASE 
-		WHEN transaction_type == 'credit'
+		WHEN transaction_type == 'Deposit'
 		THEN amount
 		
-		WHEN transaction_type == 'transfer' AND Transactions.account_id <> ?
+		WHEN transaction_type == 'Transfer' AND Transactions.account_id <> ?
 		THEN CASE
 			WHEN to_amount <> 0 AND to_amount IS NOT NULL
 			THEN to_amount
 			ELSE amount END
-		ELSE 0 END) as credit, Categories.title FROM Transactions 
+		ELSE 0 END) as Deposit, Categories.title FROM Transactions 
 INNER JOIN Categories ON Categories.id = Transactions.category_id
 INNER JOIN Accounts ON Accounts.id = Transactions.account_id WHERE (Transactions.account_id = ? OR Transactions.to_account_id = ?) AND (date BETWEEN 'FIRST' AND 'LAST')
 GROUP BY Categories.title
@@ -108,10 +108,10 @@ FOR EACH ROW
 BEGIN
 	UPDATE Accounts
 	SET balance = CASE
-		WHEN old.transaction_type = 'debit' OR old.transaction_type = 'transfer'
+		WHEN old.transaction_type = 'Withdrawal' OR old.transaction_type = 'Transfer'
 		THEN ROUND((SELECT balance FROM Accounts WHERE id = old.account_id) + old.amount, 2)
 		
-		WHEN old.transaction_type = 'credit'
+		WHEN old.transaction_type = 'Deposit'
 		THEN ROUND((SELECT balance FROM Accounts WHERE id = old.account_id) - old.amount, 2)
 		
 		ELSE RAISE(ABORT, "ELSE UPDATE Accounts ON DELETE")
@@ -138,10 +138,10 @@ FOR EACH ROW
 BEGIN
 	UPDATE Accounts
 	SET balance = CASE
-		WHEN new.transaction_type = 'debit' OR new.transaction_type = 'transfer'
+		WHEN new.transaction_type = 'Withdrawal' OR new.transaction_type = 'Transfer'
 		THEN ROUND((SELECT balance FROM Accounts WHERE id = new.account_id) - new.amount, 2)
 		
-		WHEN new.transaction_type = 'credit'
+		WHEN new.transaction_type = 'Deposit'
 		THEN ROUND((SELECT balance FROM Accounts WHERE id = new.account_id) + new.amount, 2)
 		
 		ELSE RAISE(IGNORE)
@@ -172,22 +172,22 @@ BEGIN
 		-- Update new.account if new.account_id EQUAL old.account_id
 		WHEN new.account_id = old.account_id
 		THEN CASE
-			WHEN new.transaction_type = 'debit' AND (old.transaction_type = 'debit' OR old.transaction_type = 'transfer')
+			WHEN new.transaction_type = 'Withdrawal' AND (old.transaction_type = 'Withdrawal' OR old.transaction_type = 'Transfer')
 			THEN ROUND(((SELECT balance FROM Accounts WHERE id = new.account_id) + old.amount) - new.amount, 2)
 			
-			WHEN new.transaction_type = 'debit' AND old.transaction_type = 'credit'
+			WHEN new.transaction_type = 'Withdrawal' AND old.transaction_type = 'Deposit'
 			THEN ROUND(((SELECT balance FROM Accounts WHERE id = new.account_id) - old.amount) - new.amount, 2)
 			
-			WHEN new.transaction_type = 'credit' AND (old.transaction_type = 'debit' OR old.transaction_type = 'transfer')
+			WHEN new.transaction_type = 'Deposit' AND (old.transaction_type = 'Withdrawal' OR old.transaction_type = 'Transfer')
 			THEN ROUND(((SELECT balance FROM Accounts WHERE id = new.account_id) + old.amount) + new.amount, 2)
 			
-			WHEN new.transaction_type = 'credit' AND old.transaction_type = 'credit'
+			WHEN new.transaction_type = 'Deposit' AND old.transaction_type = 'Deposit'
 			THEN ROUND(((SELECT balance FROM Accounts WHERE id = new.account_id) - old.amount) + new.amount, 2)
 			
-			WHEN new.transaction_type = 'transfer' AND (old.transaction_type = 'debit' OR old.transaction_type = 'transfer')
+			WHEN new.transaction_type = 'Transfer' AND (old.transaction_type = 'Withdrawal' OR old.transaction_type = 'Transfer')
 			THEN ROUND(((SELECT balance FROM Accounts WHERE id = new.account_id) + old.amount) - new.amount, 2)
 			
-			WHEN new.transaction_type = 'transfer' AND old.transaction_type = 'credit'
+			WHEN new.transaction_type = 'Transfer' AND old.transaction_type = 'Deposit'
 			THEN ROUND(((SELECT balance FROM Accounts WHERE id = new.account_id) - old.amount) - new.amount, 2)
 
 			ELSE RAISE(ABORT, "-- Update new.account if new.account_id EQUAL old.account_id")
@@ -195,10 +195,10 @@ BEGIN
 			
 		WHEN new.account_id <> old.account_id
 		THEN CASE
-			WHEN new.transaction_type = 'debit' OR new.transaction_type = 'transfer'
+			WHEN new.transaction_type = 'Withdrawal' OR new.transaction_type = 'Transfer'
 			THEN ROUND((SELECT balance FROM Accounts WHERE id = new.account_id) - new.amount, 2)
 
-			WHEN new.transaction_type = 'credit'
+			WHEN new.transaction_type = 'Deposit'
 			THEN ROUND((SELECT balance FROM Accounts WHERE id = new.account_id) + new.amount, 2)
 
 			ELSE RAISE(ABORT, "-- Update new.account if new.account_id NOT EQUAL old.account_id")
@@ -211,10 +211,10 @@ BEGIN
 	SET balance = CASE
 		WHEN new.account_id <> old.account_id
 		THEN CASE 
-			WHEN old.transaction_type = 'debit' OR old.transaction_type = 'transfer'
+			WHEN old.transaction_type = 'Withdrawal' OR old.transaction_type = 'Transfer'
 			THEN ROUND((SELECT balance FROM Accounts WHERE id = old.account_id) + old.amount, 2)
 
-			WHEN old.transaction_type = 'credit'
+			WHEN old.transaction_type = 'Deposit'
 			THEN ROUND((SELECT balance FROM Accounts WHERE id = old.account_id) - old.amount, 2)
 
 			ELSE RAISE(ABORT, "Update old.account if new.account_id NOT EQUAL old.account_id")

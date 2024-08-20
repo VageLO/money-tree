@@ -21,8 +21,8 @@ func insertIntoDb(source *s.Source, path string, t *s.Transaction) {
 		newRow := table.GetRowCount()
 		var transaction s.Transaction
 
-		debit := []string{"Безналичная операция", "Отправление средств", "Банкомат"}
-		credit := []string{"Поступление", "Получение средств", "Поступление (Credit)", "Внесение наличных"}
+		Withdrawal := []string{"Безналичная операция", "Отправление средств", "Банкомат"}
+		Deposit := []string{"Поступление", "Получение средств", "Поступление (Credit)", "Внесение наличных"}
 
 		transaction.AccountId = t.AccountId
 		transaction.CategoryId = t.CategoryId
@@ -42,10 +42,10 @@ func insertIntoDb(source *s.Source, path string, t *s.Transaction) {
 
 		transaction.Description = importTransaction.Description
 
-		if exist, _ := Contains(debit, importTransaction.Typeof); exist {
-			transaction.TransactionType = "debit"
-		} else if exist, _ := Contains(credit, importTransaction.Typeof); exist {
-			transaction.TransactionType = "credit"
+		if exist, _ := Contains(Withdrawal, importTransaction.Typeof); exist {
+			transaction.TransactionType = "Withdrawal"
+		} else if exist, _ := Contains(Deposit, importTransaction.Typeof); exist {
+			transaction.TransactionType = "Deposit"
 		}
 
 		if err {

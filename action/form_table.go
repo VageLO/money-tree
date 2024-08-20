@@ -245,7 +245,7 @@ func SelectedTransfer(option string, optionIndex int, a_types []s.Account, t *s.
 func TransactionTypes(t *s.Transaction, source *s.Source) {
 
 	form := source.Form
-	types := []string{"debit", "credit", "transfer"}
+	types := []string{"Withdrawal", "Deposit", "Transfer"}
 	initial := 0
 
 	for idx, title := range types {
@@ -262,13 +262,13 @@ func TransactionTypes(t *s.Transaction, source *s.Source) {
 			ToAccountIndex := form.GetFormItemIndex("To Account")
 			ToAmountIndex := form.GetFormItemIndex("To Amount")
 
-			if option == "transfer" && ToAccountIndex == -1 && ToAmountIndex == -1 {
+			if option == "Transfer" && ToAccountIndex == -1 && ToAmountIndex == -1 {
 				Transfer(source, t)
-				t.TransactionType = "transfer"
+				t.TransactionType = "Transfer"
 				return
 			}
 
-			if option != "transfer" && ToAccountIndex != -1 && ToAmountIndex != -1 {
+			if option != "Transfer" && ToAccountIndex != -1 && ToAmountIndex != -1 {
 				form.RemoveFormItem(ToAmountIndex)
 				form.RemoveFormItem(ToAccountIndex)
 				t.ToAccountId.Valid = false
