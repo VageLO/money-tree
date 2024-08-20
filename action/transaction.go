@@ -24,6 +24,8 @@ func check(err error) {
 	panic(err)
 }
 
+var SelectedRows []int
+
 func LoadTransactions(request string, source *s.Source) {
 	table := source.Table
 	table.Clear()
@@ -39,7 +41,7 @@ func LoadTransactions(request string, source *s.Source) {
 		FillForm(len(source.Columns), row, false, source)
 
 		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)
-	})
+    })
 
 	table.SetBorders(false).
 		SetSelectable(true, false).
@@ -247,28 +249,42 @@ func DeleteTransaction(source *s.Source) {
 	defer m.ErrorModal(source.Pages, source.Modal)
 	table := source.Table
 
-	row, _ := table.GetSelection()
-
 	if table.GetRowCount() <= 1 {
 		check(errors.New("Table Empty"))
 	}
 
-	cell := table.GetCell(row, 0)
-	transaction := cell.GetReference().(s.Transaction)
+    remove := func(row int) {
+        cell := table.GetCell(row, 0)
+        transaction := cell.GetReference().(s.Transaction)
 
-	db, err := sql.Open("sqlite3", source.Config.Database)
-	check(err)
+        db, err := sql.Open("sqlite3", source.Config.Database)
+        check(err)
 
-	query := `DELETE FROM Transactions WHERE id = ?`
+        query := `DELETE FROM Transactions WHERE id = ?`
 
-	_, err = db.Exec(query, transaction.Id)
-	check(err)
+        _, err = db.Exec(query, transaction.Id)
+        check(err)
 
-	deleteAttachments(source, findAttachments(source, transaction.Id))
+        deleteAttachments(source, findAttachments(source, transaction.Id))
 
-	defer db.Close()
-	LoadAccounts(source)
-	table.RemoveRow(row)
+        defer db.Close()
+        LoadAccounts(source)
+    }
+
+	if len(SelectedRows) <= 0 {
+        row, _ := table.GetSelection()
+        remove(row)
+        table.RemoveRow(row)
+        return
+    }
+    
+    for _, row := range SelectedRows {
+        remove(row)
+    }
+    for _, row := range SelectedRows {
+        table.RemoveRow(row)
+    }
+    SelectedRows = []int{}
 }
 
 func addAttachments(source *s.Source, id int64, attachments []string) {

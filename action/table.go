@@ -5,6 +5,7 @@ import (
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
 
+    "golang.org/x/exp/slices"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -71,4 +72,34 @@ func AddToTable(source *s.Source) {
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 
 	source.App.SetFocus(form)
+}
+
+func MultiSelect(source *s.Source) {
+
+	defer m.ErrorModal(source.Pages, source.Modal)
+    table := source.Table
+    if table.GetRowCount() <= 1 {
+	    return
+    }
+
+    row, _ := table.GetSelection()
+    isTrue := false
+
+    for column := 0; column <= len(source.Columns); column++ {
+        cell := table.GetCell(row, column)
+        fg, _, _ := cell.Style.Decompose()
+        if fg == tcell.ColorRed {
+            cell.SetTextColor(tcell.ColorWhite)
+        } else if fg == tcell.ColorWhite {
+            cell.SetTextColor(tcell.ColorRed)
+            isTrue = true
+        }
+    }
+    if isTrue {
+        SelectedRows = append(SelectedRows, row)
+        return
+    } 
+    if value := slices.Index(SelectedRows, row); value != -1 {
+        SelectedRows = slices.Delete(SelectedRows, value, value + 1) 
+    }
 }

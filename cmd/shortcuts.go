@@ -88,6 +88,17 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 
+    case tcell.KeyCtrlS:
+        if table.HasFocus() {
+		    check(ifFormExist(pages))
+            action.MultiSelect(source)
+			return nil
+		}
+
+    case tcell.KeyCtrlE:
+        // TODO: Edit multiple transaction in one form
+        check(errors.New(fmt.Sprintf("%+v", action.SelectedRows)))
+
 	case tcell.KeyF2:
 		check(ifFormExist(pages))
 		if tree.GetRowCount() <= 1 || accounts.GetItemCount() <= 1 {
