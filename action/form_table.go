@@ -16,67 +16,71 @@ func FormStyle(formTitle string, form *tview.Form) {
 	form.SetBorder(true).SetTitle(formTitle)
 }
 
-func FillForm(columnsLen int, row int, IsEmptyForm bool, source *s.Source) {
+func MultiSelectionForm(source *s.Source) {
 
-	form := source.Form
+    form := source.Form
 	form.Clear(true)
 
-	FormStyle("Transaction Details", form)
+	FormStyle("Multi Transaction Details", form)
+
+    columnsLen := len(source.Columns)
 
 	var transaction s.Transaction
 
 	for i := 0; i < columnsLen; i++ {
-		if !IsEmptyForm {
-			table := source.Table
-			cell := table.GetCell(row, i)
-			transaction = cell.GetReference().(s.Transaction)
-
-			FilledForm(i, row, &transaction, source)
-			continue
-		}
-		EmptyForm(i, &transaction, source)
+		emptyFormFields(i, &transaction, source)
 	}
 
-	initTransaction := transaction
+	form.AddButton("Save", func() {
+		defer m.ErrorModal(source.Pages, source.Modal)
 
-	switch IsEmptyForm {
-	case true:
-		form.AddButton("Add", func() { AddTransaction(transaction, row, source) })
+        for _, row := range SelectedRows {
+            cell := source.Table.GetCell(row, 0)
+            reference := cell.GetReference().(s.Transaction)
+            transaction.Id = reference.Id
+	        UpdateTransaction(transaction, row, source)
+        }
+        for _, row := range SelectedRows {
+            SelectMultipleTransactions(row, source)
+        }
+	})
 
-        // Clear attachments array
-        source.Attachments = []string{} 
+    // Clear attachments array
+    source.Attachments = []string{} 
 
-	case false:
-        // Find attachments by trasaction ID
-		source.Attachments = findAttachments(source, transaction.Id)
+	form.AddButton("📎", func() {
+		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
+	})
 
-        initAttachments := source.Attachments
+    source.Pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
+}
 
-		form.AddButton("Save", func() {
-			defer m.ErrorModal(source.Pages, source.Modal)
+func EmptyForm(row int, source *s.Source) {
+    
+	form := source.Form
+	form.Clear(true)
 
-			if initTransaction != transaction {
-			    UpdateTransaction(transaction, row, source)
-			} else if slices.Compare(initAttachments, source.Attachments) != 0 {
-                updateAttachments(source, source.Attachments, transaction.Id)    
-	            source.Pages.RemovePage("Form")
-            } else {
-		        check(errors.New("Change something"))
-            }
-		})
+	FormStyle("Fill Transaction Details", form)
+
+    columnsLen := len(source.Columns)
+
+	var transaction s.Transaction
+
+	for i := 0; i < columnsLen; i++ {
+		emptyFormFields(i, &transaction, source)
 	}
 
-	//form.AddButton("➕", func() {
-	//	defer m.ErrorModal(source.Pages, source.Modal)
-	//	check(errors.New(fmt.Sprintf("%v %+v", source.Attachments, transaction)))
-	//})
+	form.AddButton("Add", func() { AddTransaction(transaction, row, source) })
+
+    // Clear attachments array
+    source.Attachments = []string{} 
 
 	form.AddButton("📎", func() {
 		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
 	})
 }
 
-func EmptyForm(index int, t *s.Transaction, source *s.Source) {
+func emptyFormFields(index int, t *s.Transaction, source *s.Source) {
 
 	table := source.Table
 	columns := source.Columns
@@ -151,9 +155,53 @@ func EmptyForm(index int, t *s.Transaction, source *s.Source) {
 	}
 }
 
-func FilledForm(index, row int, t *s.Transaction, source *s.Source) {
+func FilledForm(row int, source *s.Source) {
 
-	defer m.ErrorModal(source.Pages, source.Modal)
+	form := source.Form
+	form.Clear(true)
+
+	FormStyle("Transaction Details", form)
+
+    columnsLen := len(source.Columns)
+
+	var transaction s.Transaction
+
+	for i := 0; i < columnsLen; i++ {
+			table := source.Table
+			cell := table.GetCell(row, i)
+			transaction = cell.GetReference().(s.Transaction)
+
+			filledFormFields(i, row, &transaction, source)
+	}
+
+	initTransaction := transaction
+
+    // Find attachments by trasaction ID
+	source.Attachments = findAttachments(source, transaction.Id)
+
+    initAttachments := source.Attachments
+
+	form.AddButton("Save", func() {
+		defer m.ErrorModal(source.Pages, source.Modal)
+
+		if initTransaction != transaction {
+		    UpdateTransaction(transaction, row, source)
+		} else if slices.Compare(initAttachments, source.Attachments) != 0 {
+            updateAttachments(source, source.Attachments, transaction.Id)    
+	        source.Pages.RemovePage("Form")
+        } else {
+	        check(errors.New("Change something"))
+        }
+	})
+
+	form.AddButton("📎", func() {
+		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
+	})
+}
+
+func filledFormFields(index, row int, t *s.Transaction, source *s.Source) {
+
+    defer m.ErrorModal(source.Pages, source.Modal)
 	table := source.Table
 	columns := source.Columns
 	form := source.Form

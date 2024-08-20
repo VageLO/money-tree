@@ -38,7 +38,7 @@ func LoadTransactions(request string, source *s.Source) {
 		if table.GetRowCount() <= 1 {
 			return
 		}
-		FillForm(len(source.Columns), row, false, source)
+		FilledForm(row, source)
 
 		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)
     })
@@ -277,12 +277,13 @@ func DeleteTransaction(source *s.Source) {
         table.RemoveRow(row)
         return
     }
-    
+
     for _, row := range SelectedRows {
         remove(row)
     }
-    for _, row := range SelectedRows {
-        table.RemoveRow(row)
+
+    for i := len(SelectedRows)-1; i >= 0; i-- {
+        table.RemoveRow(SelectedRows[i])
     }
     SelectedRows = []int{}
 }

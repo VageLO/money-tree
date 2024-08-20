@@ -91,13 +91,16 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
     case tcell.KeyCtrlS:
         if table.HasFocus() {
 		    check(ifFormExist(pages))
-            action.MultiSelect(source)
+            action.SelectMultipleTransactions(-1, source)
 			return nil
 		}
 
     case tcell.KeyCtrlE:
-        // TODO: Edit multiple transaction in one form
-        check(errors.New(fmt.Sprintf("%+v", action.SelectedRows)))
+        if table.HasFocus() && len(action.SelectedRows) > 0 {
+		    check(ifFormExist(pages))
+            action.MultiSelectionForm(source)
+			return nil
+		}
 
 	case tcell.KeyF2:
 		check(ifFormExist(pages))

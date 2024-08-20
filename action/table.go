@@ -68,13 +68,13 @@ func AddToTable(source *s.Source) {
 	if tree.GetRowCount() <= 1 || source.AccountList.GetItemCount() <= 1 {
 		check(errors.New("Account and category must be created"))
 	}
-	FillForm(len(source.Columns), newRow, true, source)
+	EmptyForm(newRow, source)
 	pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 
 	source.App.SetFocus(form)
 }
 
-func MultiSelect(source *s.Source) {
+func SelectMultipleTransactions(row int, source *s.Source) {
 
 	defer m.ErrorModal(source.Pages, source.Modal)
     table := source.Table
@@ -82,7 +82,9 @@ func MultiSelect(source *s.Source) {
 	    return
     }
 
-    row, _ := table.GetSelection()
+    if row == -1 {
+        row, _ = table.GetSelection()
+    }
     isTrue := false
 
     for column := 0; column <= len(source.Columns); column++ {
@@ -97,9 +99,11 @@ func MultiSelect(source *s.Source) {
     }
     if isTrue {
         SelectedRows = append(SelectedRows, row)
+        slices.Sort(SelectedRows)
         return
     } 
     if value := slices.Index(SelectedRows, row); value != -1 {
         SelectedRows = slices.Delete(SelectedRows, value, value + 1) 
+        slices.Sort(SelectedRows)
     }
 }
