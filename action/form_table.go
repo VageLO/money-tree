@@ -2,8 +2,13 @@ package action
 
 import (
 	"errors"
+	"fmt"
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
+	"log"
+	"os"
+	"path/filepath"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -38,6 +43,8 @@ func MultiSelectionForm(source *s.Source) {
 			cell := source.Table.GetCell(row, 0)
 			reference := cell.GetReference().(s.Transaction)
 			transaction.Id = reference.Id
+			CompTransactions(transaction, reference)
+			check(errors.New(fmt.Sprintf("%+v, %+v", transaction, reference)))
 			UpdateTransaction(transaction, row, source, false)
 		}
 		for i := 0; i <= len(SelectedRows)+1; i++ {
@@ -388,5 +395,48 @@ func added(text string, label string, t *s.Transaction, source *s.Source) {
 		amount, err := strconv.ParseFloat(text, 64)
 		check(err)
 		t.ToAmount.Scan(amount)
+	}
+}
+
+func CompTransactions(newT, oldT s.Transaction) {
+	dir, e := os.UserConfigDir()
+	if e != nil {
+		log.Fatalln(e)
+	}
+	configPath := filepath.Join(dir, "money-tree")
+
+	// Create money-tree directory in UserConfigDir
+	if e = os.Mkdir(configPath, 0750); e != nil && !os.IsExist(e) {
+		log.Fatalln(e)
+	}
+
+	// Create log file
+	logFile, e := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if e != nil {
+		log.Fatalf("error opening log file: %v\n", e)
+	}
+	defer logFile.Close()
+	log.SetOutput(logFile)
+
+	nT := reflect.ValueOf(&newT).Elem()
+	oT := reflect.ValueOf(&oldT).Elem()
+
+	//log.Printf("%+v\n%+v", nT, oT)
+	tN := nT.Type()
+	tO := oT.Type()
+
+	numFields := tN.NumField()
+
+	for i := 0; i < numFields; i++ {
+		newField := tN.Field(i).Type
+		field_b := tO.Field(i).Type
+
+		log.Println(tN.Field(i).Name, field_a, field_b)
+		//    switch field_a.Kind() {
+		//    case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		//        if field_a.IsNil() {
+		//            field_a.Set(field_b)
+		//        }
+		//    }
 	}
 }
