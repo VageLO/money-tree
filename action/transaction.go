@@ -250,8 +250,17 @@ func AddTransaction(t s.Transaction, newRow int, source *s.Source) {
 		addAttachments(source, t.Id, source.Attachments)
 	}
 
+	amount := strconv.FormatFloat(t.Amount, 'f', 2, 32)
 	row := []string{t.Description, t.Date, t.Account, t.Category,
-		strconv.FormatFloat(t.Amount, 'f', 2, 32), t.TransactionType}
+		amount, t.TransactionType}
+
+	if t.ToAccountId.Valid {
+		row[2] = fmt.Sprintf("%v > %v", t.Account, t.ToAccount.String)
+		if t.ToAmount.Valid && t.ToAmount.Float64 != 0 {
+			toAmount := strconv.FormatFloat(t.ToAmount.Float64, 'f', 2, 32)
+			row[4] = amount + " > " + toAmount
+		}
+	}
 
 	InsertRows(s.Row{
 		Columns:   source.Columns,
