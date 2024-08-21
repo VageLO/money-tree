@@ -110,7 +110,7 @@ func SelectTransactions(request string, source *s.Source) {
 	defer db.Close()
 }
 
-func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
+func UpdateTransaction(t s.Transaction, row int, source *s.Source, removePreviousAttachments bool) {
 	pages := source.Pages
 	modal := source.Modal
 
@@ -153,7 +153,7 @@ func UpdateTransaction(t s.Transaction, row int, source *s.Source) {
 
 	check(err)
 
-	updateAttachments(source, source.Attachments, t.Id)
+	updateAttachments(source, source.Attachments, t.Id, removePreviousAttachments)
 
 	amount := strconv.FormatFloat(t.Amount, 'f', 2, 32)
 	data := []string{t.Description, t.Date, t.Account, t.Category,
@@ -345,19 +345,21 @@ func findAttachments(source *s.Source, id int64) []string {
 	return attachments
 }
 
-func updateAttachments(source *s.Source, newAttachments []string, id int64) {
+func updateAttachments(source *s.Source, newAttachments []string, id int64, remove bool) {
 	currentAttachments := findAttachments(source, id)
 
 	var addArray []string
 	var deleteArray []string
 
-	// Check deleted attachments and delete them
-	for _, currentAttachment := range currentAttachments {
-		if exist, _ := Contains(newAttachments, currentAttachment); !exist {
-			deleteArray = append(deleteArray, currentAttachment)
-		}
-	}
-	deleteAttachments(source, deleteArray)
+    if remove {
+        // Check deleted attachments and delete them
+        for _, currentAttachment := range currentAttachments {
+            if exist, _ := Contains(newAttachments, currentAttachment); !exist {
+                deleteArray = append(deleteArray, currentAttachment)
+            }
+        }
+        deleteAttachments(source, deleteArray)
+    }
 
 	renameAttachments(source, id)
 

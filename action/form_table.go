@@ -38,7 +38,7 @@ func MultiSelectionForm(source *s.Source) {
             cell := source.Table.GetCell(row, 0)
             reference := cell.GetReference().(s.Transaction)
             transaction.Id = reference.Id
-	        UpdateTransaction(transaction, row, source)
+	        UpdateTransaction(transaction, row, source, false)
         }
         for i := 0; i <= len(SelectedRows) + 1; i++ {
             SelectMultipleTransactions(SelectedRows[0], source)
@@ -185,9 +185,9 @@ func FilledForm(row int, source *s.Source) {
 		defer m.ErrorModal(source.Pages, source.Modal)
 
 		if initTransaction != transaction {
-		    UpdateTransaction(transaction, row, source)
+		    UpdateTransaction(transaction, row, source, true)
 		} else if slices.Compare(initAttachments, source.Attachments) != 0 {
-            updateAttachments(source, source.Attachments, transaction.Id)    
+            updateAttachments(source, source.Attachments, transaction.Id, true)    
 	        source.Pages.RemovePage("Form")
         } else {
 	        check(errors.New("Change something"))
