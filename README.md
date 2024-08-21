@@ -8,6 +8,8 @@
 |`Ctrl + A`|- Insert into **Transactions** table,<br>- Pick file in **Attachments** table<br>- Add account on focused **Accounts** box<br>- Add category on focused **Categories** box|
 |`Ctrl + D`|- Delete selected row in **Transactions** table,<br>- Delete file in **Attachments** table<br>- Delete selected account on focused **Accounts** box<br>- Delete selected category on focused **Categories** box|
 |`Ctrl + R`|- Edit selected account on focused **Accounts** box<br>- Edit selected category on focused **Categories** box|
+|`Ctrl + S`|- Selecte multiple transactions on focused **Transactions** box|
+|`Ctrl + E`|- Edit selected multiple transactions on focused **Transactions** box|
 |`Enter`|- Edit selected transaction on focused **Transactions** box<br>- Open selected file with default system application on focused **Attachments** box|
 |`Ctrl + C`|Exit|
 
