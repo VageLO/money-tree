@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"log"
 	"os"
 	"path/filepath"
-    "log"
 
 	"gopkg.in/yaml.v3"
 )
@@ -11,21 +11,21 @@ import (
 func readConfig() error {
 
 	pwd, err := os.Getwd()
-    check(err)
+	check(err)
 
 	dir, err := os.UserConfigDir()
-    check(err)
-	
+	check(err)
+
 	configPath := filepath.Join(dir, "money-tree")
 
-    // Create money-tree directory in UserConfigDir
+	// Create money-tree directory in UserConfigDir
 	if err = os.Mkdir(configPath, 0750); err != nil && !os.IsExist(err) {
 		log.Fatalln(err)
 	}
-    
+
 	source.Config.Database = filepath.Join(pwd, "database.db")
 
-    // Create config.yml in config directory
+	// Create config.yml in config directory
 	configPath = filepath.Join(configPath, "config.yml")
 	file, err := os.Open(configPath)
 	if err != nil && !os.IsExist(err) {
@@ -34,7 +34,7 @@ func readConfig() error {
 	}
 	defer file.Close()
 
-    // Read yaml from file
+	// Read yaml from file
 	decoder := yaml.NewDecoder(file)
 	err = decoder.Decode(&source.Config)
 	check(err)
@@ -60,8 +60,8 @@ func initConfig(pwd, configPath string) {
 	}
 
 	source.Config.Attachments = attachmentsPath
-    
-    // Write yaml to file
+
+	// Write yaml to file
 	encoder := yaml.NewEncoder(file)
 	err = encoder.Encode(&source.Config)
 	check(err)

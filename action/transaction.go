@@ -12,29 +12,29 @@ import (
 	"strconv"
 	"strings"
 
-    "golang.org/x/exp/slices"
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/exp/slices"
 )
 
 func check(err error) {
-    if err == nil {
-        return
-    }
+	if err == nil {
+		return
+	}
 
-    dir, e := os.UserConfigDir()
+	dir, e := os.UserConfigDir()
 	if e != nil {
-        log.Fatalln(e)
-    }
+		log.Fatalln(e)
+	}
 	configPath := filepath.Join(dir, "money-tree")
 
-    // Create money-tree directory in UserConfigDir
+	// Create money-tree directory in UserConfigDir
 	if e = os.Mkdir(configPath, 0750); e != nil && !os.IsExist(e) {
 		log.Fatalln(e)
 	}
-    
-    // Create log file
-    logFile, e := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	// Create log file
+	logFile, e := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if e != nil {
 		log.Fatalf("error opening log file: %v\n", e)
 	}
@@ -42,7 +42,7 @@ func check(err error) {
 	log.SetOutput(logFile)
 
 	log.Println(err)
-    panic(err)
+	panic(err)
 }
 
 var SelectedRows []int
@@ -62,7 +62,7 @@ func LoadTransactions(request string, source *s.Source) {
 		FilledForm(row, source)
 
 		source.Pages.AddPage("Form", m.Modal(source.Form, 30, 50), true, true)
-    })
+	})
 
 	table.SetBorders(false).
 		SetSelectable(true, false).
@@ -274,40 +274,40 @@ func DeleteTransaction(source *s.Source) {
 		check(errors.New("Table Empty"))
 	}
 
-    remove := func(row int) {
-        cell := table.GetCell(row, 0)
-        transaction := cell.GetReference().(s.Transaction)
+	remove := func(row int) {
+		cell := table.GetCell(row, 0)
+		transaction := cell.GetReference().(s.Transaction)
 
-        db, err := sql.Open("sqlite3", source.Config.Database)
-        check(err)
+		db, err := sql.Open("sqlite3", source.Config.Database)
+		check(err)
 
-        query := `DELETE FROM Transactions WHERE id = ?`
+		query := `DELETE FROM Transactions WHERE id = ?`
 
-        _, err = db.Exec(query, transaction.Id)
-        check(err)
+		_, err = db.Exec(query, transaction.Id)
+		check(err)
 
-        deleteAttachments(source, findAttachments(source, transaction.Id))
+		deleteAttachments(source, findAttachments(source, transaction.Id))
 
-        defer db.Close()
-        LoadAccounts(source)
-    }
+		defer db.Close()
+		LoadAccounts(source)
+	}
 
 	if len(SelectedRows) <= 0 {
-        row, _ := table.GetSelection()
-        remove(row)
-        table.RemoveRow(row)
-        return
-    }
+		row, _ := table.GetSelection()
+		remove(row)
+		table.RemoveRow(row)
+		return
+	}
 
-    for _, row := range SelectedRows {
-        remove(row)
-    }
+	for _, row := range SelectedRows {
+		remove(row)
+	}
 
-    slices.Sort(SelectedRows)
-    for i := len(SelectedRows)-1; i >= 0; i-- {
-        table.RemoveRow(SelectedRows[i])
-    }
-    SelectedRows = []int{}
+	slices.Sort(SelectedRows)
+	for i := len(SelectedRows) - 1; i >= 0; i-- {
+		table.RemoveRow(SelectedRows[i])
+	}
+	SelectedRows = []int{}
 }
 
 func addAttachments(source *s.Source, id int64, attachments []string) {
@@ -371,15 +371,15 @@ func updateAttachments(source *s.Source, newAttachments []string, id int64, remo
 	var addArray []string
 	var deleteArray []string
 
-    if remove {
-        // Check deleted attachments and delete them
-        for _, currentAttachment := range currentAttachments {
-            if exist, _ := Contains(newAttachments, currentAttachment); !exist {
-                deleteArray = append(deleteArray, currentAttachment)
-            }
-        }
-        deleteAttachments(source, deleteArray)
-    }
+	if remove {
+		// Check deleted attachments and delete them
+		for _, currentAttachment := range currentAttachments {
+			if exist, _ := Contains(newAttachments, currentAttachment); !exist {
+				deleteArray = append(deleteArray, currentAttachment)
+			}
+		}
+		deleteAttachments(source, deleteArray)
+	}
 
 	renameAttachments(source, id)
 

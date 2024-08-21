@@ -85,9 +85,9 @@ type Config struct {
 }
 
 type Statistics struct {
-	Withdrawal    float64
-	Deposit   float64
-	Category string
+	Withdrawal float64
+	Deposit    float64
+	Category   string
 }
 
 func (a *Account) IsEmpty() error {

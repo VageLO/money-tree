@@ -45,7 +45,7 @@ func RemoveCategory(source *s.Source) {
 	node := selectedNode.GetReference().(*s.TreeNode)
 	id := node.Reference.Id
 
-	db, err := sql.Open("sqlite3", source.Config.Database + "?_foreign_keys=on")
+	db, err := sql.Open("sqlite3", source.Config.Database+"?_foreign_keys=on")
 	check(err)
 
 	query := `DELETE FROM Categories WHERE id = ? OR parent_id = ?`
@@ -56,9 +56,9 @@ func RemoveCategory(source *s.Source) {
 	selectedNode.ClearChildren()
 	node.Parent.RemoveChild(selectedNode)
 
-    // Reload transactions
+	// Reload transactions
 	LoadTransactions(s.Transactions, source)
-    
+
 	defer db.Close()
 }
 
@@ -96,15 +96,15 @@ func AddCategory(newNode *tview.TreeNode, parentNode *tview.TreeNode, source *s.
 	nodeReference.Reference.Id = createdId
 	nodeReference.Reference.ParentId.Scan(parentId)
 	nodeReference.Reference.Title = title
-    
-    nodeReference.Selected = func() {
-        SelecteByCategoryId(createdId, source)
-    }
+
+	nodeReference.Selected = func() {
+		SelecteByCategoryId(createdId, source)
+	}
 
 	newNode.SetReference(nodeReference)
 	parentNode.AddChild(newNode)
-    
-    source.App.SetFocus(source.CategoryTree)
+
+	source.App.SetFocus(source.CategoryTree)
 	defer db.Close()
 }
 

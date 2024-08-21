@@ -2,15 +2,15 @@ package cmd
 
 import (
 	"database/sql"
-	"log"
 	s "github.com/VageLO/money-tree/structs"
+	"log"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func initDB() error {
-	url := source.Config.Database 
+	url := source.Config.Database
 
 	// Check if database file exist, if exist return.
 	fileInfo, _ := os.Stat(url)
@@ -20,20 +20,20 @@ func initDB() error {
 	}
 
 	_, err := os.Create(url)
-    check(err)
+	check(err)
 
 	db, err := sql.Open("sqlite3", url)
 	check(err)
 
-    array := []string{
-        s.InitTransactions, 
-        s.InitAccounts,
-        s.InitCategories,
-        s.UpdateOnDelete,
-        s.UpdateOnInsert,
-        s.UpdateOnUpdate,
-        s.UpdateToAccount,
-    }
+	array := []string{
+		s.InitTransactions,
+		s.InitAccounts,
+		s.InitCategories,
+		s.UpdateOnDelete,
+		s.UpdateOnInsert,
+		s.UpdateOnUpdate,
+		s.UpdateToAccount,
+	}
 
 	for _, query := range array {
 		_, err = db.Exec(query)

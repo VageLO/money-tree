@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-    // TODO: Change to slices go1.22
-    "golang.org/x/exp/slices"
+	// TODO: Change to slices go1.22
 	"github.com/rivo/tview"
+	"golang.org/x/exp/slices"
 )
 
 func FormStyle(formTitle string, form *tview.Form) {
@@ -18,12 +18,12 @@ func FormStyle(formTitle string, form *tview.Form) {
 
 func MultiSelectionForm(source *s.Source) {
 
-    form := source.Form
+	form := source.Form
 	form.Clear(true)
 
 	FormStyle("Multi Transaction Details", form)
 
-    columnsLen := len(source.Columns)
+	columnsLen := len(source.Columns)
 
 	var transaction s.Transaction
 
@@ -34,36 +34,36 @@ func MultiSelectionForm(source *s.Source) {
 	form.AddButton("Save", func() {
 		defer m.ErrorModal(source.Pages, source.Modal)
 
-        for _, row := range SelectedRows {
-            cell := source.Table.GetCell(row, 0)
-            reference := cell.GetReference().(s.Transaction)
-            transaction.Id = reference.Id
-	        UpdateTransaction(transaction, row, source, false)
-        }
-        for i := 0; i <= len(SelectedRows) + 1; i++ {
-            SelectMultipleTransactions(SelectedRows[0], source)
-        }
-        source.Pages.RemovePage("Form")
+		for _, row := range SelectedRows {
+			cell := source.Table.GetCell(row, 0)
+			reference := cell.GetReference().(s.Transaction)
+			transaction.Id = reference.Id
+			UpdateTransaction(transaction, row, source, false)
+		}
+		for i := 0; i <= len(SelectedRows)+1; i++ {
+			SelectMultipleTransactions(SelectedRows[0], source)
+		}
+		source.Pages.RemovePage("Form")
 	})
 
-    // Clear attachments array
-    source.Attachments = []string{} 
+	// Clear attachments array
+	source.Attachments = []string{}
 
 	form.AddButton("📎", func() {
 		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
 	})
 
-    source.Pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
+	source.Pages.AddPage("Form", m.Modal(form, 30, 50), true, true)
 }
 
 func EmptyForm(row int, source *s.Source) {
-    
+
 	form := source.Form
 	form.Clear(true)
 
 	FormStyle("Fill Transaction Details", form)
 
-    columnsLen := len(source.Columns)
+	columnsLen := len(source.Columns)
 
 	var transaction s.Transaction
 
@@ -73,8 +73,8 @@ func EmptyForm(row int, source *s.Source) {
 
 	form.AddButton("Add", func() { AddTransaction(transaction, row, source) })
 
-    // Clear attachments array
-    source.Attachments = []string{} 
+	// Clear attachments array
+	source.Attachments = []string{}
 
 	form.AddButton("📎", func() {
 		m.FileTable(source, "Attachments", source.Attachments, m.OpenFiles)
@@ -163,36 +163,36 @@ func FilledForm(row int, source *s.Source) {
 
 	FormStyle("Transaction Details", form)
 
-    columnsLen := len(source.Columns)
+	columnsLen := len(source.Columns)
 
 	var transaction s.Transaction
 
 	for i := 0; i < columnsLen; i++ {
-			table := source.Table
-			cell := table.GetCell(row, i)
-			transaction = cell.GetReference().(s.Transaction)
+		table := source.Table
+		cell := table.GetCell(row, i)
+		transaction = cell.GetReference().(s.Transaction)
 
-			filledFormFields(i, row, &transaction, source)
+		filledFormFields(i, row, &transaction, source)
 	}
 
 	initTransaction := transaction
 
-    // Find attachments by trasaction ID
+	// Find attachments by trasaction ID
 	source.Attachments = findAttachments(source, transaction.Id)
 
-    initAttachments := source.Attachments
+	initAttachments := source.Attachments
 
 	form.AddButton("Save", func() {
 		defer m.ErrorModal(source.Pages, source.Modal)
 
 		if initTransaction != transaction {
-		    UpdateTransaction(transaction, row, source, true)
+			UpdateTransaction(transaction, row, source, true)
 		} else if slices.Compare(initAttachments, source.Attachments) != 0 {
-            updateAttachments(source, source.Attachments, transaction.Id, true)    
-	        source.Pages.RemovePage("Form")
-        } else {
-	        check(errors.New("Change something"))
-        }
+			updateAttachments(source, source.Attachments, transaction.Id, true)
+			source.Pages.RemovePage("Form")
+		} else {
+			check(errors.New("Change something"))
+		}
 	})
 
 	form.AddButton("📎", func() {
@@ -202,7 +202,7 @@ func FilledForm(row int, source *s.Source) {
 
 func filledFormFields(index, row int, t *s.Transaction, source *s.Source) {
 
-    defer m.ErrorModal(source.Pages, source.Modal)
+	defer m.ErrorModal(source.Pages, source.Modal)
 	table := source.Table
 	columns := source.Columns
 	form := source.Form

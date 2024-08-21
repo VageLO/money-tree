@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package modal
@@ -10,6 +11,6 @@ import (
 func OpenFiles(filePath string, source *s.Source) {
 	defer ErrorModal(source.Pages, source.Modal)
 
-    err := exec.Command("xdg-open", filePath).Start()
-    check(err)
+	err := exec.Command("xdg-open", filePath).Start()
+	check(err)
 }

@@ -50,16 +50,16 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyCtrlD:
 
 		if attachments.HasFocus() {
-            row, column := attachments.GetSelection()
-            cell := attachments.GetCell(row, column)
-            reference := cell.GetReference().(m.Reference)
-            exist, index := action.Contains(source.Attachments, reference.Path)
-            if exist {
-                a := source.Attachments
-                source.Attachments = append(a[:index], a[index+1:]...)
-            }
-            attachments.RemoveRow(row)
-        }
+			row, column := attachments.GetSelection()
+			cell := attachments.GetCell(row, column)
+			reference := cell.GetReference().(m.Reference)
+			exist, index := action.Contains(source.Attachments, reference.Path)
+			if exist {
+				a := source.Attachments
+				source.Attachments = append(a[:index], a[index+1:]...)
+			}
+			attachments.RemoveRow(row)
+		}
 
 		check(ifFormExist(pages))
 
@@ -88,17 +88,17 @@ func Shortcuts(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 
-    case tcell.KeyCtrlS:
-        if table.HasFocus() {
-		    check(ifFormExist(pages))
-            action.SelectMultipleTransactions(-1, source)
+	case tcell.KeyCtrlS:
+		if table.HasFocus() {
+			check(ifFormExist(pages))
+			action.SelectMultipleTransactions(-1, source)
 			return nil
 		}
 
-    case tcell.KeyCtrlE:
-        if table.HasFocus() && len(action.SelectedRows) > 0 {
-		    check(ifFormExist(pages))
-            action.MultiSelectionForm(source)
+	case tcell.KeyCtrlE:
+		if table.HasFocus() && len(action.SelectedRows) > 0 {
+			check(ifFormExist(pages))
+			action.MultiSelectionForm(source)
 			return nil
 		}
 

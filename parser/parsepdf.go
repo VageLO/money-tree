@@ -1,12 +1,12 @@
 package parser
 
 import (
+	"errors"
+	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
-    "errors"
-    "path/filepath"
-    "log"
 
 	"github.com/dslipak/pdf"
 )
@@ -33,23 +33,23 @@ type Transaction struct {
 }
 
 func check(err error) {
-    if err == nil {
-        return
-    }
+	if err == nil {
+		return
+	}
 
-    dir, e := os.UserConfigDir()
+	dir, e := os.UserConfigDir()
 	if e != nil {
-        log.Fatalln(e)
-    }
+		log.Fatalln(e)
+	}
 	configPath := filepath.Join(dir, "money-tree")
 
-    // Create money-tree directory in UserConfigDir
+	// Create money-tree directory in UserConfigDir
 	if e = os.Mkdir(configPath, 0750); e != nil && !os.IsExist(e) {
 		log.Fatalln(e)
 	}
-    
-    // Create log file
-    logFile, e := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	// Create log file
+	logFile, e := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if e != nil {
 		log.Fatalf("error opening log file: %v\n", e)
 	}
@@ -57,7 +57,7 @@ func check(err error) {
 	log.SetOutput(logFile)
 
 	log.Println(err)
-    panic(err)
+	panic(err)
 }
 
 func ParsePdf(filename string) (error, []Transaction) {
@@ -95,8 +95,8 @@ func ParsePdf(filename string) (error, []Transaction) {
 				temp_str += parse(texts[tranID:len(texts)])
 				extractRegex(temp_str, &transaction)
 				if !transaction.isEmpty() {
-                    transactions = append(transactions, transaction)
-                }
+					transactions = append(transactions, transaction)
+				}
 			}
 			if !TransactionNum.MatchString(sentence.S) {
 				continue
@@ -106,9 +106,9 @@ func ParsePdf(filename string) (error, []Transaction) {
 				temp_str += parse(texts[tranID : i-(len(sentence.S)-1)])
 				tranID = i + 1
 				extractRegex(temp_str, &transaction)
-                if !transaction.isEmpty() {
-				    transactions = append(transactions, transaction)
-                }
+				if !transaction.isEmpty() {
+					transactions = append(transactions, transaction)
+				}
 				temp_str = ""
 				transaction = Transaction{}
 			}
@@ -118,9 +118,9 @@ func ParsePdf(filename string) (error, []Transaction) {
 		}
 	}
 	//csv(transactions)
-    if len(transactions) <= 0 {
-        return errors.New("Can't find any transactions"), transactions
-    }
+	if len(transactions) <= 0 {
+		return errors.New("Can't find any transactions"), transactions
+	}
 	return nil, transactions
 }
 
@@ -196,9 +196,11 @@ func csv(t []Transaction) {
 }
 
 func (t *Transaction) isEmpty() bool {
-    arr := []string{t.Id, t.Date, t.Time, t.Typeof, t.Status, t.Price, t.Acronym, t.Description}
-    for _, v := range arr {
-        if v == "" { return true }
-    }
-    return false
+	arr := []string{t.Id, t.Date, t.Time, t.Typeof, t.Status, t.Price, t.Acronym, t.Description}
+	for _, v := range arr {
+		if v == "" {
+			return true
+		}
+	}
+	return false
 }

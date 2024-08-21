@@ -68,7 +68,7 @@ func RemoveAccount(source *s.Source) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", source.Config.Database + "?_foreign_keys=on")
+	db, err := sql.Open("sqlite3", source.Config.Database+"?_foreign_keys=on")
 	check(err)
 
 	query := `DELETE FROM Accounts WHERE title = ?`
@@ -82,14 +82,14 @@ func RemoveAccount(source *s.Source) {
 	title, _ = accounts.GetItemText(newSelectedAccount)
 	_, accountTypes := SelectAccounts(source)
 
-    for _, account := range accountTypes {
-        if account.Title == title {
-            WhereAccount(account.Id, source)
-            return
-        } 
-    }
+	for _, account := range accountTypes {
+		if account.Title == title {
+			WhereAccount(account.Id, source)
+			return
+		}
+	}
 
-    LoadTransactions(s.Transactions, source)
+	LoadTransactions(s.Transactions, source)
 	defer db.Close()
 }
 

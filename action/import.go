@@ -8,12 +8,12 @@ import (
 )
 
 func insertIntoDb(source *s.Source, path string, t *s.Transaction) {
-    defer m.ErrorModal(source.Pages, source.Modal)
+	defer m.ErrorModal(source.Pages, source.Modal)
 	err, transactions := parser.ParsePdf(path)
-    if err != nil {
-        source.Pages.RemovePage("Form")
-    }
-    check(err)
+	if err != nil {
+		source.Pages.RemovePage("Form")
+	}
+	check(err)
 
 	table := source.Table
 

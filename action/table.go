@@ -5,9 +5,9 @@ import (
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
 
-    "golang.org/x/exp/slices"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"golang.org/x/exp/slices"
 )
 
 func InsertCell(c s.Cell, table *tview.Table) {
@@ -75,36 +75,36 @@ func AddToTable(source *s.Source) {
 }
 
 func SelectMultipleTransactions(row int, source *s.Source) {
-	
-    defer m.ErrorModal(source.Pages, source.Modal)
-    table := source.Table
-    if table.GetRowCount() <= 1 {
-	    return
-    }
 
-    if row == -1 {
-        row, _ = table.GetSelection()
-    }
-    isTrue := false
+	defer m.ErrorModal(source.Pages, source.Modal)
+	table := source.Table
+	if table.GetRowCount() <= 1 {
+		return
+	}
 
-    for column := 0; column <= len(source.Columns); column++ {
-        cell := table.GetCell(row, column)
-        fg, _, _ := cell.Style.Decompose()
-        if fg == tcell.ColorRed {
-            cell.SetTextColor(tcell.ColorWhite)
-        } else if fg == tcell.ColorWhite {
-            cell.SetTextColor(tcell.ColorRed)
-            isTrue = true
-        }
-    }
+	if row == -1 {
+		row, _ = table.GetSelection()
+	}
+	isTrue := false
 
-    if isTrue {
-        SelectedRows = append(SelectedRows, row)
-        //slices.Sort(SelectedRows)
-        return
-    } 
-    if value := slices.Index(SelectedRows, row); value != -1 {
-        SelectedRows = slices.Delete(SelectedRows, value, value + 1) 
-        //slices.Sort(SelectedRows)
-    }
+	for column := 0; column <= len(source.Columns); column++ {
+		cell := table.GetCell(row, column)
+		fg, _, _ := cell.Style.Decompose()
+		if fg == tcell.ColorRed {
+			cell.SetTextColor(tcell.ColorWhite)
+		} else if fg == tcell.ColorWhite {
+			cell.SetTextColor(tcell.ColorRed)
+			isTrue = true
+		}
+	}
+
+	if isTrue {
+		SelectedRows = append(SelectedRows, row)
+		//slices.Sort(SelectedRows)
+		return
+	}
+	if value := slices.Index(SelectedRows, row); value != -1 {
+		SelectedRows = slices.Delete(SelectedRows, value, value+1)
+		//slices.Sort(SelectedRows)
+	}
 }

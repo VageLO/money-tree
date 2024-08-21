@@ -26,22 +26,22 @@ func Statistics(source *s.Source) {
 		SetBorder(true).
 		SetTitle("Statistics")
 
-    currentYear, currentMonth, _:= time.Now().Date()
+	currentYear, currentMonth, _ := time.Now().Date()
 
 	startDate := tview.NewInputField().SetLabel(" Start Date: ")
 	endDate := tview.NewInputField().SetLabel(" End Date: ")
 	yearField := tview.NewInputField().SetLabel(" Year: ").SetText(strconv.Itoa(currentYear))
 
-    months := []time.Month{time.January, time.February, time.March, time.April, time.May, time.June, time.July,
-        time.August, time.September, time.October, time.November, time.December}
+	months := []time.Month{time.January, time.February, time.March, time.April, time.May, time.June, time.July,
+		time.August, time.September, time.October, time.November, time.December}
 
-    var strMonths []string
-    for _, month := range months {
-        strMonths = append(strMonths, month.String())
-    }
+	var strMonths []string
+	for _, month := range months {
+		strMonths = append(strMonths, month.String())
+	}
 
 	dropDown := tview.NewDropDown().SetLabel("Account: ")
-	monthsDropDown:= tview.NewDropDown().SetLabel("Months: ")
+	monthsDropDown := tview.NewDropDown().SetLabel("Months: ")
 
 	// Flex
 	topFlex := tview.NewFlex().
@@ -66,7 +66,7 @@ func Statistics(source *s.Source) {
 		loadStatictisTable(table, stats)
 	}
 
-    // StartDate Field
+	// StartDate Field
 	startDate.SetDoneFunc(func(key tcell.Key) {
 		index, text := dropDown.GetCurrentOption()
 		reloadChart(text, index)
@@ -75,7 +75,7 @@ func Statistics(source *s.Source) {
 		index, text := dropDown.GetCurrentOption()
 		reloadChart(text, index)
 	})
-    // EndDate Field
+	// EndDate Field
 	endDate.SetDoneFunc(func(key tcell.Key) {
 		index, text := dropDown.GetCurrentOption()
 		reloadChart(text, index)
@@ -84,49 +84,48 @@ func Statistics(source *s.Source) {
 		index, text := dropDown.GetCurrentOption()
 		reloadChart(text, index)
 	})
-    // Year Field
-    inputYear := func() {
-	    defer m.ErrorModal(source.Pages, source.Modal)
+	// Year Field
+	inputYear := func() {
+		defer m.ErrorModal(source.Pages, source.Modal)
 
-        index, _ := monthsDropDown.GetCurrentOption()
-        accountIndex, accountText := dropDown.GetCurrentOption()
+		index, _ := monthsDropDown.GetCurrentOption()
+		accountIndex, accountText := dropDown.GetCurrentOption()
 
-        //TODO: Make year validation
-        year, err := strconv.Atoi(yearField.GetText())
-        check(err)
+		//TODO: Make year validation
+		year, err := strconv.Atoi(yearField.GetText())
+		check(err)
 
-        firstDay, lastDay := getMonth(year, months[index])
-        startDate.SetText(firstDay)
-        endDate.SetText(lastDay)
+		firstDay, lastDay := getMonth(year, months[index])
+		startDate.SetText(firstDay)
+		endDate.SetText(lastDay)
 
 		reloadChart(accountText, accountIndex)
-    }
+	}
 
-    yearField.SetDoneFunc(func(key tcell.Key) {
-        inputYear()
+	yearField.SetDoneFunc(func(key tcell.Key) {
+		inputYear()
 	})
 	yearField.SetFinishedFunc(func(key tcell.Key) {
-        inputYear()
+		inputYear()
 	})
 
-    
-    monthsDropDown.SetOptions(strMonths, func(text string, index int) {
-        accountIndex, accountText := dropDown.GetCurrentOption()
+	monthsDropDown.SetOptions(strMonths, func(text string, index int) {
+		accountIndex, accountText := dropDown.GetCurrentOption()
 
-        firstDay, lastDay := getMonth(currentYear, months[index])
-        startDate.SetText(firstDay)
-        endDate.SetText(lastDay)
+		firstDay, lastDay := getMonth(currentYear, months[index])
+		startDate.SetText(firstDay)
+		endDate.SetText(lastDay)
 
 		reloadChart(accountText, accountIndex)
 	})
-    
+
 	dropDown.SetOptions(accounts, func(text string, index int) {
 		reloadChart(text, index)
 	})
 	dropDown.SetCurrentOption(0)
-    
-    // Set current month in drop down
-    intMonth := int(currentMonth)
+
+	// Set current month in drop down
+	intMonth := int(currentMonth)
 	monthsDropDown.SetCurrentOption(intMonth - 1)
 
 	source.Pages.AddPage("Statistics", flex, true, true)
