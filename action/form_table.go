@@ -43,6 +43,7 @@ func MultiSelectionForm(source *s.Source) {
         for i := 0; i <= len(SelectedRows) + 1; i++ {
             SelectMultipleTransactions(SelectedRows[0], source)
         }
+        source.Pages.RemovePage("Form")
 	})
 
     // Clear attachments array
