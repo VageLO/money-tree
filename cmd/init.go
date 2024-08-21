@@ -5,6 +5,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"log"
+    "os"
+    "path/filepath"
 )
 
 var (
@@ -28,6 +30,26 @@ func check(err error) {
     if err == nil {
         return
     }
+
+    dir, e := os.UserConfigDir()
+	if e != nil {
+        log.Fatalln(e)
+    }
+	configPath := filepath.Join(dir, "money-tree")
+
+    // Create money-tree directory in UserConfigDir
+	if e = os.Mkdir(configPath, 0750); e != nil && !os.IsExist(e) {
+		log.Fatalln(e)
+	}
+    
+    // Create log file
+    logFile, e := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if e != nil {
+		log.Fatalf("error opening log file: %v\n", e)
+	}
+	defer logFile.Close()
+	log.SetOutput(logFile)
+
 	log.Println(err)
     panic(err)
 }

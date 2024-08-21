@@ -8,19 +8,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var pwd string
-
 func readConfig() error {
 
 	pwd, err := os.Getwd()
-	if err != nil {
-        log.Fatalln(err)
-    }
+    check(err)
 
 	dir, err := os.UserConfigDir()
-	if err != nil {
-        log.Fatalln(err)
-    }
+    check(err)
+	
 	configPath := filepath.Join(dir, "money-tree")
 
     // Create money-tree directory in UserConfigDir
@@ -28,14 +23,6 @@ func readConfig() error {
 		log.Fatalln(err)
 	}
     
-    // Create log file
-    logFile, err := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening log file: %v\n", err)
-	}
-	defer logFile.Close()
-	log.SetOutput(logFile)
-
 	source.Config.Database = filepath.Join(pwd, "database.db")
 
     // Create config.yml in config directory
