@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	"fmt"
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
 	"log"
@@ -43,11 +42,13 @@ func MultiSelectionForm(source *s.Source) {
 			cell := source.Table.GetCell(row, 0)
 			reference := cell.GetReference().(s.Transaction)
 			transaction.Id = reference.Id
-			CompTransactions(transaction, reference)
-			check(errors.New(fmt.Sprintf("%+v, %+v", transaction, reference)))
-			UpdateTransaction(transaction, row, source, false)
+			t := transaction
+			CompTransactions(&t, &reference)
+			check(t.IsEmpty())
+			UpdateTransaction(t, row, source, false)
 		}
-		for i := 0; i <= len(SelectedRows)+1; i++ {
+		length := len(SelectedRows)
+		for i := 0; i < length; i++ {
 			SelectMultipleTransactions(SelectedRows[0], source)
 		}
 		source.Pages.RemovePage("Form")
@@ -398,7 +399,7 @@ func added(text string, label string, t *s.Transaction, source *s.Source) {
 	}
 }
 
-func CompTransactions(newT, oldT s.Transaction) {
+func CompTransactions(newT, oldT *s.Transaction) {
 	dir, e := os.UserConfigDir()
 	if e != nil {
 		log.Fatalln(e)
@@ -418,25 +419,47 @@ func CompTransactions(newT, oldT s.Transaction) {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
-	nT := reflect.ValueOf(&newT).Elem()
-	oT := reflect.ValueOf(&oldT).Elem()
+	nT := reflect.ValueOf(newT).Elem()
+	oT := reflect.ValueOf(oldT).Elem()
 
-	//log.Printf("%+v\n%+v", nT, oT)
 	tN := nT.Type()
-	tO := oT.Type()
 
 	numFields := tN.NumField()
 
 	for i := 0; i < numFields; i++ {
-		newField := tN.Field(i).Type
-		field_b := tO.Field(i).Type
+		newFieldType := tN.Field(i).Type
 
-		log.Println(tN.Field(i).Name, field_a, field_b)
-		//    switch field_a.Kind() {
-		//    case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
-		//        if field_a.IsNil() {
-		//            field_a.Set(field_b)
-		//        }
-		//    }
+		newFieldValue := nT.Field(i)
+		oldFieldValue := oT.Field(i)
+
+		switch newFieldType.Kind() {
+
+		case reflect.Int64:
+			newInt := newFieldValue.Int()
+			oldInt := oldFieldValue.Int()
+			if newInt != oldInt {
+				if newFieldValue.CanSet() && !newFieldValue.OverflowInt(newInt) {
+					newFieldValue.SetInt(newInt)
+				}
+			}
+
+		case reflect.Float64:
+			newFloat := newFieldValue.Float()
+			oldFloat := oldFieldValue.Float()
+			if newFloat == oldFloat {
+				continue
+			} else if tN.Field(i).Name == "Amount" && newFloat == 0 {
+				newFieldValue.SetFloat(oldFloat)
+			}
+
+		case reflect.String:
+			newString := newFieldValue.String()
+			oldString := oldFieldValue.String()
+			if newString == oldString {
+				continue
+			} else if newString == "" {
+				newFieldValue.SetString(oldString)
+			}
+		}
 	}
 }
