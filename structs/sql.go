@@ -11,7 +11,8 @@ SELECT Transactions.*, from_account.title, to_account.title, Categories.title FR
 INNER JOIN Categories ON Categories.id = Transactions.category_id
 INNER JOIN Accounts as from_account ON from_account.id = Transactions.account_id
 INNER JOIN Accounts as to_account ON to_account.id = Transactions.to_account_id
-WHERE Transactions.to_account_id IS NOT NULL AND (Transactions.account_id = ? OR Transactions.to_account_id = ?);
+WHERE Transactions.to_account_id IS NOT NULL AND (Transactions.account_id = ? OR Transactions.to_account_id = ?)
+ORDER BY Transactions.date DESC;
 `
 const TransactionsWhereCategoryId = `
 SELECT Transactions.*, Accounts.title as 'from_account', NULL as 'to_account', Categories.title FROM Transactions 
@@ -24,7 +25,8 @@ SELECT Transactions.*, from_account.title, to_account.title, Categories.title FR
 INNER JOIN Categories ON Categories.id = Transactions.category_id
 INNER JOIN Accounts as from_account ON from_account.id = Transactions.account_id
 INNER JOIN Accounts as to_account ON to_account.id = Transactions.to_account_id
-WHERE Transactions.to_account_id IS NOT NULL AND Transactions.category_id = ?;
+WHERE Transactions.to_account_id IS NOT NULL AND Transactions.category_id = ?
+ORDER BY Transactions.date DESC;
 `
 
 const Transactions = `
@@ -38,7 +40,8 @@ SELECT Transactions.*, from_account.title, to_account.title, Categories.title FR
 INNER JOIN Categories ON Categories.id = Transactions.category_id
 INNER JOIN Accounts as from_account ON from_account.id = Transactions.account_id
 INNER JOIN Accounts as to_account ON to_account.id = Transactions.to_account_id
-WHERE Transactions.to_account_id IS NOT NULL;
+WHERE Transactions.to_account_id IS NOT NULL
+ORDER BY Transactions.date DESC;
 `
 const StatisticsQuery = `
 SELECT 
