@@ -6,6 +6,7 @@ import (
 	s "github.com/VageLO/money-tree/structs"
 	"os"
 	"path/filepath"
+    "strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -35,7 +36,7 @@ func newTree(source *s.Source, pattern, pageName string) *tree {
 		rootNode: root,
 	}
 
-	disks := getDrives(source)
+	disks := getDrives()
 	if len(disks) == 0 {
 		check(errors.New("list of disks is empty"))
 	}
@@ -47,6 +48,9 @@ func newTree(source *s.Source, pattern, pageName string) *tree {
 		root.AddChild(diskNode)
 		tree.addNode(diskNode, disk, pattern)
 	}
+
+    homePath, _ := os.UserHomeDir()
+    tree.expandUserHome(homePath, pattern, pageName, source)
 
 	tree.SetSelectedFunc(func(node *tview.TreeNode) {
 		tree.expandOrAddNode(node, source, pattern, pageName)
@@ -140,4 +144,27 @@ func newNodeReference(path string, isDir bool, parent *tview.TreeNode) *nodeRefe
 		isDir:  isDir,
 		parent: parent,
 	}
+}
+
+func (tree *tree) expandUserHome(path, pattern, pageName string, source *s.Source) {
+
+    parents := tree.rootNode.GetChildren()
+
+    homePathSplit := strings.Split(path, string(filepath.Separator))
+
+    fullPath := string(filepath.Separator)
+
+    for _, split := range homePathSplit {
+
+        fullPath = filepath.Join(fullPath, split)
+        for _, parent := range parents {
+            reference := parent.GetReference().(*nodeReference)
+            if (fullPath == reference.path) {
+                tree.expandOrAddNode(parent, source, pattern, pageName)
+                parent.Expand()
+                parents = parent.GetChildren()
+            }
+        }
+
+    }
 }

@@ -3,10 +3,6 @@
 
 package action
 
-import (
-	s "github.com/VageLO/money-tree/structs"
-)
-
-func getDrives(source *s.Source) []string {
+func getDrives() []string {
 	return []string{"/"}
 }

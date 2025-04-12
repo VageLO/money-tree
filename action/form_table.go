@@ -4,9 +4,6 @@ import (
 	"errors"
 	m "github.com/VageLO/money-tree/modal"
 	s "github.com/VageLO/money-tree/structs"
-	"log"
-	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"time"
@@ -33,6 +30,7 @@ func MultiSelectionForm(source *s.Source) {
 
 	for i := 0; i < columnsLen; i++ {
 		emptyFormFields(i, &transaction, source)
+		locateCheckboxes(form, i)
 	}
 
 	form.AddButton("Save", func() {
@@ -43,7 +41,9 @@ func MultiSelectionForm(source *s.Source) {
 			reference := cell.GetReference().(s.Transaction)
 			transaction.Id = reference.Id
 			t := transaction
+
 			CompTransactions(&t, &reference)
+
 			check(t.IsEmpty())
 			UpdateTransaction(t, row, source, false)
 		}
@@ -400,24 +400,6 @@ func added(text string, label string, t *s.Transaction, source *s.Source) {
 }
 
 func CompTransactions(newT, oldT *s.Transaction) {
-	dir, e := os.UserConfigDir()
-	if e != nil {
-		log.Fatalln(e)
-	}
-	configPath := filepath.Join(dir, "money-tree")
-
-	// Create money-tree directory in UserConfigDir
-	if e = os.Mkdir(configPath, 0750); e != nil && !os.IsExist(e) {
-		log.Fatalln(e)
-	}
-
-	// Create log file
-	logFile, e := os.OpenFile(filepath.Join(configPath, "tree.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if e != nil {
-		log.Fatalf("error opening log file: %v\n", e)
-	}
-	defer logFile.Close()
-	log.SetOutput(logFile)
 
 	nT := reflect.ValueOf(newT).Elem()
 	oT := reflect.ValueOf(oldT).Elem()
@@ -458,6 +440,8 @@ func CompTransactions(newT, oldT *s.Transaction) {
 			if newString == oldString {
 				continue
 			} else if newString == "" {
+				newFieldValue.SetString(oldString)
+			} else if tN.Field(i).Name == "Date" {
 				newFieldValue.SetString(oldString)
 			}
 		}
